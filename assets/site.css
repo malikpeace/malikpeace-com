@@ -1060,3 +1060,40 @@ html[data-theme="light"] .gp-act { color: #fff; }
 .gp-eq.gp-res { padding-top: 11px; border-top: 1px solid rgba(255, 255, 255, .22); }
 .gp-eq.gp-res i { color: #6fcfd6; }
 .gp-eq.gp-res b { font-size: 16px; font-weight: 700; }
+
+/* ======================= alternating bands (Malik 2026-10-25): sections switch between black and white for contrast =======================
+   dark mode:  hero B / mission W / comments B / the lock-in story W (with the people row B inside it) / tools B / 25+5 W / Memento B / footer W
+   Flash bang: each band flips, except the Memento section (always dark) and the 25+5 and footer (they stay on the page colour) */
+.band-tok-w, html:not([data-theme="light"]) :is(.s7-mission, .s7-val, .l25, .s1-foot), html[data-theme="light"] .great7 {
+  --bg: #ffffff; --ink: #0b0b0c; --mid: #5c5c66; --line: #e3e3e8; --soft: #f3f3f5; --field: #f4f4f6; --link: #0b8a93; --text: #2b2b31;
+  --fill: rgba(0, 0, 0, .035); --fill2: rgba(0, 0, 0, .06); --hi: inset 0 1px 0 rgba(255, 255, 255, .7); --u: rgba(0, 0, 0, .35);
+  color: var(--ink);
+}
+.band-tok-b, html:not([data-theme="light"]) .great7, html[data-theme="light"] :is(.s7-mission, .s7-val) {
+  --bg: #000000; --ink: #f2f2f3; --mid: #a7a7ad; --line: #1d1d21; --soft: rgba(255, 255, 255, .05); --field: #0a0a0b; --link: #6fcfd6; --text: #dcdce1;
+  --fill: rgba(255, 255, 255, .05); --fill2: rgba(255, 255, 255, .085); --hi: inset 0 1px 0 rgba(255, 255, 255, .07); --u: rgba(255, 255, 255, .4);
+  color: var(--ink);
+}
+/* the band paints edge to edge without changing the layout (the shadow never adds scroll width) */
+.s7-mission, .s7-val, .great7, html:not([data-theme="light"]) :is(.l25, .s1-foot) {
+  background: var(--bg); box-shadow: 0 0 0 100vmax var(--bg); clip-path: inset(0 -100vmax);
+}
+/* breathing room inside every band, and no stray gaps between them */
+.s7-me { padding-bottom: clamp(56px, 8vw, 104px); }
+.s7-mission { padding-block: clamp(64px, 9vw, 120px); }
+.s7 .ysec { padding-block: clamp(64px, 9vw, 120px); }
+.s7-val { padding-block: clamp(64px, 9vw, 120px); }
+.great7 { margin-block: clamp(56px, 7vw, 104px) 0; padding-block: clamp(56px, 8vw, 104px); }
+.s7-tools { padding-block: clamp(64px, 9vw, 120px) clamp(64px, 9vw, 120px); }
+.s7-mem { margin-top: 0; }
+.pad-end { display: none; }
+html:not([data-theme="light"]) .s7-tools { padding-bottom: 0; }
+html:not([data-theme="light"]) .l25 { margin-top: clamp(64px, 8vw, 112px); padding-block: clamp(56px, 8vw, 104px); padding-inline: 0; border-radius: 0; }
+html:not([data-theme="light"]) .s1-foot { margin-top: 0; border-top: 0; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+html:not([data-theme="light"]) .s1-foot .wide { padding-block: clamp(48px, 7vw, 88px) 24px; }
+/* things that must read on either band */
+.l25-cover { color: #f2f2f3; }
+.l25-cover b span { color: #6fcfd6; }
+.p7s__more { text-decoration-color: var(--u, rgba(255, 255, 255, .4)); }
+.p7s__n { color: var(--mid); }
+html:not([data-theme="light"]) :is(.l25, .s1-foot) .bhwrap { background: #0b0b0c; border-radius: 16px; padding: 6px 4px 2px; }

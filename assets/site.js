@@ -121,7 +121,7 @@
       var row = e.target.closest('.row'); if (!row || e.button) return;
       row._g = (row._g || 0) + 1;   // a new grab stops any glide still running on this row
       var s = rowState(row);
-      drag = { row: row, x0: e.clientX, y0: e.clientY, tx0: s.tx, tx: s.tx, moved: false, el: e.target, hist: [[performance.now(), e.clientX]] };
+      drag = { row: row, x0: e.clientX, y0: e.clientY, sy: window.scrollY, t0: performance.now(), tx0: s.tx, tx: s.tx, moved: false, el: e.target, hist: [[performance.now(), e.clientX]] };
       row.style.animation = 'none'; row.style.transform = 'translateX(' + s.tx + 'px)';
     });
     window.addEventListener('pointermove', function (e) {
@@ -132,10 +132,15 @@
       var now = performance.now(); drag.hist.push([now, e.clientX]); while (drag.hist.length > 2 && now - drag.hist[0][0] > 100) drag.hist.shift();
       drag.tx = wrapX(drag.row, drag.tx0 + dx); drag.row.style.transform = 'translateX(' + drag.tx + 'px)';
     });
-    function end() {
+    function end(e) {
       if (!drag) return;
       var d = drag; drag = null; d.row.classList.remove('grab');
-      if (!d.moved) { resume(d.row, d.tx0); if (onTap) onTap(d.el); return; }
+      if (!d.moved) {
+        resume(d.row, d.tx0);
+        var still = e && e.type === 'pointerup' && Math.abs(e.clientX - d.x0) < 8 && Math.abs(e.clientY - d.y0) < 8 && Math.abs(window.scrollY - d.sy) < 4 && performance.now() - d.t0 < 450;
+        if (still && onTap) onTap(d.el);
+        return;
+      }
       var h = d.hist, a = h[0], b = h[h.length - 1], now = performance.now();
       var v = (now - b[0] > 80 || b[0] === a[0]) ? 0 : (b[1] - a[1]) / (b[0] - a[0]) * 16;   // px per frame at release
       v = Math.max(-120, Math.min(120, v * 1.8));
