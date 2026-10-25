@@ -960,14 +960,9 @@ img[src="shared/face-cut-ol.png"] { border-radius: 0px !important; background: n
   .mp-act.dm { width: 32px; padding: 0; justify-content: center; }
 }
 
-/* Flash bang mode: a white flash, a little shake, then light mode */
-.fb-flash, .fb-dark { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; }
-.fb-flash { background: #fff; animation: fbFlash 1.4s cubic-bezier(.2, .7, .2, 1) forwards; }
-.fb-dark { background: #000; animation: fbDark .5s ease-in-out forwards; }
-@keyframes fbFlash { 0% { opacity: 0; } 5% { opacity: 1; } 32% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes fbDark { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0; } }
-.fb-shake #app { animation: fbShake .42s linear 1; }
-@keyframes fbShake { 0%, 100% { transform: none; } 20% { transform: translate(-5px, 2px); } 40% { transform: translate(4px, -3px); } 60% { transform: translate(-3px, 1px); } 80% { transform: translate(2px, -1px); } }
+/* switching modes: the new mode grows out of the centre in a circle (view transition; old browsers use .fb-orb) */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+.fb-orb { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; background: #fff; mix-blend-mode: difference; clip-path: circle(6px at 50% 50%); }
 
 /* comments: grab a row and fling it; tap one to pin it */
 .ymarq .row { cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
@@ -988,7 +983,7 @@ img[src="shared/face-cut-ol.png"] { border-radius: 0px !important; background: n
 .bh { min-height: 56px; --bh-inset: 19px; width: calc(100% + var(--bh-inset) * 2) !important; max-width: none !important; margin-left: calc(-1 * var(--bh-inset)) !important; }
 .bh iframe { width: 100%; border: 0; background: transparent; color-scheme: normal; }
 
-@media (prefers-reduced-motion: reduce) { .mp-act, .pin7, .pin7-card { transition: none; } .fb-shake #app { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .mp-act, .pin7, .pin7-card { transition: none; } }
 
 /* ======================= Flash bang mode: the light theme ======================= */
 html[data-theme="light"] { color-scheme: light; background: #fff; }
@@ -1126,3 +1121,24 @@ html[data-theme="light"] .s7-tools { border-top: 1px solid var(--line); }
   --fill: rgba(255, 255, 255, .05); --fill2: rgba(255, 255, 255, .085); --hi: inset 0 1px 0 rgba(255, 255, 255, .07); --u: rgba(255, 255, 255, .4);
   color: var(--ink); background: #0b0b0d; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), 0 24px 50px -24px rgba(0, 0, 0, .45);
 }
+/* the 25+5 card links to the lessons (cover and title) */
+.l25-cover-a { display: block; text-decoration: none; color: inherit; border-radius: 12px; transition: transform .2s ease-out; }
+.l25-cover-a:hover { transform: translateY(-2px) rotate(-.6deg); }
+.l25-link { color: inherit; text-decoration: none; }
+.l25-link:hover { text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 2px; }
+@media (prefers-reduced-motion: reduce) { .l25-cover-a { transition: none; } .l25-cover-a:hover { transform: none; } }
+/* a step can hold several paragraphs, indents and lists (Malik writes them in edit mode) */
+.p7s__body > div > :not(:last-child) { padding-bottom: 14px; }
+.p7s__body > div > :is(ul, ol, blockquote) { margin: 0 0 0 52px; padding: 0 0 28px 1.3em; font-size: 17px; line-height: 1.65; color: var(--text); max-width: 40em; opacity: 0; transform: translateY(6px); transition: opacity .3s var(--ease), transform .36s var(--ease); }
+.p7s.open .p7s__body > div > :is(ul, ol, blockquote) { opacity: 1; transform: none; }
+.p7s__body > div > blockquote { padding-left: 1.6em; }
+.p7s__body :is(blockquote, li) p { margin-left: 0; padding-bottom: 0; opacity: 1; transform: none; font-size: inherit; }
+.p7s__body :is(ul, ol) :is(ul, ol), .p7s__body blockquote blockquote { margin: 4px 0; padding: 0 0 0 1.3em; }
+.p7s__body li + li { margin-top: 4px; }
+@media (min-width: 900px) { .p7s__body > div > :is(ul, ol, blockquote) { margin-left: calc((100% + var(--gp)) * 5 / 12); max-width: min(40em, calc((100% + var(--gp)) * 6 / 12 - var(--gp))); font-size: 19px; padding-bottom: 36px; } }
+@media (prefers-reduced-motion: reduce) { .p7s__body > div > :is(ul, ol, blockquote) { transition: none; } }
+.p7s__body ul { list-style: disc; } .p7s__body ol { list-style: decimal; } .p7s__body :is(ul, ol) :is(ul, ol) { list-style-type: circle; }
+.p7s__body li { display: list-item; border: 0 !important; padding: 0 0 0 .2em; background: none; }
+.p7s__body li::before, .p7s__body li::after { content: none !important; }
+.p7s__body li::marker { color: var(--mid); }
+.p7s__body li { box-shadow: none !important; }

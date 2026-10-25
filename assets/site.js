@@ -17,13 +17,20 @@
   if (fbBtn) {
     setTheme(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
     fbBtn.addEventListener('click', function () {
-      var toLight = root.getAttribute('data-theme') !== 'light';
-      if (REDUCE) { setTheme(toLight ? 'light' : 'dark'); return; }
-      var fx = document.createElement('div'); fx.className = toLight ? 'fb-flash' : 'fb-dark'; document.body.appendChild(fx);
-      if (toLight) { document.body.classList.add('fb-shake'); }
-      // the theme flips under the flash at its brightest, then the flash fades
-      setTimeout(function () { setTheme(toLight ? 'light' : 'dark'); }, toLight ? 90 : 160);
-      setTimeout(function () { fx.remove(); document.body.classList.remove('fb-shake'); }, toLight ? 1500 : 520);
+      var to = root.getAttribute('data-theme') !== 'light' ? 'light' : 'dark';
+      if (REDUCE) { setTheme(to); return; }
+      // the new mode grows out of the centre of the screen like the Action orb: a small dot that speeds up ((32^f - 1) / 31)
+      var R = Math.hypot(innerWidth / 2, innerHeight / 2) + 4, frames = [];
+      for (var i = 0; i <= 30; i++) { var f = i / 30, r = 6 + (R - 6) * (Math.pow(32, f) - 1) / 31; frames.push({ clipPath: 'circle(' + r.toFixed(1) + 'px at 50% 50%)' }); }
+      if (document.startViewTransition) {
+        var vt = document.startViewTransition(function () { setTheme(to); });
+        vt.ready.then(function () { root.animate(frames, { duration: 500, easing: 'linear', fill: 'forwards', pseudoElement: '::view-transition-new(root)' }); }, function () {});
+        return;
+      }
+      // older browsers: the same circle as a white "difference" layer (it inverts everything under it), then the real mode takes over
+      var fx = document.createElement('div'); fx.className = 'fb-orb'; document.body.appendChild(fx);
+      var an = fx.animate(frames, { duration: 500, easing: 'linear', fill: 'forwards' });
+      an.onfinish = function () { setTheme(to); requestAnimationFrame(function () { fx.remove(); }); };
     });
   }
 
@@ -118,7 +125,7 @@
   function flingRows(box, onTap) {
     var drag = null;
     box.addEventListener('pointerdown', function (e) {
-      var row = e.target.closest('.row'); if (!row || e.button) return;
+      var row = e.target.closest('.row'); if (!row || e.button || root.classList.contains('mp-editing')) return;
       row._g = (row._g || 0) + 1;   // a new grab stops any glide still running on this row
       var s = rowState(row);
       drag = { row: row, x0: e.clientX, y0: e.clientY, sy: window.scrollY, t0: performance.now(), tx0: s.tx, tx: s.tx, moved: false, el: e.target, hist: [[performance.now(), e.clientX]] };
