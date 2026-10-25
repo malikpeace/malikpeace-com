@@ -1034,3 +1034,18 @@ html[data-theme="light"] .bhwrap { background: #0b0b0c; border-radius: 16px; pad
 .great-cr a { color: inherit; }
 @media (prefers-reduced-motion: reduce) { .gp-ph img { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .great-row { overflow-x: auto; } .great-row .row { animation: none; } }
+
+/* each person: who they are by default; hover (computer) or tap (phone) shows their focused, consistent action over the photo */
+.gp { cursor: pointer; outline: none; }
+.gp-ph { position: relative; }
+.gp-act { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 16px 16px 18px; font-size: 15.5px; line-height: 1.45; font-weight: 600; color: #fff; letter-spacing: -0.005em;
+  background: linear-gradient(to top, rgba(0, 0, 0, .94) 0%, rgba(0, 0, 0, .86) 55%, rgba(0, 0, 0, .55) 100%); opacity: 0; transform: translateY(6px); transition: opacity .25s ease-out, transform .25s ease-out; pointer-events: none; }
+.gp-b { font-size: 15px; line-height: 1.4; color: var(--mid); margin-top: -4px; }
+.gp-more { font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; text-decoration-color: rgba(127, 127, 127, .5); width: max-content; }
+.gp.open .gp-act, .gp:focus-visible .gp-act { opacity: 1; transform: none; }
+.gp.open .gp-ph img { filter: none; }
+.gp:focus-visible .gp-ph { box-shadow: 0 0 0 2px var(--ink); }
+@media (hover: hover) and (pointer: fine) { .gp:hover .gp-act { opacity: 1; transform: none; } }
+.great-row.held .row { animation-play-state: paused; }
+html[data-theme="light"] .gp-act { color: #fff; }
+@media (prefers-reduced-motion: reduce) { .gp-act { transition: none; transform: none; } }

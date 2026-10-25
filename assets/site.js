@@ -27,10 +27,6 @@
     });
   }
 
-  /* ---------------- the mode button: Desktop mode on a computer, Mobile mode on a phone ---------------- */
-  function modeLabel() { var m = innerWidth < 900 ? 'Mobile mode' : 'Desktop mode'; $$('[data-modebtn]').forEach(function (b) { b.setAttribute('aria-label', m); var l = $('.lbl', b); if (l) l.textContent = m; }); }
-  modeLabel(); addEventListener('resize', modeLabel);
-
   /* ---------------- the steps: tap the step or Read more ---------------- */
   $$('.p7s').forEach(function (st) {
     var b = $('.p7s__h', st), more = $('.p7s__more', st), body = $('.p7s__body', st), t = 0;
@@ -154,9 +150,22 @@
     window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
   }
   var great = $('#greatRow');
+  // a person card: tap (or Enter) shows their focused, consistent action; the row holds still while one is open
+  function togglePerson(gp) {
+    if (!gp || !great) return;
+    var open = !gp.classList.contains('open');
+    $$('.gp.open', great).forEach(function (x) { x.classList.remove('open'); var m = $('.gp-more', x); if (m) m.textContent = 'See how'; });
+    if (open) { gp.classList.add('open'); var m = $('.gp-more', gp); if (m) m.textContent = 'Close'; }
+    great.classList.toggle('held', open);
+  }
+  if (great) {
+    great.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('gp')) { e.preventDefault(); togglePerson(e.target); } });
+    document.addEventListener('pointerdown', function (e) { if (!e.target.closest('#greatRow')) { $$('.gp.open', great).forEach(function (x) { togglePerson(x); }); } });
+    if (REDUCE) great.addEventListener('click', function (e) { togglePerson(e.target.closest('.gp')); });
+  }
   if (!REDUCE) {
     if (box) flingRows(box, function (el) { var ci = el.closest('.yc'); if (ci) pin(+ci.getAttribute('data-ci')); });
-    if (great) flingRows(great, null);
+    if (great) flingRows(great, function (el) { togglePerson(el.closest('.gp')); });
   } else if (box) {
     box.addEventListener('click', function (e) { var ci = e.target.closest('.yc'); if (ci) pin(+ci.getAttribute('data-ci')); });
   }
