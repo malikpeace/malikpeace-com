@@ -969,15 +969,6 @@ img[src="shared/face-cut-ol.png"] { border-radius: 0px !important; background: n
 .fb-shake #app { animation: fbShake .42s linear 1; }
 @keyframes fbShake { 0%, 100% { transform: none; } 20% { transform: translate(-5px, 2px); } 40% { transform: translate(4px, -3px); } 60% { transform: translate(-3px, 1px); } 80% { transform: translate(2px, -1px); } }
 
-/* the throwable face */
-.s7-me .ph.throw { position: relative; }
-.s7-me .ph.throw img { cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; will-change: transform; position: relative; }
-.s7-me .ph.grabbed img { cursor: grabbing; }
-.s7-me .ph.flying { z-index: 60; }
-.throw-hint { position: absolute; right: -4px; top: 6%; padding: 6px 10px; white-space: nowrap; border-radius: 999px; background: var(--ink); color: var(--bg); font: 700 12.5px/1 var(--arial, Arial, sans-serif); transform: rotate(8deg); pointer-events: none; transition: opacity .3s ease-out, transform .3s ease-out; }
-.throw-hint.gone { opacity: 0; transform: rotate(8deg) scale(.8); }
-@media (max-width: 899px) { .throw-hint { right: -6px; left: auto; top: -2px; } }
-
 /* comments: grab a row and fling it; tap one to pin it */
 .ymarq .row { cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
 .ymarq .row.grab { cursor: grabbing; }
@@ -997,7 +988,7 @@ img[src="shared/face-cut-ol.png"] { border-radius: 0px !important; background: n
 .bh { min-height: 56px; --bh-inset: 19px; width: calc(100% + var(--bh-inset) * 2) !important; max-width: none !important; margin-left: calc(-1 * var(--bh-inset)) !important; }
 .bh iframe { width: 100%; border: 0; background: transparent; color-scheme: normal; }
 
-@media (prefers-reduced-motion: reduce) { .mp-act, .pin7, .pin7-card, .throw-hint { transition: none; } .fb-shake #app { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .mp-act, .pin7, .pin7-card { transition: none; } .fb-shake #app { animation: none; } }
 
 /* ======================= Flash bang mode: the light theme ======================= */
 html[data-theme="light"] { color-scheme: light; background: #fff; }
@@ -1014,3 +1005,7 @@ html[data-theme="light"] .s7 #ytallbtn:hover { background: #26262a; }
 html[data-theme="light"] .l25-cover { color: #f2f2f3; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 24px 50px -18px rgba(0, 0, 0, .35); }
 html[data-theme="light"] .l25-cover b span { color: #6fcfd6; }
 html[data-theme="light"] .bhwrap { background: #0b0b0c; border-radius: 16px; padding: 6px 4px 2px; }
+
+/* the mode button: Desktop mode on a computer, Mobile mode on a phone (same page, it lays itself out per device) */
+.mp-act .ic-phone { display: none; }
+@media (max-width: 899px) { .mp-act .ic-mac { display: none; } .mp-act .ic-phone { display: block; } }
