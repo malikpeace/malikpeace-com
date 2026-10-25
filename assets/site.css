@@ -1097,3 +1097,32 @@ html:not([data-theme="light"]) .s1-foot .wide { padding-block: clamp(48px, 7vw, 
 .p7s__more { text-decoration-color: var(--u, rgba(255, 255, 255, .4)); }
 .p7s__n { color: var(--mid); }
 html:not([data-theme="light"]) :is(.l25, .s1-foot) .bhwrap { background: #0b0b0c; border-radius: 16px; padding: 6px 4px 2px; }
+
+/* round 2 of the bands: the people row, the lock-in heading and the steps share ONE band (the 25+5 card is off for now)
+   dark:  hero B / mission W / comments B / the story W / people + steps B / tools W / Memento B / footer W
+   light: hero W / mission B / comments W / the story B / people + steps W / tools W / Memento B / footer W */
+html:not([data-theme="light"]) .great7, html[data-theme="light"] .great7 { background: none; box-shadow: none; clip-path: none; }
+.great7 { margin-block: 0; padding-block: 0; }
+.steps7 { display: flex; flex-direction: column; margin-top: clamp(64px, 9vw, 120px); padding-block: clamp(64px, 9vw, 120px); background: var(--bg); box-shadow: 0 0 0 100vmax var(--bg); clip-path: inset(0 -100vmax); }
+.steps7 .lockin { margin-top: clamp(64px, 8vw, 112px); }
+.s7-val { padding-bottom: 0; }
+html:not([data-theme="light"]) .steps7 {
+  --bg: #000000; --ink: #f2f2f3; --mid: #a7a7ad; --line: #1d1d21; --soft: rgba(255, 255, 255, .05); --field: #0a0a0b; --link: #6fcfd6; --text: #dcdce1;
+  --fill: rgba(255, 255, 255, .05); --fill2: rgba(255, 255, 255, .085); --hi: inset 0 1px 0 rgba(255, 255, 255, .07); --u: rgba(255, 255, 255, .4); color: var(--ink);
+}
+html[data-theme="light"] .steps7 {
+  --bg: #ffffff; --ink: #0b0b0c; --mid: #5c5c66; --line: #e3e3e8; --soft: #f3f3f5; --field: #f4f4f6; --link: #0b8a93; --text: #2b2b31;
+  --fill: rgba(0, 0, 0, .035); --fill2: rgba(0, 0, 0, .06); --hi: inset 0 1px 0 rgba(255, 255, 255, .7); --u: rgba(0, 0, 0, .35); color: var(--ink);
+}
+html:not([data-theme="light"]) .s7-tools {
+  --bg: #ffffff; --ink: #0b0b0c; --mid: #5c5c66; --line: #e3e3e8; --soft: #f3f3f5; --field: #f4f4f6; --link: #0b8a93; --text: #2b2b31;
+  --fill: rgba(0, 0, 0, .035); --fill2: rgba(0, 0, 0, .06); --hi: inset 0 1px 0 rgba(255, 255, 255, .7); --u: rgba(0, 0, 0, .35); color: var(--ink);
+  background: var(--bg); box-shadow: 0 0 0 100vmax var(--bg); clip-path: inset(0 -100vmax); padding-bottom: clamp(64px, 9vw, 120px);
+}
+html[data-theme="light"] .s7-tools { border-top: 1px solid var(--line); }
+/* the three tool cards stay dark objects on any band (their visuals and small print are drawn for dark) */
+.s7-tools .k7 {
+  --bg: #000000; --ink: #f2f2f3; --mid: #a7a7ad; --line: #1d1d21; --soft: rgba(255, 255, 255, .05); --field: #0a0a0b; --link: #6fcfd6; --text: #dcdce1;
+  --fill: rgba(255, 255, 255, .05); --fill2: rgba(255, 255, 255, .085); --hi: inset 0 1px 0 rgba(255, 255, 255, .07); --u: rgba(255, 255, 255, .4);
+  color: var(--ink); background: #0b0b0d; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), 0 24px 50px -24px rgba(0, 0, 0, .45);
+}
