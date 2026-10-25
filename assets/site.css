@@ -948,6 +948,10 @@ img[src="shared/face-cut-ol.png"] { border-radius: 0px !important; background: n
 .mp-act svg { width: 15px; height: 15px; flex: none; }
 .mp-act:active { transform: scale(0.96); }
 .mp-act.fb { background: var(--ink); color: var(--bg); }
+/* both labels (each with its icon) share one cell, so the button keeps one width and a fast run of taps can't miss it as the words change */
+.mp-act .lbl { display: inline-grid; justify-items: center; }
+.mp-act .lbl > span { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: 7px; }   /* icon + words centred together */
+html[data-theme="light"] .mp-act .lb-l, html:not([data-theme="light"]) .mp-act .lb-d { visibility: hidden; }
 .mp-act.dm { background: var(--fill2, rgba(255,255,255,.085)); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
 .mp-act:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 @media (max-width: 720px) {
@@ -960,13 +964,43 @@ img[src="shared/face-cut-ol.png"] { border-radius: 0px !important; background: n
   .mp-act.dm { width: 32px; padding: 0; justify-content: center; }
 }
 
-/* switching modes: the new mode grows out of the centre in a circle (view transition; old browsers use .fb-orb) */
+/* switching modes: the new mode grows out of the centre in a circle, a small dot that speeds up like the Action orb
+   ((32^f - 1) / 31; 71% of the circle's reference box is half the screen's diagonal). While it swaps, every colour fade
+   is off, so a fast run of taps can never catch the page half way between black and white (grey). */
+html.mp-swap *, html.mp-swap *::before, html.mp-swap *::after { transition: none !important; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-.fb-orb { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; background: #fff; mix-blend-mode: difference; clip-path: circle(6px at 50% 50%); }
+html.mp-swap::view-transition-new(root) { animation: mp-orb .5s linear both; }
+/* taps go through the circle to the real page, so mashing the button keeps switching instead of being swallowed */
+::view-transition { pointer-events: none; }
+@keyframes mp-orb {
+  0% { clip-path: circle(calc(6px + (71% - 2px) * 0.0000) at 50% 50%); }
+  5% { clip-path: circle(calc(6px + (71% - 2px) * 0.0061) at 50% 50%); }
+  10% { clip-path: circle(calc(6px + (71% - 2px) * 0.0134) at 50% 50%); }
+  15% { clip-path: circle(calc(6px + (71% - 2px) * 0.0220) at 50% 50%); }
+  20% { clip-path: circle(calc(6px + (71% - 2px) * 0.0323) at 50% 50%); }
+  25% { clip-path: circle(calc(6px + (71% - 2px) * 0.0445) at 50% 50%); }
+  30% { clip-path: circle(calc(6px + (71% - 2px) * 0.0590) at 50% 50%); }
+  35% { clip-path: circle(calc(6px + (71% - 2px) * 0.0762) at 50% 50%); }
+  40% { clip-path: circle(calc(6px + (71% - 2px) * 0.0968) at 50% 50%); }
+  45% { clip-path: circle(calc(6px + (71% - 2px) * 0.1212) at 50% 50%); }
+  50% { clip-path: circle(calc(6px + (71% - 2px) * 0.1502) at 50% 50%); }
+  55% { clip-path: circle(calc(6px + (71% - 2px) * 0.1847) at 50% 50%); }
+  60% { clip-path: circle(calc(6px + (71% - 2px) * 0.2258) at 50% 50%); }
+  65% { clip-path: circle(calc(6px + (71% - 2px) * 0.2746) at 50% 50%); }
+  70% { clip-path: circle(calc(6px + (71% - 2px) * 0.3327) at 50% 50%); }
+  75% { clip-path: circle(calc(6px + (71% - 2px) * 0.4018) at 50% 50%); }
+  80% { clip-path: circle(calc(6px + (71% - 2px) * 0.4839) at 50% 50%); }
+  85% { clip-path: circle(calc(6px + (71% - 2px) * 0.5815) at 50% 50%); }
+  90% { clip-path: circle(calc(6px + (71% - 2px) * 0.6977) at 50% 50%); }
+  95% { clip-path: circle(calc(6px + (71% - 2px) * 0.8358) at 50% 50%); }
+  100% { clip-path: circle(calc(6px + (71% - 2px) * 1.0000) at 50% 50%); }
+}
 
 /* comments: grab a row and fling it; tap one to pin it */
 .ymarq .row { cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
 .ymarq .row.grab { cursor: grabbing; }
+/* cards off screen are skipped (site.js pins each row's height first); width stays the card's own */
+.ymarq .row.cv > .yc { content-visibility: auto; contain-intrinsic-size: auto 262px auto 120px; }
 .pin7 { position: fixed; inset: 0; z-index: 2147482000; display: grid; place-items: center; padding: max(20px, env(safe-area-inset-top, 0px)) 16px max(20px, env(safe-area-inset-bottom, 0px)); background: rgba(0, 0, 0, 0); -webkit-backdrop-filter: blur(0px); backdrop-filter: blur(0px); transition: background-color .22s ease-out, backdrop-filter .22s ease-out, -webkit-backdrop-filter .22s ease-out; }
 .pin7.on { background: rgba(0, 0, 0, .62); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .pin7-card { position: relative; width: min(560px, 100%); opacity: 0; transform: scale(.92) translateY(10px); transition: opacity .22s ease-out, transform .26s cubic-bezier(.2, .8, .2, 1); }

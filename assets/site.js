@@ -11,27 +11,33 @@
   function setTheme(t) {
     root.setAttribute('data-theme', t);
     try { localStorage.setItem('mp-theme', t); } catch (e) {}
-    if (fbBtn) { fbBtn.setAttribute('aria-pressed', String(t === 'light')); fbBtn.querySelector('.lbl').textContent = t === 'light' ? 'Dark mode' : 'Flash bang mode'; }
+    if (fbBtn) fbBtn.setAttribute('aria-pressed', String(t === 'light'));   // the label shown follows data-theme (site.css)
     var meta = $('meta[name="theme-color"]'); if (meta) meta.content = t === 'light' ? '#ffffff' : '#000000';
   }
   if (fbBtn) {
-    setTheme(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
-    fbBtn.addEventListener('click', function () {
-      var to = root.getAttribute('data-theme') !== 'light' ? 'light' : 'dark';
-      if (REDUCE) { setTheme(to); return; }
-      // the new mode grows out of the centre of the screen like the Action orb: a small dot that speeds up ((32^f - 1) / 31)
-      var R = Math.hypot(innerWidth / 2, innerHeight / 2) + 4, frames = [];
-      for (var i = 0; i <= 30; i++) { var f = i / 30, r = 6 + (R - 6) * (Math.pow(32, f) - 1) / 31; frames.push({ clipPath: 'circle(' + r.toFixed(1) + 'px at 50% 50%)' }); }
-      if (document.startViewTransition) {
-        var vt = document.startViewTransition(function () { setTheme(to); });
-        vt.ready.then(function () { root.animate(frames, { duration: 500, easing: 'linear', fill: 'forwards', pseudoElement: '::view-transition-new(root)' }); }, function () {});
-        return;
-      }
-      // older browsers: the same circle as a white "difference" layer (it inverts everything under it), then the real mode takes over
-      var fx = document.createElement('div'); fx.className = 'fb-orb'; document.body.appendChild(fx);
-      var an = fx.animate(frames, { duration: 500, easing: 'linear', fill: 'forwards' });
-      an.onfinish = function () { setTheme(to); requestAnimationFrame(function () { fx.remove(); }); };
-    });
+    var mode = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark', swap = false, owed = false, noop = function () {};
+    setTheme(mode);
+    // the new mode grows out of the centre of the screen (the circle lives in site.css: html.mp-swap). Every circle plays
+    // out in full; colour fades stay off from the first tap until the last circle lands, so nothing is ever caught grey.
+    var go = function () {
+      mode = mode === 'light' ? 'dark' : 'light';
+      if (REDUCE || !document.startViewTransition) { setTheme(mode); return; }
+      root.classList.add('mp-swap'); swap = true;
+      var vt = document.startViewTransition(function () { setTheme(mode); });
+      vt.ready.catch(noop); vt.updateCallbackDone.catch(noop);
+      vt.finished.catch(noop).then(function () {
+        swap = false;
+        if (owed) { owed = false; go(); } else root.classList.remove('mp-swap');
+      });
+    };
+    // taps that land mid-circle only flip what's owed, so a run of taps always ends on the mode its count says
+    var tap = function () { if (swap) owed = !owed; else go(); };
+    // while a circle runs the browser hands taps to the page itself, not the button, so the button's spot is checked too
+    document.addEventListener('click', function (e) {
+      var hit = e.target.closest && e.target.closest('[data-flashbang]');
+      if (!hit && swap && e.clientX) { var b = fbBtn.getBoundingClientRect(); hit = e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom; }
+      if (hit) tap();
+    }, true);
   }
 
   /* ---------------- the steps: tap the step or Read more ---------------- */
@@ -79,8 +85,22 @@
     for (var k = 0; k < n; k++) rows[k % R].push(card(C[k], k));
     box.innerHTML = rows.map(function (r, i) { return '<div class="row' + (i % 2 ? ' rev' : '') + '" style="--dur:' + Math.round(r.length * sp[i % 5]) + 's">' + r.join('') + r.join('') + '</div>'; }).join('');
     box.classList.toggle('is-all', !!all);
+    lighten();
+  }
+  // Only the comment cards on or near the screen get styled and laid out; the rest are skipped (styling all 1,000 made a
+  // mode switch stall over the comments). Each row is pinned at its full height first, so skipping a card never moves it.
+  var CV = !!box && 'contentVisibility' in box.style, cvW = 0;
+  function lighten() {
+    if (!CV) return;
+    var rows = $$('.row', box), hs;
+    box.style.contentVisibility = ''; rows.forEach(function (r) { r.style.height = ''; r.classList.remove('cv'); });
+    hs = rows.map(function (r) { return r.offsetHeight; });
+    rows.forEach(function (r, i) { r.style.height = hs[i] + 'px'; r.classList.add('cv'); });
+    box.style.containIntrinsicHeight = 'auto ' + box.offsetHeight + 'px'; box.style.contentVisibility = 'auto';
+    cvW = innerWidth;
   }
   buildMarquee(false);
+  if (CV) { var cvT = 0; addEventListener('resize', function () { clearTimeout(cvT); cvT = setTimeout(function () { if (innerWidth !== cvW) lighten(); }, 200); }); }
   var allOn = false, allBtn = $('#ytallbtn'), wallBtn = $('#ywallbtn'), wall = $('#ywall'), note = $('#ynote');
   function closeWall() { wall.hidden = true; wall.innerHTML = ''; wallBtn.textContent = 'See them all on one page'; }
   if (allBtn) allBtn.addEventListener('click', function () {
