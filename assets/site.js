@@ -57,16 +57,6 @@
     c.set(AURORA_FROST, 0); c.mark('rgba(238,246,255,0.95)');
   });
 
-  /* ---------------- the "anyone great" row: on a computer, drag it with the mouse like a phone swipe ---------------- */
-  var gr = $('#greatRow');
-  if (gr) {
-    var gd = null;
-    gr.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse' || e.button) return; gd = { x: e.clientX, s: gr.scrollLeft, moved: false }; gr.style.scrollSnapType = 'none'; });
-    window.addEventListener('pointermove', function (e) { if (!gd) return; var dx = e.clientX - gd.x; if (Math.abs(dx) > 4) gd.moved = true; gr.scrollLeft = gd.s - dx; });
-    window.addEventListener('pointerup', function () { if (!gd) return; gd = null; gr.style.scrollSnapType = ''; });
-    gr.addEventListener('dragstart', function (e) { e.preventDefault(); });
-  }
-
   /* ---------------- comments ---------------- */
   var C = window.COMMENTS || [];
   var THUMB = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.77 11h-4.23l1.52-4.94C16.38 5.03 15.54 4 14.38 4c-.58 0-1.14.24-1.52.65L7 11H3v10h14.43c1.06 0 1.98-.67 2.2-1.61l1.34-6C21.26 12.15 20.2 11 18.77 11zM7 20H4v-8h3v8zm12.98-6.83-1.34 6c-.1.48-.61.83-1.21.83H8v-8.61l5.6-6.06c.19-.21.48-.33.78-.33.26 0 .5.11.63.3.07.1.15.26.09.47l-1.52 4.94-.4 1.29h5.58c.41 0 .8.17 1.03.46.13.15.26.49.18.89z"/></svg>';
@@ -128,12 +118,14 @@
     row.style.transform = ''; row.style.animation = '';
     row.style.animationDelay = (-(rev ? 1 - p : p) * dur).toFixed(2) + 's';
   }
-  if (box && !REDUCE) {
+  // grab a drifting row and fling it: it glides a long way, folds back into an endless loop, then drifts on its own again
+  function flingRows(box, onTap) {
     var drag = null;
     box.addEventListener('pointerdown', function (e) {
       var row = e.target.closest('.row'); if (!row || e.button) return;
+      row._g = (row._g || 0) + 1;   // a new grab stops any glide still running on this row
       var s = rowState(row);
-      drag = { row: row, x0: e.clientX, y0: e.clientY, tx0: s.tx, tx: s.tx, moved: false, ci: e.target.closest('.yc'), hist: [[performance.now(), e.clientX]] };
+      drag = { row: row, x0: e.clientX, y0: e.clientY, tx0: s.tx, tx: s.tx, moved: false, el: e.target, hist: [[performance.now(), e.clientX]] };
       row.style.animation = 'none'; row.style.transform = 'translateX(' + s.tx + 'px)';
     });
     window.addEventListener('pointermove', function (e) {
@@ -147,18 +139,24 @@
     function end() {
       if (!drag) return;
       var d = drag; drag = null; d.row.classList.remove('grab');
-      if (!d.moved) { resume(d.row, d.tx0); if (d.ci) pin(+d.ci.getAttribute('data-ci')); return; }
+      if (!d.moved) { resume(d.row, d.tx0); if (onTap) onTap(d.el); return; }
       var h = d.hist, a = h[0], b = h[h.length - 1], now = performance.now();
       var v = (now - b[0] > 80 || b[0] === a[0]) ? 0 : (b[1] - a[1]) / (b[0] - a[0]) * 16;   // px per frame at release
       v = Math.max(-120, Math.min(120, v * 1.8));
-      var tx = d.tx, last = now;
+      var tx = d.tx, last = now, g = d.row._g;
       (function glide(t) {   // a long glide with very little friction, then it carries on moving on its own
+        if (d.row._g !== g) return;
         var dt = Math.min(3, ((t || performance.now()) - last) / 16.67); last = t || performance.now();
         v *= Math.pow(0.991, dt); tx = wrapX(d.row, tx + v * dt); d.row.style.transform = 'translateX(' + tx + 'px)';
         if (Math.abs(v) > 0.35) requestAnimationFrame(glide); else resume(d.row, tx);
       })();
     }
     window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+  }
+  var great = $('#greatRow');
+  if (!REDUCE) {
+    if (box) flingRows(box, function (el) { var ci = el.closest('.yc'); if (ci) pin(+ci.getAttribute('data-ci')); });
+    if (great) flingRows(great, null);
   } else if (box) {
     box.addEventListener('click', function (e) { var ci = e.target.closest('.yc'); if (ci) pin(+ci.getAttribute('data-ci')); });
   }
