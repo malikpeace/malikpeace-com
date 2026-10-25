@@ -45,29 +45,29 @@
   if (hi) (function () {
     // a handwritten hello in the spirit of Apple's, drawn here as one stroke so it can write itself on
     var HELLO = 'M8 158 C11.7 155 21.7 148.3 30 140 C38.3 131.7 49.3 120 58 108 C66.7 96 75.7 80.7 82 68 C88.3 55.3 93.7 41.3 96 32 C98.3 22.7 98 15.7 96 12 C94 8.3 87.7 7.7 84 10 C80.3 12.3 77 17.3 74 26 C71 34.7 68.3 48.3 66 62 C63.7 75.7 61.7 94 60 108 C58.3 122 57 135.7 56 146 C55 156.3 53.7 169.3 54 170 C54.3 170.7 55.7 158 58 150 C60.3 142 63.7 129.7 68 122 C72.3 114.3 78.7 107.7 84 104 C89.3 100.3 95.7 98.7 100 100 C104.3 101.3 108 105.7 110 112 C112 118.3 111.7 129.7 112 138 C112.3 146.3 111 156.3 112 162 C113 167.7 114.7 170.7 118 172 C121.3 173.3 126.7 172.3 132 170 C137.3 167.7 144 163 150 158 C156 153 163.3 146 168 140 C172.7 134 176.7 127.7 178 122 C179.3 116.3 178.3 109.3 176 106 C173.7 102.7 168.3 101.3 164 102 C159.7 102.7 153.3 105.3 150 110 C146.7 114.7 144.7 123 144 130 C143.3 137 144 145.7 146 152 C148 158.3 151.3 164.3 156 168 C160.7 171.7 167.3 174.3 174 174 C180.7 173.7 189.3 170.7 196 166 C202.7 161.3 208 155.7 214 146 C220 136.3 226.7 122 232 108 C237.3 94 242.7 75.3 246 62 C249.3 48.7 251.7 36.7 252 28 C252.3 19.3 250.7 13 248 10 C245.3 7 239.3 7 236 10 C232.7 13 230 18 228 28 C226 38 225 55 224 70 C223 85 222 104.3 222 118 C222 131.7 222.3 143.3 224 152 C225.7 160.7 228 166.3 232 170 C236 173.7 242.7 174.7 248 174 C253.3 173.3 258.3 170.7 264 166 C269.7 161.3 276 155.7 282 146 C288 136.3 294.7 122 300 108 C305.3 94 310.7 75.3 314 62 C317.3 48.7 319.7 36.7 320 28 C320.3 19.3 318.7 13 316 10 C313.3 7 307.3 7 304 10 C300.7 13 298 18 296 28 C294 38 293 55 292 70 C291 85 290 104.3 290 118 C290 131.7 290.3 143.3 292 152 C293.7 160.7 296 166.3 300 170 C304 173.7 310.7 174.7 316 174 C321.3 173.3 327.3 170 332 166 C336.7 162 340.3 156.3 344 150 C347.7 143.7 350.7 134.7 354 128 C357.3 121.3 360 114.5 364 110 C368 105.5 373 102.3 378 101 C383 99.7 389.3 99.5 394 102 C398.7 104.5 403.3 109.7 406 116 C408.7 122.3 410.7 132 410 140 C409.3 148 406.3 158.2 402 164 C397.7 169.8 390 174.3 384 175 C378 175.7 370.3 172.8 366 168 C361.7 163.2 358.7 153.7 358 146 C357.3 138.3 359.3 128.7 362 122 C364.7 115.3 368.7 109.8 374 106 C379.3 102.2 386.7 100 394 99 C401.3 98 410.3 100.5 418 100 C425.7 99.5 436.3 96.7 440 96';
-    var FONTS = 'https://fonts.googleapis.com/css2?family=Pacifico&family=Playfair+Display:ital,wght@1,900&family=Dela+Gothic+One&family=Monoton&family=Rubik+Mono+One&family=Press+Start+2P&family=Black+Han+Sans&family=Shrikhand&family=Rozha+One&family=UnifrakturMaguntia&family=ZCOOL+KuaiLe&family=Major+Mono+Display&family=Lalezar&family=Bungee&family=Caveat:wght@700&text=BCHJOabeijlmnoru%C3%A1%D0%9F%D0%B2%D0%B5%D0%B8%D1%80%D1%82%D8%A7%D8%A8%D8%AD%D8%B1%D9%85%E0%A4%A4%E0%A4%A8%E0%A4%AE%E0%A4%B8%E0%A5%87%E0%A5%8D%E3%81%93%E3%81%A1%E3%81%AB%E3%81%AF%E3%82%93%E4%BD%A0%E5%A5%BD%EB%85%95%EC%84%B8%EC%95%88%EC%9A%94%ED%95%98&display=swap';
-    // t: the word, l: its language, f: typeface, s: size against the heading (each face is sized by eye to sit like the rest)
+    var FONTS = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&text=Helo&display=swap';
+    // t: the word, l: its language; most are in the heading's own type. f/s: the one 8-bit hello's typeface and size.
+    // ls: scripts whose letters join up (Arabic, Hindi) drop the heading's tight letter spacing so they stay joined.
     var V = [
       { svg: 1 },
-      { t: 'Hola', l: 'es', f: 'Pacifico', s: .86 },
-      { t: 'Bonjour', l: 'fr', f: 'Playfair Display', w: 900, i: 1, s: .96 },
-      { t: 'こんにちは', l: 'ja', f: 'Dela Gothic One', s: .74 },
-      { t: 'Ciao', l: 'it', f: 'Monoton', s: .9 },
-      { t: 'Привет', l: 'ru', f: 'Rubik Mono One', s: .72 },
+      { t: 'Hola', l: 'es' },
+      { t: 'Bonjour', l: 'fr' },
+      { t: 'こんにちは', l: 'ja' },
+      { t: 'Ciao', l: 'it' },
       { t: 'Hello', l: 'en', f: 'Press Start 2P', s: .62 },
-      { t: '안녕하세요', l: 'ko', f: 'Black Han Sans', s: .84 },
-      { t: 'Olá', l: 'pt', f: 'Shrikhand', s: .88 },
-      { t: 'नमस्ते', l: 'hi', f: 'Rozha One', s: 1 },
-      { t: 'Hallo', l: 'de', f: 'UnifrakturMaguntia', s: 1.06 },
-      { t: '你好', l: 'zh', f: 'ZCOOL KuaiLe', s: .9 },
-      { t: 'Hej', l: 'sv', f: 'Major Mono Display', s: .9 },
-      { t: 'مرحبا', l: 'ar', f: 'Lalezar', s: 1.04, rtl: 1 },
-      { t: 'Jambo', l: 'sw', f: 'Bungee', s: .8 },
-      { t: 'Hello', l: 'en', f: 'Caveat', w: 700, s: 1.08 },
+      { t: 'Привет', l: 'ru' },
+      { t: '안녕하세요', l: 'ko' },
+      { t: 'Olá', l: 'pt' },
+      { t: 'नमस्ते', l: 'hi', ls: 1 },
+      { t: 'Hallo', l: 'de' },
+      { t: '你好', l: 'zh' },
+      { t: 'Hej', l: 'sv' },
+      { t: 'مرحبا', l: 'ar', rtl: 1, ls: 1 },
+      { t: 'Jambo', l: 'sw' },
       { def: 1 }
     ];
     var DEF = hi.innerHTML, at = V.length - 1, busy = false, again = false, css = null, timer = 0;
-    // the typefaces come in once, cut down to just these letters (a few KB each), the first time someone comes near
+    // the 8-bit typeface comes in once, cut down to just the letters of Hello (a few KB), the first time someone comes near
     function sheet() {
       if (!css) css = new Promise(function (ok) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = FONTS; l.onload = l.onerror = ok; document.head.appendChild(l); setTimeout(ok, 3000); });
       return css;
@@ -75,7 +75,7 @@
     function ready(v) {
       if (!v.f || !document.fonts) return Promise.resolve();
       return sheet().then(function () {
-        return Promise.race([document.fonts.load((v.i ? 'italic ' : '') + (v.w || 400) + ' 40px "' + v.f + '"', v.t), new Promise(function (ok) { setTimeout(ok, 900); })]);
+        return Promise.race([document.fonts.load('400 40px "' + v.f + '"', v.t), new Promise(function (ok) { setTimeout(ok, 900); })]);
       }).catch(function () {});
     }
     function warm() { V.forEach(function (v) { ready(v); }); }
@@ -87,7 +87,8 @@
       else if (v.def) e.innerHTML = DEF;
       else {
         e.textContent = v.t; e.lang = v.l; if (v.rtl) e.dir = 'rtl';
-        e.style.cssText = 'font-family:"' + v.f + '",Arial,sans-serif;font-size:' + v.s + 'em;font-weight:' + (v.w || 400) + ';font-style:' + (v.i ? 'italic' : 'normal') + ';letter-spacing:0';
+        if (v.f) e.style.cssText = 'font-family:"' + v.f + '",Arial,sans-serif;font-size:' + v.s + 'em;font-weight:400;letter-spacing:0';
+        else if (v.ls) e.style.letterSpacing = '0';
       }
       return e;
     }
@@ -98,12 +99,17 @@
       void p.getBoundingClientRect();
       p.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.45,.05,.3,1)'; p.style.strokeDashoffset = '0';
     }
-    // the free space at the end of the greeting's line (the heading's right edge minus the last word sharing that line)
-    function room() {
-      var h = hi.closest('h1'), mid = hi.getBoundingClientRect(), y = (mid.top + mid.bottom) / 2, end = mid.right, rg = document.createRange();
-      rg.selectNodeContents(h);
-      Array.prototype.forEach.call(rg.getClientRects(), function (r) { if (r.top < y && r.bottom > y && r.width) end = Math.max(end, r.right); });
-      return Math.max(0, h.getBoundingClientRect().right - end - 2);
+    // how wide the greeting may be: out to the heading's widest line (or its edge, if wider), minus the words after it on
+    // its own line. Measured from the words themselves, never from the greeting showing now, so it can't creep smaller.
+    function fit() {
+      var h = hi.closest('h1'), me = hi.getBoundingClientRect(), y = (me.top + me.bottom) / 2, end = me.right, far = h.getBoundingClientRect().right;
+      var tw = document.createTreeWalker(h, NodeFilter.SHOW_TEXT), rg = document.createRange(), n;
+      while ((n = tw.nextNode())) {
+        if (hi.contains(n)) continue;
+        rg.selectNodeContents(n);
+        Array.prototype.forEach.call(rg.getClientRects(), function (r) { if (!r.width) return; if (r.top < y && r.bottom > y) end = Math.max(end, r.right); else far = Math.max(far, r.right); });
+      }
+      return far - me.left - (end - me.right) - 2;
     }
     function go() {
       if (busy) { again = true; return; }
@@ -113,7 +119,7 @@
         var cur = hi.firstElementChild, next = face(v);
         if (!cur) { cur = document.createElement('span'); cur.className = 'hi-v'; cur.innerHTML = DEF; hi.innerHTML = ''; hi.appendChild(cur); }
         next.style.position = 'absolute'; next.style.visibility = 'hidden'; hi.appendChild(next);
-        var w0 = hi.getBoundingClientRect().width, w1 = next.getBoundingClientRect().width, max = w0 + room();
+        var w0 = hi.getBoundingClientRect().width, w1 = next.getBoundingClientRect().width, max = fit();
         // a word too wide for the line comes in a little smaller, so the heading never re-wraps under it
         if (w1 > max) { next.style.fontSize = ((v.s || 1) * max / w1).toFixed(3) + 'em'; w1 = next.getBoundingClientRect().width; }
         hi.removeChild(next); next.style.position = next.style.visibility = '';
