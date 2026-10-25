@@ -1049,3 +1049,14 @@ html[data-theme="light"] .bhwrap { background: #0b0b0c; border-radius: 16px; pad
 .great-row.held .row { animation-play-state: paused; }
 html[data-theme="light"] .gp-act { color: #fff; }
 @media (prefers-reduced-motion: reduce) { .gp-act { transition: none; transform: none; } }
+
+/* the reveal is the same equation for everyone: focused action, consistency, result */
+.gp { width: clamp(236px, 23vw, 270px); }
+.gp-act { flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 11px; padding: 18px 16px 18px; font-weight: 400;
+  background: linear-gradient(to top, rgba(0, 0, 0, .96) 0%, rgba(0, 0, 0, .9) 62%, rgba(0, 0, 0, .7) 100%); }
+.gp-eq { display: flex; flex-direction: column; gap: 3px; }
+.gp-eq i { font-style: normal; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; color: rgba(255, 255, 255, .58); }
+.gp-eq b { font-size: 15px; line-height: 1.32; font-weight: 600; color: #fff; letter-spacing: -0.005em; }
+.gp-eq.gp-res { padding-top: 11px; border-top: 1px solid rgba(255, 255, 255, .22); }
+.gp-eq.gp-res i { color: #6fcfd6; }
+.gp-eq.gp-res b { font-size: 16px; font-weight: 700; }
