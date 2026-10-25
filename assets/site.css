@@ -1176,3 +1176,21 @@ html[data-theme="light"] .s7-tools { border-top: 1px solid var(--line); }
 .p7s__body li::before, .p7s__body li::after { content: none !important; }
 .p7s__body li::marker { color: var(--mid); }
 .p7s__body li { box-shadow: none !important; }
+
+/* "Hello": tap it and it says hello another way. The button is plain heading text; its own line height is tiny so no
+   typeface, however tall, can push the heading's lines apart (the letters just draw past it). */
+.s7-me h1 .hi { font: inherit; color: inherit; letter-spacing: inherit; line-height: .5; display: inline-block; vertical-align: baseline; white-space: nowrap; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.s7-me h1 .hi-line { white-space: nowrap; }   /* the comma always stays with the greeting */
+.s7-me h1 .hi:focus-visible { outline: 2px solid var(--link); outline-offset: 6px; border-radius: 6px; }
+.s7-me h1 .hi.swap { transition: width .26s cubic-bezier(.2, .8, .2, 1); }
+.hi-v { display: inline-block; transition: opacity .15s ease-in, filter .15s ease-in, transform .15s ease-in; }
+.hi-v.out { opacity: 0; filter: blur(6px); transform: translateY(-.06em); }
+.hi-v.in { animation: hi-in .24s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes hi-in { from { opacity: 0; filter: blur(6px); transform: translateY(.08em); } }
+.hi-svg svg { display: inline-block; width: 2.96em; height: 1.25em; vertical-align: -.11em; margin-top: -.36em; overflow: visible; }
+.hi-svg path { fill: none; stroke: currentColor; stroke-width: 17; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) { .s7-me h1 .hi.swap, .hi-v { transition: none; } .hi-v.in { animation: none; } }
+
+/* "tools" in the opening line: bold, never underlined */
+.s7-me .lede a { color: var(--ink); font-weight: 700; text-decoration: none; }
+@media (hover: hover) { .s7-me .lede a:hover { opacity: .72; } }
