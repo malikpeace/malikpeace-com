@@ -2791,12 +2791,14 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
   render(first, { initial: true });
 })();
 </script>
-<style>.buy button.buy-go { border: 0; font: inherit; font-weight: 700; cursor: pointer; margin-top: 14px; } .buy .bh-plate { max-width: none; }</style>
+<style>.buy button.buy-go { border: 0; font: inherit; font-weight: 700; cursor: pointer; margin-top: 14px; } .buy .bh-plate { margin-inline: 0; } html[data-theme="light"] .buy .bh-plate { background: none; padding: 0; } .buy button.buy-go { max-width: 420px; } html[data-theme="light"] .buy button.buy-go { max-width: 400px; }</style>
 <style>
-.bh-plate { margin-top: 4px; max-width: 460px; }
-.bh { min-height: 56px; --bh-inset: 19px; width: calc(100% + var(--bh-inset) * 2) !important; max-width: none !important; margin-left: calc(-1 * var(--bh-inset)) !important; }
-.bh iframe { width: 100%; border: 0; background: transparent; color-scheme: light; }   /* light, like the form inside: a mismatch paints a white box behind it on pages that declare dark mode */
-html[data-theme="light"] .bh-plate, .bh-plate.always { background: #0b0b0c; border-radius: 16px; padding: 6px 4px 2px; }   /* .always: on a card that's white in dark mode */
+/* Beehiiv's form sits in its own 76px frame with 16px of padding, at most 432px wide: the box pulls the padding back out
+   and is never wider than the form, so the plate hugs the field and Join button with the same 10px on every side */
+.bh-plate { margin-top: 20px; box-sizing: content-box; max-width: 400px; }
+.bh { width: calc(100% + 32px) !important; max-width: 432px !important; margin: -16px !important; min-height: 76px; }
+.bh iframe { display: block; width: 100%; border: 0; background: transparent; color-scheme: light; }   /* light, like the form inside: a mismatch paints a white box behind it on pages that declare dark mode */
+html[data-theme="light"] .bh-plate, .bh-plate.always { background: #0b0b0c; border-radius: 17px; padding: 10px; }   /* .always: on a card that's white in dark mode */
 </style>
 <script>
 document.querySelectorAll('[data-bh]').forEach(function (b) {
