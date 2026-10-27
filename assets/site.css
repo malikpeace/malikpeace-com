@@ -1043,14 +1043,14 @@ html[data-theme="light"] .bhwrap { background: #0b0b0c; border-radius: 16px; pad
 .s7 .s7-val .bridge2 { margin-top: .7em; }
 
 /* "look at anyone great": real people in three rows drifting sideways (grab one and fling it). Each card is just the
-   photo, the name, what they relentlessly did, and what came of it (Malik 2026-10-27: no subtext, nothing to hover). */
+   photo, the name, what they relentlessly did, and what came of it (Malik 2026-10-27: no subtext, nothing to hover,
+   and the rows never stop under the mouse, like the comments). */
 .great7 { margin-top: clamp(56px, 7vw, 104px); display: flex; flex-direction: column; gap: 26px; }
 .great-h { margin: 0; font-size: clamp(24px, 3vw, 36px); font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; max-width: 24em; text-wrap: balance; color: var(--ink); }
 .great-row { width: 100vw; margin-left: calc(50% - 50vw); overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding-block: 4px 6px; -webkit-mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%); }
 .great-row .row { display: flex; gap: 12px; width: max-content; list-style: none; margin: 0; padding: 0; align-items: stretch; animation: ymove var(--dur, 120s) linear infinite; will-change: transform; cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
 .great-row .row.rev { animation-direction: reverse; }
 .great-row .row.grab { cursor: grabbing; }
-@media (hover: hover) and (pointer: fine) { .great-row:hover .row { animation-play-state: paused; } }
 .great-row img { -webkit-user-drag: none; pointer-events: none; }
 .gp { flex: 0 0 auto; width: 344px; display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 0 16px; align-items: start; padding: 14px 18px 16px 14px; border-radius: 16px; background: var(--fill, rgba(255, 255, 255, .05)); box-shadow: inset 0 0 0 1px var(--line); }
 .gp-ph { grid-row: 1 / span 3; display: block; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; background: #111113; }
