@@ -1204,3 +1204,11 @@ html[data-theme="light"] .p7s.open .p7s__n { color: #1c9e31; }   /* the bright g
 
 /* "(good!)" sits on "life" like an exponent: small, tight to the top right of the word, never taller than the line */
 .s7 .s7-val .bridge .good { font-size: .38em; margin-left: .05em; vertical-align: baseline; position: relative; top: -1.25em; line-height: 0; }
+
+/* the comments' "Show all" asks first: a plain line and two buttons in place of the usual pair */
+.yask { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.yask[hidden] { display: none; }
+.s7 .ytbtn.pri { background: #f2f2f3; color: #000; box-shadow: none; padding: 0 24px; }
+.s7 .ytbtn.pri:hover { background: #fff; }
+html[data-theme="light"] .s7 .ytbtn.pri:not(#ytallbtn) { background: #0b0b0c; color: #fff; box-shadow: none; }
+html[data-theme="light"] .s7 .ytbtn.pri:not(#ytallbtn):hover { background: #26262a; }

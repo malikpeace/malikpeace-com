@@ -180,13 +180,14 @@
       '<span class="rp">Reply</span></div></div></div>';
   }
   var box = $('#ymarq7');
-  function buildMarquee(all) {
+  var SP = [7, 8.5, 6.5, 7.8, 7.4], BASE = Math.min(500, C.length), PER = 100, added = 0;
+  function rowHtml(cards, i, more) { return '<div class="row' + (i % 2 ? ' rev' : '') + (more ? ' more' : '') + '" style="--dur:' + Math.round(cards.length * SP[i % 5]) + 's">' + cards.join('') + cards.join('') + '</div>'; }
+  // the first five rows hold the first 500 comments, dealt across them
+  function buildMarquee() {
     if (!box) return;
-    var R = all ? (innerWidth < 620 ? 12 : 14) : 5, n = all ? C.length : Math.min(500, C.length), rows = [], sp = [7, 8.5, 6.5, 7.8, 7.4];
-    for (var i = 0; i < R; i++) rows.push([]);
-    for (var k = 0; k < n; k++) rows[k % R].push(card(C[k], k));
-    box.innerHTML = rows.map(function (r, i) { return '<div class="row' + (i % 2 ? ' rev' : '') + '" style="--dur:' + Math.round(r.length * sp[i % 5]) + 's">' + r.join('') + r.join('') + '</div>'; }).join('');
-    box.classList.toggle('is-all', !!all);
+    var rows = [[], [], [], [], []];
+    for (var k = 0; k < BASE; k++) rows[k % 5].push(card(C[k], k));
+    box.innerHTML = rows.map(function (r, i) { return rowHtml(r, i); }).join('');
     lighten();
   }
   // Only the comment cards on or near the screen get styled and laid out; the rest are skipped (styling all 1,000 made a
@@ -201,21 +202,42 @@
     box.style.containIntrinsicHeight = 'auto ' + box.offsetHeight + 'px'; box.style.contentVisibility = 'auto';
     cvW = innerWidth;
   }
-  buildMarquee(false);
+  buildMarquee();
   if (CV) { var cvT = 0; addEventListener('resize', function () { clearTimeout(cvT); cvT = setTimeout(function () { if (innerWidth !== cvW) lighten(); }, 200); }); }
-  var allOn = false, allBtn = $('#ytallbtn'), wallBtn = $('#ywallbtn'), wall = $('#ywall'), note = $('#ynote');
-  function closeWall() { wall.hidden = true; wall.innerHTML = ''; wallBtn.textContent = 'See them all on one page'; }
-  if (allBtn) allBtn.addEventListener('click', function () {
-    allOn = !allOn; buildMarquee(allOn);
-    $('.lbl', allBtn).textContent = allOn ? 'Show less' : 'Read all 1,000+';
-    allBtn.setAttribute('aria-expanded', String(allOn));
-    if (note) note.hidden = !allOn; if (wallBtn) wallBtn.hidden = !allOn;
-    if (!allOn) { closeWall(); box.scrollIntoView({ block: 'center' }); }
+  // "Add more" adds two more rows of comments not yet shown; once everyone is in, it becomes "Show less"
+  var addBtn = $('#ytallbtn'), wallBtn = $('#ywallbtn'), wall = $('#ywall'), btns = addBtn && addBtn.parentNode;
+  function addLabel() {
+    var left = BASE + added * PER < C.length;
+    $('.lbl', addBtn).textContent = left ? 'Add more' : 'Show less'; addBtn.setAttribute('aria-expanded', String(!left));
+  }
+  if (addBtn) addBtn.addEventListener('click', function () {
+    var start = BASE + added * PER;
+    if (start >= C.length) { $$('.row.more', box).forEach(function (r) { r.remove(); }); added = 0; lighten(); addLabel(); box.scrollIntoView({ block: 'center' }); return; }
+    var html = '', i = $$('.row', box).length;
+    for (var r = 0; r < 2 && start < C.length; r++, i++, start += PER, added++) {
+      var cards = []; for (var k = start; k < Math.min(C.length, start + PER); k++) cards.push(card(C[k], k));
+      html += rowHtml(cards, i, true);
+    }
+    box.insertAdjacentHTML('beforeend', html); lighten(); addLabel();
   });
+  // "Show all" asks first, then puts every comment on one page
+  var N = C.length.toLocaleString('en-US'), ask = document.createElement('div');
+  ask.className = 'yask'; ask.hidden = true;
+  ask.innerHTML = '<p class="ynote">Show all ' + N + ' comments on one page?</p><div class="ybtns"><button type="button" class="ytbtn pri" data-yes>Show all</button><button type="button" class="ytbtn" data-no>Cancel</button></div>';
+  if (btns) btns.parentNode.insertBefore(ask, btns.nextSibling);
+  function asking(on) { ask.hidden = !on; btns.hidden = on; (on ? $('[data-yes]', ask) : wallBtn).focus({ preventScroll: true }); }
+  function closeWall() { wall.hidden = true; wall.innerHTML = ''; wallBtn.textContent = 'Show all'; }
+  function openWall() {
+    wall.innerHTML = '<p class="ywall-top">Here’s all 1,000+ 🫡</p><div class="ywall-cols">' + C.map(card).join('') + '</div><button type="button" class="ytbtn" data-hidewall>Hide the full list</button>';
+    wall.hidden = false; wallBtn.textContent = 'Hide the full list'; wall.scrollIntoView({ block: 'start' });
+  }
   if (wallBtn) wallBtn.addEventListener('click', function () {
     if (!wall.hidden) { closeWall(); wallBtn.scrollIntoView({ block: 'center' }); return; }
-    wall.innerHTML = '<p class="ywall-top">All ' + C.length.toLocaleString('en-US') + ' of them, on one page.</p><div class="ywall-cols">' + C.map(card).join('') + '</div><button type="button" class="ytbtn" data-hidewall>Hide the full list</button>';
-    wall.hidden = false; wallBtn.textContent = 'Hide the full list'; wall.scrollIntoView({ block: 'start' });
+    asking(true);
+  });
+  ask.addEventListener('click', function (e) {
+    if (e.target.closest('[data-yes]')) { asking(false); openWall(); }
+    else if (e.target.closest('[data-no]')) asking(false);
   });
   if (wall) wall.addEventListener('click', function (e) { if (e.target.closest('[data-hidewall]')) { closeWall(); wallBtn.scrollIntoView({ block: 'center' }); } });
 
