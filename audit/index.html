@@ -1,0 +1,2392 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>The Life Audit</title>
+<meta name="theme-color" content="#000000">
+<script>
+  // Flash bang mode (light) is remembered under the homepage's own key, so on malikpeace.com it carries between pages
+  try { if (localStorage.getItem('mp-theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
+</script>
+<meta name="description" content="A free tool by Malik Peace. See how much time you have left, and where it goes.">
+<style>
+:root{
+  /* the homepage's tokens (malikpeace.com, 2026-10-25): plain black, white type */
+  --bg:#000000; --paper:#000000; --ink:#f2f2f3; --mid:#a7a7ad; --line:#1d1d21;
+  --accent:#f2f2f3; --accent-ink:#3fd94e; --warn:#ff1a1a;
+  --on-ink:#000000; --ink-hover:#ffffff;
+  --surf:rgba(255,255,255,.07); --surf-2:rgba(255,255,255,.12);
+  --track:#26262a; --track-2:#18181b; --deep:#0a0a0b;
+  --tip-bg:#0b0b0c; --tip-ink:#f2f2f3; --toast-bg:#f2f2f3; --toast-ink:#0b0b0c;
+  --sw-hl:inset 0 0 0 1px rgba(255,255,255,.12); --check-ring:rgba(255,255,255,.3); --placeholder:#8a8a90;
+  --c-lived:#f2f2f3; --c-now:#f2f2f3; --c-sleep:#2b2b31; --c-work:#4f4f58; --c-tax:#75757e; --c-screen:#a6a6ae;
+  --c-free:#3fd94e; --c-doom:#ff1a1a; --c-gain:#3fd94e; --c-empty:#151517; --c-intro:#1c1c1f;
+  --glass-bg:transparent; --glass-hl:inset 0 0 0 1px rgba(255,255,255,.12); --glass-shadow:0 0 0 0 transparent;
+  --topbg:rgba(0,0,0,.82); --link:#6fcfd6;
+  --red:#ff1a1a; --green:#3fd94e;
+  --r-ctl:12px; --r-card:16px;
+  --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
+  --out:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+/* Flash bang mode: a white page, black boxes; red and green stay */
+html[data-theme="light"]{
+  --bg:#ffffff; --paper:#ffffff; --ink:#0b0b0c; --mid:#5c5c66; --line:#e3e3e8;
+  --accent:#0b0b0c; --accent-ink:#138a2a; --warn:#e00000;
+  --on-ink:#ffffff; --ink-hover:#26262a;
+  --surf:rgba(11,11,12,.05); --surf-2:rgba(11,11,12,.09);
+  --track:#dcdce1; --track-2:#ececef; --deep:#f4f4f6;
+  --tip-bg:#ffffff; --tip-ink:#0b0b0c; --toast-bg:#0b0b0c; --toast-ink:#f2f2f3;
+  --sw-hl:inset 0 0 0 1px rgba(11,11,12,.14); --check-ring:rgba(11,11,12,.32); --placeholder:#7a7a82;
+  --c-lived:#17171a; --c-now:#17171a; --c-sleep:#cfcfd5; --c-work:#abaab4; --c-tax:#8a8a93; --c-screen:#62626b;
+  --c-empty:#ececef; --c-intro:#e3e3e8;
+  --glass-hl:inset 0 0 0 1px rgba(11,11,12,.12);
+  --topbg:rgba(255,255,255,.86); --link:#0b8a93;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.5;min-height:100vh;min-height:100svh;overflow-x:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+a{color:inherit}
+b,strong{font-weight:700}
+.num{font-variant-numeric:tabular-nums}
+.w{color:var(--warn)}
+.t{color:var(--accent-ink)}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* one edge-safe radial light at the top, never a box */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(60% 42% at 50% -8%, var(--ambient), transparent 72%)}
+main{position:relative;z-index:1}
+
+.view{display:none}
+.view.on{display:block;animation:viewIn .28s var(--out) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- controls ---------- */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 26px;border-radius:var(--r-ctl);font-size:17px;font-weight:700;letter-spacing:-.01em;text-decoration:none;transition:transform .15s var(--out),background-color .15s var(--out),opacity .15s}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--ink);color:var(--on-ink)}
+.btn-primary:hover{background:var(--ink-hover)}
+.btn-primary[disabled]{opacity:.35;cursor:not-allowed}
+.btn-glass{background:var(--surf);color:var(--ink);box-shadow:var(--glass-hl);-webkit-backdrop-filter:blur(28px) saturate(1.4);backdrop-filter:blur(28px) saturate(1.4)}
+.btn-glass:hover{background:var(--surf-2)}
+.btn-block{width:100%}
+.icon-btn{width:44px;height:44px;flex:none;border-radius:var(--r-ctl);display:grid;place-items:center;background:var(--surf);box-shadow:var(--glass-hl);transition:background-color .15s}
+.icon-btn:hover{background:var(--surf-2)}
+.icon-btn svg{width:20px;height:20px}
+.glass{background:var(--glass-bg);-webkit-backdrop-filter:blur(32px) saturate(1.4);backdrop-filter:blur(32px) saturate(1.4);box-shadow:var(--glass-hl),var(--glass-shadow);border-radius:var(--r-card)}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;cursor:pointer;--p:50%;--fill:var(--ink);touch-action:pan-y}
+input[type=range]:focus{outline:none}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(111,207,214,.45),0 2px 10px rgba(0,0,0,.5)}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,var(--fill) 0,var(--fill) var(--p),var(--track) var(--p),var(--track) 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.25);transition:transform .15s var(--out)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.08)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--track)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--fill)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.55)}
+input[type=range].is-doom{--fill:var(--warn)}
+
+.select-wrap{position:relative;flex:1;min-width:0}
+.select-wrap svg{position:absolute;right:14px;top:50%;width:14px;height:14px;transform:translateY(-50%);pointer-events:none;color:var(--mid)}
+select{-webkit-appearance:none;appearance:none;width:100%;height:56px;padding:0 38px 0 16px;border:0;border-radius:var(--r-ctl);background:var(--surf);box-shadow:var(--glass-hl);color:var(--ink);font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer}
+select:hover{background:var(--surf-2)}
+select option{background:var(--deep);color:var(--ink)}
+
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+.disclose{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--ink);font-weight:700;font-size:16px}
+.disclose svg{width:14px;height:14px;transition:transform .2s var(--out);color:var(--mid)}
+details[open]>.disclose svg{transform:rotate(90deg)}
+details.closing>.disclose svg{transform:none}
+.about-body{overflow:hidden}
+
+/* ---------- intro ---------- */
+.intro{max-width:1120px;margin:0 auto;padding:calc(var(--st) + 56px) calc(20px + var(--sr)) calc(var(--sb) + 56px) calc(20px + var(--sl));display:grid;gap:56px}
+.intro-title{font-size:clamp(48px,13vw,96px);font-weight:700;letter-spacing:-.055em;line-height:.92}
+.intro-by{margin-top:14px;color:var(--mid);font-size:16px}
+.intro-lede{margin-top:28px;font-size:clamp(20px,4.8vw,24px);line-height:1.35;letter-spacing:-.015em;max-width:30em}
+.intro-meta{margin-top:14px;color:var(--mid);font-size:17px}
+.intro-actions{margin-top:32px;display:flex;flex-direction:column;gap:14px;max-width:360px}
+.intro-warn{color:var(--mid);font-size:15px}
+.about{margin-top:28px;max-width:34em}
+.about-body{padding:6px 0 4px;color:var(--ink);display:grid;gap:14px;font-size:16px;line-height:1.6}
+.about-body .quote{color:var(--ink);font-weight:700;font-size:18px;line-height:1.45}
+.about-body .quote span{display:block;margin-top:6px;color:var(--mid);font-weight:400;font-size:15px}
+.about-body .sign{color:var(--ink)}
+.privacy{margin-top:18px;color:var(--mid);font-size:14px}
+.intro-grid{min-width:0}
+.intro-grid canvas{display:block;width:100%}
+.intro-grid figcaption{margin-top:14px;color:var(--mid);font-size:15px}
+.intro-grid figcaption b{color:var(--ink)}
+
+/* ---------- quiz ---------- */
+.quiz{max-width:600px;margin:0 auto;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;padding:calc(var(--st) + 14px) calc(20px + var(--sr)) calc(var(--sb) + 18px) calc(20px + var(--sl))}
+.quiz-top{display:flex;align-items:center;gap:14px;height:48px}
+.progress{flex:1;display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.progress i{height:3px;border-radius:2px;background:var(--track);transition:background-color .25s var(--out)}
+.progress i.on{background:var(--ink)}
+.step-count{min-width:48px;text-align:right;color:var(--mid);font-size:14px}
+.quiz-body{flex:1;padding:clamp(28px,7vh,72px) 0 28px}
+.q{display:none}
+.q.on{display:block;animation:qIn .24s var(--out) both}
+.q.on.from-left{animation-name:qInL}
+@keyframes qIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes qInL{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.q-pre{color:var(--mid);font-size:17px;margin-bottom:10px}
+.q-title{font-size:clamp(30px,7.6vw,42px);font-weight:700;line-height:1.08;letter-spacing:-.035em}
+.q-sub{margin-top:14px;color:var(--mid);font-size:17px;line-height:1.45}
+.q-sub b{color:var(--ink)}
+.callout{margin-top:18px;padding:14px 16px;border-radius:var(--r-ctl);background:rgba(255,93,82,.07);box-shadow:inset 0 0 0 1px rgba(255,93,82,.22);font-size:15px;line-height:1.5;color:var(--ink)}
+.tip{margin-top:14px;font-size:15px;color:var(--mid)}
+.tip b{color:var(--ink);font-weight:700}
+
+.dial{margin-top:clamp(28px,5vh,44px)}
+.dial-value{display:flex;align-items:baseline;gap:12px}
+.dial-num{font-size:clamp(76px,22vw,112px);font-weight:700;letter-spacing:-.055em;line-height:.9}
+.dial-num.is-doom{color:var(--warn)}
+.dial-unit{font-size:20px;color:var(--mid)}
+.dial-row{display:flex;align-items:center;gap:12px;margin-top:20px}
+.dial-scale{display:flex;justify-content:space-between;padding:0 60px;margin-top:-4px;color:var(--mid);font-size:13px}
+.dial-feedback{margin-top:18px;font-size:17px;line-height:1.45;min-height:50px}
+.egg{margin-top:4px;font-size:15px;color:var(--mid);min-height:22px;transition:opacity .15s}
+.egg.warn{color:var(--warn)}
+.egg.good{color:var(--accent-ink)}
+
+.bday{margin-top:clamp(28px,5vh,44px);display:flex;gap:10px}
+.bday .select-wrap:first-child{flex:1.6}
+.bday-out{margin-top:22px;font-size:17px;line-height:1.5;min-height:52px}
+.bday-bar{margin-top:14px;margin-bottom:12px;height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.bday-bar i{display:block;height:100%;background:var(--ink);border-radius:3px;transition:width .25s var(--out)}
+
+.human-no{margin-top:22px}
+
+.quiz-foot{display:grid;gap:12px}
+.quiz-foot .row{display:flex;gap:10px}
+.quiz-foot .row .btn{flex:1}
+.kbd-hint{text-align:center;color:var(--mid);font-size:13px;display:none}
+@media (hover:hover) and (pointer:fine){.kbd-hint{display:block}}
+
+.lifebar{padding:2px 2px 8px;background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-radius:0}
+.lifebar-head{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--mid);margin-bottom:10px}
+.lifebar-head b{color:var(--ink);font-size:22px;letter-spacing:-.03em;margin-right:2px}
+.lifebar-head #lifebarNote{font-size:15px;color:var(--ink)}
+.stack{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--c-empty);box-shadow:var(--sw-hl)}
+.stack i{display:block;height:100%;flex:none;transition:width .3s var(--out)}
+.stack i+i{box-shadow:inset 1px 0 0 var(--bg)}
+#lifebarStack{gap:3px;height:6px;border-radius:3px;overflow:visible;background:none;box-shadow:none;position:relative}
+#lifebarStack:before{content:"";position:absolute;inset:0;border-radius:3px;background:var(--track);opacity:.55}
+#lifebarStack i{position:relative;border-radius:3px;box-shadow:none;flex:0 1 auto;min-width:0}
+
+
+/* ---------- loading ---------- */
+.loading{min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:24px}
+.loading-inner{width:min(420px,88vw);text-align:center}
+.loading-text{font-size:24px;font-weight:700;letter-spacing:-.02em;min-height:36px;transition:opacity .15s}
+
+/* ---------- results ---------- */
+.wrap{max-width:1120px;margin:0 auto;padding:0 calc(20px + var(--sr)) 0 calc(20px + var(--sl))}
+.hero{min-height:min(100svh,860px);min-height:min(100vh,860px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(var(--st) + 64px) calc(20px + var(--sr)) 72px calc(20px + var(--sl));position:relative}
+@supports (height:100svh){.hero{min-height:min(100svh,860px)}}
+.hero-pre{color:var(--mid);font-size:clamp(17px,4.4vw,20px)}
+.hero-line{margin-top:18px;font-size:clamp(40px,10.4vw,92px);font-weight:700;letter-spacing:-.05em;line-height:1;max-width:12em}
+.hero-line .big{display:inline-block;color:var(--warn)}
+.hero-stats{margin-top:44px;display:grid;grid-template-columns:repeat(3,auto);gap:0;justify-content:center}
+.hero-stats div{padding:0 clamp(14px,4vw,34px);display:grid;gap:4px}
+.hero-stats div+div{box-shadow:inset 1px 0 0 var(--line)}
+.hero-stats b{font-size:clamp(22px,5.6vw,34px);letter-spacing:-.03em}
+.hero-stats span{color:var(--mid);font-size:14px}
+.hero-note{margin-top:28px;color:var(--mid);font-size:16px;max-width:30em}
+.hero-cue{position:absolute;left:0;right:0;bottom:calc(var(--sb) + 22px);display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--mid);font-size:14px}
+.hero-cue svg{width:16px;height:16px}
+
+.sec{padding:clamp(64px,11vw,112px) 0 0;scroll-margin-top:24px}
+.sec h2{font-size:clamp(32px,5.4vw,56px);font-weight:700;letter-spacing:-.045em;line-height:1.02}
+.sec-sub{margin-top:12px;color:var(--mid);font-size:clamp(17px,1.6vw,19px);line-height:1.5;max-width:40em}
+.sec-sub b{color:var(--ink)}
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .3s var(--out),transform .3s var(--out)}
+.reveal.in{opacity:1;transform:none}
+
+.summary{padding-top:clamp(48px,8vw,72px)}
+.summary-line{font-size:clamp(28px,4.6vw,56px);font-weight:700;letter-spacing:-.045em;line-height:1.06;max-width:17em}
+.summary-line .dim{color:var(--mid)}
+.summary-kicker{margin-top:18px;color:var(--mid);font-size:clamp(17px,4.2vw,20px);max-width:34em}
+
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px}
+.seg{display:inline-grid;grid-auto-flow:column;gap:2px;padding:3px;border-radius:12px;background:var(--surf);box-shadow:var(--glass-hl)}
+.seg button{height:38px;padding:0 16px;border-radius:9px;color:var(--mid);font-size:15px;font-weight:700;transition:background-color .15s,color .15s}
+.seg button[aria-selected=true]{background:var(--ink);color:var(--on-ink)}
+.grid-card{margin-top:24px;padding:clamp(16px,3.4vw,32px)}
+.grid-box{position:relative}
+.grid-box canvas{display:block;width:100%;touch-action:pan-y}
+.grid-box.is-years canvas{max-width:520px;margin:0 auto}
+.now-dot{position:absolute;pointer-events:none;background:var(--c-now);box-shadow:0 0 0 2px rgba(111,207,214,.28),0 0 16px rgba(111,207,214,.65);opacity:0;transition:opacity .2s var(--out)}
+.now-dot.show{opacity:1}
+.now-dot.ping{animation:ping .7s var(--out) 1}
+@keyframes ping{0%{transform:scale(1)}40%{transform:scale(2.2)}100%{transform:scale(1)}}
+.now-tag{position:absolute;pointer-events:none;white-space:nowrap;font-size:13px;font-weight:700;color:#0b0b0c;background:var(--accent);padding:4px 8px;border-radius:6px;opacity:0;transition:opacity .2s var(--out)}
+.now-tag.show{opacity:1}
+.grid-tip{position:absolute;pointer-events:none;z-index:3;white-space:nowrap;font-size:13px;line-height:1.35;padding:8px 10px;border-radius:8px;background:var(--tip-bg);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:var(--glass-hl),0 10px 30px rgba(0,0,0,.5);opacity:0;transition:opacity .12s}
+.grid-tip.show{opacity:1}
+.grid-tip span{color:var(--mid)}
+.grid-tip{box-shadow:var(--glass-hl),var(--glass-shadow)!important}
+.legend{margin-top:22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;list-style:none}
+.legend li{display:grid;grid-template-columns:12px 1fr;column-gap:10px;align-items:baseline;font-size:15px}
+.legend .sw{margin-top:3px}
+.legend .lv{grid-column:2;color:var(--mid);font-size:14px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block;box-shadow:var(--sw-hl)}
+.grid-foot{margin-top:18px;color:var(--mid);font-size:14px}
+
+.clock-num{margin-top:22px;font-size:clamp(34px,8.6vw,84px);font-weight:700;letter-spacing:-.04em;line-height:1;white-space:nowrap}
+.left-grid{margin-top:32px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border-radius:var(--r-card);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.left-grid div:first-child{grid-column:1 / -1}
+.left-grid div{background:var(--bg);padding:18px 18px 16px;display:grid;gap:4px}
+.left-grid b{font-size:clamp(22px,5vw,30px);letter-spacing:-.03em}
+.left-grid span{color:var(--mid);font-size:14px}
+.fine{margin-top:16px;color:var(--mid);font-size:14px;line-height:1.5}
+
+.scale{margin-top:34px}
+.scale-top{position:relative;height:30px}
+.scale-you{position:absolute;bottom:6px;transform:translateX(-50%);white-space:nowrap;font-size:13px;font-weight:700;color:var(--accent-ink)}
+.scale-you::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:6px;background:var(--accent-ink)}
+.scale .stack{height:28px;border-radius:8px}
+.scale-ends{display:flex;justify-content:space-between;margin-top:8px;color:var(--mid);font-size:13px}
+.wrows{margin-top:28px;display:grid}
+.wrow{padding:16px 0;display:grid;gap:10px;box-shadow:inset 0 -1px 0 var(--line)}
+.wrow:first-child{box-shadow:inset 0 1px 0 var(--line),inset 0 -1px 0 var(--line)}
+.wrow-top{display:grid;grid-template-columns:12px 1fr auto;column-gap:12px;align-items:baseline}
+.wl{font-weight:700;font-size:17px}
+.ws{grid-column:2;color:var(--mid);font-size:14px;line-height:1.4}
+.wv{grid-row:1;grid-column:3;font-size:22px;font-weight:700;letter-spacing:-.02em;text-align:right}
+.wv small{font-size:14px;color:var(--mid);font-weight:400;margin-left:4px}
+.wbar{height:4px;border-radius:2px;background:var(--track-2);margin-left:24px;overflow:hidden}
+.wbar i{display:block;height:100%;border-radius:2px;width:0;transition:width .6s var(--out)}
+.wrow.is-free .wl,.wrow.is-free .wv{color:var(--accent-ink)}
+.wrow.is-doom .wl,.wrow.is-doom .wv{color:var(--warn)}
+.callouts{margin-top:28px;display:grid;gap:12px}
+.callouts p{padding:16px 18px;font-size:16px;line-height:1.5}
+.callouts p b{color:var(--ink)}
+.more{margin-top:20px;display:grid;gap:4px}
+.more details{box-shadow:inset 0 -1px 0 var(--line);padding:6px 0}
+.more details:first-child{box-shadow:inset 0 1px 0 var(--line),inset 0 -1px 0 var(--line)}
+.adjust{padding:6px 0 22px;display:grid;gap:18px}
+.adj-bday{display:flex;gap:8px}
+.adj-bday select{height:48px;font-size:16px}
+.adj-bday .select-wrap:first-child{flex:1.6}
+.adj{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:12px}
+.adj label{font-weight:700;font-size:16px}
+.adj .av{font-size:16px;font-weight:700;text-align:right}
+.adj input{grid-column:1 / -1}
+.adj-lbl{color:var(--mid);font-size:14px;margin-bottom:-8px}
+
+.cards{margin-top:28px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{padding:18px 16px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card b{font-size:clamp(28px,7vw,40px);letter-spacing:-.04em;line-height:1}
+.card .cl{font-weight:700;font-size:16px;line-height:1.25}
+.card .cn{color:var(--mid);font-size:14px;line-height:1.45}
+.card.wide{grid-column:1 / -1;background:rgba(111,207,214,.07);box-shadow:inset 0 0 0 1px rgba(111,207,214,.28),inset 0 1px 0 rgba(255,255,255,.06)}
+.card.wide b{color:var(--accent-ink)}
+
+.duo{display:grid;gap:12px}
+.panel{padding:clamp(22px,4vw,34px)}
+.panel h2{font-size:clamp(26px,5vw,34px)}
+.panel .ctl{margin-top:22px;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:12px}
+.panel .ctl label{font-weight:700}
+.panel .ctl .cv{font-weight:700;font-size:18px}
+.panel .ctl input[type=range]{grid-column:1 / -1}
+.panel .outs{margin-top:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.panel .outs.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.panel .outs div{background:var(--deep);padding:14px 14px 12px;display:grid;gap:2px}
+.panel .outs b{font-size:clamp(22px,5.6vw,30px);letter-spacing:-.03em}
+.panel .outs span{color:var(--mid);font-size:13px}
+.panel .result-line{margin-top:16px;font-size:16px;color:var(--mid)}
+.panel .result-line b{color:var(--ink)}
+.rate{display:flex;align-items:center;gap:6px}
+.rate input{width:84px;height:40px;border:0;border-radius:8px;background:var(--surf);box-shadow:var(--glass-hl);padding:0 10px;text-align:right;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.rate span{color:var(--mid)}
+
+.tiles{margin-top:28px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border-radius:var(--r-card);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.tiles div{background:var(--bg);padding:18px;display:grid;gap:4px}
+.tiles b{font-size:clamp(24px,6vw,36px);letter-spacing:-.035em}
+.tiles span{color:var(--mid);font-size:14px}
+.math{margin-top:14px;box-shadow:inset 0 -1px 0 var(--line),inset 0 1px 0 var(--line);padding:6px 0}
+
+
+.mori-text{margin-top:22px;display:grid;gap:16px;font-size:clamp(17px,4.2vw,19px);line-height:1.6;max-width:36em}
+.mori-text .m1{color:var(--ink)}
+.mori-text .m2{font-weight:700}
+.mori-text .m3{font-size:clamp(24px,5.4vw,34px);font-weight:700;letter-spacing:-.03em;line-height:1.15}
+.mori-quote{margin-top:36px;padding-top:24px;box-shadow:inset 0 1px 0 var(--line);max-width:36em;font-size:18px;font-weight:700;line-height:1.45}
+.mori-quote span{display:block;margin-top:6px;color:var(--mid);font-weight:400;font-size:15px}
+
+.next-copy{margin-top:18px;display:grid;gap:14px;color:var(--ink);font-size:17px;line-height:1.6;max-width:36em}
+.links{margin-top:28px;display:grid;gap:10px}
+.link{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 16px;padding:18px;text-decoration:none;transition:background-color .15s}
+.link:hover{background:var(--surf-2)}
+.link b{font-size:18px}
+.link span{grid-column:1;color:var(--mid);font-size:15px;line-height:1.4}
+.link svg{grid-row:1 / span 2;grid-column:2;width:18px;height:18px;color:var(--mid)}
+.notify{margin-top:14px;padding:18px}
+.notify label{display:block;font-weight:700;font-size:17px}
+.notify .row{margin-top:12px;display:flex;gap:8px}
+.notify input{flex:1;min-width:0;height:52px;border:0;border-radius:var(--r-ctl);background:var(--surf);box-shadow:var(--glass-hl);padding:0 14px;font-size:17px}
+.notify input::placeholder{color:var(--placeholder)}
+.notify .btn{height:52px;padding:0 20px}
+.notify .fine{margin-top:10px}
+.preview-msg{margin-top:10px;font-size:15px;color:var(--accent-ink)}
+.preview-msg:empty{display:none}
+
+.foot{margin-top:clamp(72px,12vw,120px);padding:28px 0 calc(var(--sb) + 40px);box-shadow:inset 0 1px 0 var(--line);display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;color:var(--mid);font-size:14px}
+
+.foot .btn{height:44px;font-size:15px;padding:0 18px}
+
+/* round 2: welcome back, insights, plan, keep */
+.welcome{margin-top:28px;padding:16px 18px;max-width:460px}
+.welcome p{font-size:16px;line-height:1.5}
+.welcome .row{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+.welcome .btn{height:44px;font-size:15px;padding:0 16px}
+.linkish{display:inline-flex;align-items:center;min-height:44px;font-size:15px}
+.shared-banner{position:absolute;top:calc(var(--st) + 70px);left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 40px));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 16px;font-size:15px;text-align:left}
+.shared-banner .btn{height:40px;font-size:14px;padding:0 14px;flex:none}
+.hero-jump{margin-top:18px}
+.worth{display:grid;gap:8px 40px;align-items:center}
+.insights{margin-top:28px;display:grid;gap:10px}
+.insight{padding:18px;display:grid;grid-template-columns:10px 1fr;column-gap:14px;align-items:start}
+.insight .dot{width:10px;height:10px;border-radius:3px;margin-top:7px;background:var(--mid)}
+.insight.is-warn .dot{background:var(--warn)}
+.insight.is-good .dot{background:var(--accent)}
+.insight b{display:block;font-size:18px;line-height:1.3;letter-spacing:-.01em}
+.insight p{margin-top:6px;font-size:16px;line-height:1.55}
+.plan .turn{color:var(--mid);font-size:clamp(17px,4.4vw,20px);margin-bottom:10px}
+.plan-lede{color:var(--ink)!important}
+.plan-grid{margin-top:28px;display:grid;gap:12px}
+.plan h3{font-size:clamp(22px,4.8vw,26px);font-weight:700;letter-spacing:-.025em;line-height:1.15}
+.plan .panel .sec-sub{font-size:16px}
+.custom{margin-top:10px;width:100%;height:48px;border:0;border-radius:10px;background:var(--surf);box-shadow:var(--glass-hl);padding:0 14px;font-size:16px}
+.custom::placeholder{color:var(--placeholder)}
+.week,.steps-card{margin-top:12px}
+.wk{margin-top:22px;display:grid;gap:16px}
+.wk-row{display:grid;gap:8px}
+.wk-l{font-size:15px;font-weight:700}
+.wk .stack{height:24px;border-radius:6px}
+.steps{list-style:none;margin-top:10px;display:grid}
+.steps li+li{box-shadow:inset 0 1px 0 var(--line)}
+.steps label{display:grid;grid-template-columns:24px 1fr;column-gap:14px;padding:14px 0;cursor:pointer;align-items:start}
+.steps input{-webkit-appearance:none;appearance:none;width:24px;height:24px;margin:1px 0 0;border-radius:7px;background:var(--surf);box-shadow:inset 0 0 0 1.5px var(--check-ring);display:grid;place-items:center;cursor:pointer;transition:background-color .15s}
+.steps input:checked{background:var(--accent);box-shadow:none}
+.steps input:checked::after{content:"";width:10px;height:6px;border-left:2px solid #0b0b0c;border-bottom:2px solid #0b0b0c;transform:translateY(-1px) rotate(-45deg)}
+.steps b{display:block;font-size:17px;line-height:1.35}
+.steps .st{display:block;margin-top:4px;font-size:16px;line-height:1.5}
+.steps-test{margin-top:6px;padding-top:16px;box-shadow:inset 0 1px 0 var(--line);font-size:16px;color:var(--mid)}
+.steps-test b{color:var(--ink)}
+.keep{margin-top:24px;display:grid;gap:12px}
+.keep p{color:var(--mid);font-size:15px;max-width:40em}
+.keep-row{display:flex;flex-wrap:wrap;gap:10px}
+.keep-row .btn{height:48px;font-size:15px;padding:0 18px}
+/* round 4: fits the website. Pure black in dark mode, the grid card is flat black with a hairline */
+/* links, the way the site does them */
+.steps .st a{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:currentColor;text-decoration-thickness:1.5px;text-underline-offset:4px}
+.foot a{color:var(--ink);font-weight:700;text-decoration:none}
+.linkish{color:var(--accent-ink);text-decoration:underline;text-underline-offset:3px}
+.linkish:hover{color:var(--ink)}
+/* round 3 */
+.signup{margin-top:30px;max-width:420px;padding-top:24px;box-shadow:inset 0 1px 0 var(--line)}
+.signup label{display:block;color:var(--mid);font-size:14px;line-height:1.45}
+.signup .row{margin-top:10px;display:flex;gap:8px}
+.signup input{flex:1;min-width:0;height:46px;border:0;border-radius:var(--r-ctl);background:var(--surf);box-shadow:var(--glass-hl);padding:0 14px;font-size:16px}
+.signup input::placeholder{color:var(--placeholder)}
+.signup .btn{height:46px;font-size:15px;padding:0 16px}
+.signup .preview-msg{margin-top:8px}
+.discord{margin-top:10px;display:inline-flex;align-items:center;gap:10px;height:46px;padding:0 16px;border-radius:var(--r-ctl);background:var(--surf);box-shadow:var(--glass-hl);font-size:15px;font-weight:700;text-decoration:none;transition:background-color .15s}
+.discord:hover{background:var(--surf-2)}
+.discord svg{width:20px;height:15px}
+.load-grid{display:block;margin:0 auto}
+.loading-text{margin-top:26px;font-size:20px;font-weight:700;letter-spacing:-.015em;min-height:30px;transition:opacity .2s var(--out)}
+.loading-count{margin-top:6px;color:var(--mid);font-size:15px;min-height:22px}
+/* How I calculated this: printed like a terminal (Malik, 2026-10-27: "more terminal font like. so it looks more mathy").
+   A black box on the red band (white in Flash bang): operator, the number right aligned, what it is. */
+.calc{margin:8px 0 4px;max-width:520px;padding:16px 18px 18px;border-radius:12px;background:#0b0b0c;color:#f2f2f3;
+  font-family:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:14px;line-height:1.55;
+  font-variant-numeric:tabular-nums;display:grid;grid-template-columns:1.1em max-content minmax(0,1fr);column-gap:14px;row-gap:3px;align-items:baseline}
+.calc .cr{display:contents}
+.calc .op{color:#8a8a92;text-align:center}
+.calc .v{text-align:right;white-space:nowrap;font-weight:600}
+.calc .u{color:#a7a7ad;min-width:0}
+.calc .rule{grid-column:1 / -1;height:1px;margin:7px 0;background:#34343a}
+.calc .rule.dbl{height:4px;background:none;border-top:1px solid #4a4a52;border-bottom:1px solid #4a4a52}
+.calc .res .v{grid-column:2 / -1;text-align:left;font-size:18px;font-weight:800;color:#fff;white-space:normal}
+.calc .res .op{font-size:18px;font-weight:800;color:#fff}
+.calc .res .u{grid-column:2 / -1;margin-top:-2px;color:#a7a7ad}
+html[data-theme="light"] .calc{background:#fff;color:#0b0b0c}
+html[data-theme="light"] .calc .op{color:#7a7a82}
+html[data-theme="light"] .calc .u{color:#5c5c66}
+html[data-theme="light"] .calc .rule{background:#dcdce1}
+html[data-theme="light"] .calc .rule.dbl{background:none;border-color:#b9b9c0}
+html[data-theme="light"] :is(.calc .res .v,.calc .res .op){color:#0b0b0c}
+@media (max-width:380px){.calc{font-size:13px;padding:14px 14px 16px;column-gap:10px}}
+.chain-note{margin:14px 0 18px;font-size:16px;line-height:1.6;max-width:44em}
+.chain-note b{font-variant-numeric:tabular-nums}
+.memento-card p+p{margin-top:12px}
+.memento-card .mc-copy{margin-top:14px;font-size:16px;line-height:1.55}
+.memento-card .btn{margin-top:20px}
+
+.steps-after{margin-top:6px;padding-top:16px;box-shadow:inset 0 1px 0 var(--line);font-size:16px;line-height:1.55}
+.stories{margin-top:26px}
+/* round 5: see more */
+.see-more{padding-top:clamp(56px,9vw,96px)}
+.more-btn{width:100%;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:16px;row-gap:3px;padding:18px 20px;text-align:left;color:var(--ink);transition:background-color .15s}
+.more-btn:hover{background:var(--surf-2)}
+.more-label{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.more-note{grid-column:1;color:var(--mid);font-size:15px;line-height:1.4}
+.more-btn[aria-expanded=true] .more-note{display:none}
+.more-btn svg{grid-row:1 / span 2;grid-column:2;width:22px;height:22px;transition:transform .25s var(--out)}
+.more-btn[aria-expanded=true] svg{transform:rotate(180deg)}
+.expander{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--out)}
+.expander.open{grid-template-rows:1fr}
+.expander-in{min-height:0;overflow:hidden;opacity:0;transform:translateY(-8px);visibility:hidden;transition:opacity .2s ease-in,transform .2s ease-in,visibility 0s linear .3s}
+.expander.open .expander-in{opacity:1;transform:none;visibility:visible;transition:opacity .25s var(--out) .05s,transform .25s var(--out) .05s,visibility 0s}
+/* round 5: one poster card */
+.poster{display:grid;justify-items:center;gap:18px}
+.share-head{justify-self:stretch;margin-bottom:6px}
+@media (min-width:960px){
+  .poster{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"head card" "seg card" "act card" ". card";column-gap:72px;row-gap:24px;justify-items:start;align-items:start}
+  .share-head{grid-area:head;margin:0}.poster-seg{grid-area:seg}.poster-card{grid-area:card}.poster .story-actions{grid-area:act;align-items:flex-start;margin-top:0}
+}
+.poster-card{display:block;width:min(100%,420px,calc((100vh - 110px) * 9 / 16));aspect-ratio:9/16;height:auto;border-radius:var(--r-card);box-shadow:0 0 0 1px var(--line);transition:opacity .15s var(--out)}
+.story-actions{margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.story-actions p{color:var(--mid);font-size:14px}
+/* Discord, in Discord's own color, everywhere (after the base button rules so it wins) */
+.discord,.link.discord-card{background:#5865F2;color:#fff;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.discord:hover,.link.discord-card:hover{background:#4752c4}
+.link.discord-card{border-radius:var(--r-card)}
+.link.discord-card b{display:inline-flex;align-items:center;gap:10px}
+.link.discord-card b svg{width:22px;height:17px;grid-row:auto;grid-column:auto;color:#fff}
+.link.discord-card span{color:#fff}
+.link.discord-card>svg{color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(var(--sb) + 24px);transform:translate(-50%,12px);z-index:50;max-width:calc(100vw - 40px);padding:12px 16px;border-radius:12px;background:var(--toast-bg);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px);box-shadow:var(--glass-hl),var(--glass-shadow);font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s var(--out),transform .2s var(--out)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (min-width:720px){
+  .legend{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .left-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .left-grid div:first-child{grid-column:auto}
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .links{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .link{grid-template-columns:1fr auto;align-content:start}
+  .wrow{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:center;column-gap:28px}
+  .wbar{margin-left:0;height:6px;border-radius:3px}
+  .adjust{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px}
+  .adjust .adj-lbl,.adjust .adj-bday{grid-column:1 / -1}
+  .insights{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .wk-row{grid-template-columns:120px 1fr;align-items:center}
+}
+@media (min-width:960px){
+  .intro{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center;min-height:100vh;min-height:100svh;padding-top:calc(var(--st) + 48px);padding-bottom:48px}
+  .intro-grid{max-width:430px;justify-self:end;width:100%}
+  .duo{grid-template-columns:1fr 1fr}
+  .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .card.wide{grid-column:span 2}
+  .plan-grid{grid-template-columns:1fr 1fr}
+  .worth{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .reveal{opacity:1;transform:none}
+}
+
+
+/* ===================== THE SHARED LOOK (Malik, 2026-10-25) =====================
+   Plain black, like malikpeace.com. Key content sits in white boxes with black text, like Memento. Big colour blocks,
+   like the homepage's bands: red for what you lose (the doomscroll years, the scrolling), green for what you get back
+   (the plan). One switch: the homepage's Flash bang mode, which turns the page white and the boxes black. */
+
+/* the homepage's top bar */
+.s1-top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--topbg);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+.s1-top .bar{max-width:1100px;margin-inline:auto;padding:12px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 18px}
+.s1-top .name{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;text-decoration:none;color:var(--ink)}
+.s1-top .name img{width:32px;height:32px;object-fit:contain}
+.mp-acts{display:flex;align-items:center;gap:8px}
+.mp-act{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border:0;border-radius:999px;font:700 13.5px/1 var(--font);letter-spacing:-.005em;cursor:pointer;text-decoration:none;white-space:nowrap;transition:transform .12s ease-out,background-color .2s ease-out,color .2s ease-out}
+.mp-act svg{width:15px;height:15px;flex:none}
+.mp-act:active{transform:scale(.96)}
+.mp-act.fb{background:var(--ink);color:var(--bg)}
+.mp-act .lbl{display:inline-grid;justify-items:center}
+.mp-act .lbl>span{grid-area:1 / 1;display:inline-flex;align-items:center;gap:7px}
+html[data-theme="light"] .mp-act .lb-l,html:not([data-theme="light"]) .mp-act .lb-d{visibility:hidden}
+.mp-act:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+@media (max-width:720px){.s1-top .bar{padding-block:10px}.mp-act{height:32px;padding:0 11px;font-size:13px}}
+/* switching modes: the new mode grows out of the centre in a circle (the homepage's own) */
+html.mp-swap *,html.mp-swap *::before,html.mp-swap *::after{transition:none!important}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+html.mp-swap::view-transition-new(root){animation:mp-orb .5s linear both}
+::view-transition{pointer-events:none}
+@keyframes mp-orb{
+  0%{clip-path:circle(calc(6px + (71% - 2px) * 0.0000) at 50% 50%)}
+  10%{clip-path:circle(calc(6px + (71% - 2px) * 0.0134) at 50% 50%)}
+  20%{clip-path:circle(calc(6px + (71% - 2px) * 0.0323) at 50% 50%)}
+  30%{clip-path:circle(calc(6px + (71% - 2px) * 0.0590) at 50% 50%)}
+  40%{clip-path:circle(calc(6px + (71% - 2px) * 0.0968) at 50% 50%)}
+  50%{clip-path:circle(calc(6px + (71% - 2px) * 0.1502) at 50% 50%)}
+  60%{clip-path:circle(calc(6px + (71% - 2px) * 0.2258) at 50% 50%)}
+  70%{clip-path:circle(calc(6px + (71% - 2px) * 0.3327) at 50% 50%)}
+  80%{clip-path:circle(calc(6px + (71% - 2px) * 0.4839) at 50% 50%)}
+  90%{clip-path:circle(calc(6px + (71% - 2px) * 0.6977) at 50% 50%)}
+  95%{clip-path:circle(calc(6px + (71% - 2px) * 0.8358) at 50% 50%)}
+  100%{clip-path:circle(calc(6px + (71% - 2px) * 1.0000) at 50% 50%)}
+}
+/* every screen fits under the bar */
+:root{--hdr:57px}
+@media (max-width:720px){:root{--hdr:53px}}
+/* the bar's name and Flash bang stay the homepage's size, but take a full-size tap on phones */
+.s1-top .name,.mp-act{position:relative}
+.s1-top .name::after,.mp-act::after{content:"";position:absolute;left:-4px;right:-4px;top:-7px;bottom:-7px}
+:focus-visible{outline:2px solid var(--link);outline-offset:3px}
+
+/* white boxes: every .glass panel, the number tiles and the intro's weeks. In Flash bang they turn black */
+.glass,.left-grid>div,.tiles>div,.hero-stats>div,.intro-grid{
+  --paper:#ffffff; --ink:#0b0b0c; --mid:#5c5c66; --line:#e3e3e8;
+  --accent:#0b0b0c; --accent-ink:#138a2a; --warn:#e00000; --on-ink:#ffffff; --ink-hover:#26262a;
+  --surf:#f3f3f4; --surf-2:#e9e9ec; --track:#dcdce1; --track-2:#ececef; --deep:#f4f4f6;
+  --tip-bg:#0b0b0c; --tip-ink:#f2f2f3;
+  --sw-hl:inset 0 0 0 1px rgba(11,11,12,.14); --check-ring:rgba(11,11,12,.32); --placeholder:#7a7a82;
+  --glass-hl:inset 0 0 0 1px rgba(11,11,12,.12);
+  --c-lived:#0b0b0c; --c-now:#0b0b0c; --c-sleep:#d6d6dc; --c-work:#b4b4bc; --c-tax:#8f8f98; --c-screen:#66666e; --c-empty:#ececef; --c-intro:#dcdce1;
+  background:var(--paper); color:var(--ink); box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; border-radius:var(--r-card)
+}
+html[data-theme="light"] :is(.glass,.left-grid>div,.tiles>div,.hero-stats>div,.intro-grid){
+  --paper:#0b0b0c; --ink:#f2f2f3; --mid:#a7a7ad; --line:#26262a;
+  --accent:#f2f2f3; --accent-ink:#3fd94e; --warn:#ff1a1a; --on-ink:#0b0b0c; --ink-hover:#ffffff;
+  --surf:#18181b; --surf-2:#232327; --track:#2e2e34; --track-2:#1c1c20; --deep:#151517;
+  --tip-bg:#ffffff; --tip-ink:#0b0b0c;
+  --sw-hl:inset 0 0 0 1px rgba(255,255,255,.14); --check-ring:rgba(255,255,255,.3); --placeholder:#8a8a90;
+  --glass-hl:inset 0 0 0 1px rgba(255,255,255,.12);
+  --c-lived:#f2f2f3; --c-now:#f2f2f3; --c-sleep:#2e2e34; --c-work:#4f4f58; --c-tax:#75757e; --c-screen:#a6a6ae; --c-empty:#1c1c20; --c-intro:#2c2c31
+}
+.btn-glass,.icon-btn,.seg,select,.custom,.rate input,.signup input,.notify input,.chain .lk{-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* colour blocks, full bleed like the homepage's bands. Text on them is black; boxes on them stay white (or black) */
+.band{position:relative;background:var(--paper);box-shadow:0 0 0 100vmax var(--paper);clip-path:inset(0 -100vmax);padding-bottom:clamp(56px,9vw,96px)}
+.blk-red,.blk-green{
+  --ink:#0b0b0c; --mid:rgba(11,11,12,.72); --line:rgba(11,11,12,.2);
+  --accent:#0b0b0c; --accent-ink:#0b0b0c; --on-ink:#ffffff; --ink-hover:#26262a;
+  --surf:rgba(11,11,12,.09); --surf-2:rgba(11,11,12,.15); --track:rgba(11,11,12,.22); --track-2:rgba(11,11,12,.12); --deep:rgba(11,11,12,.06);
+  --glass-hl:inset 0 0 0 1px rgba(11,11,12,.2); --sw-hl:inset 0 0 0 1px rgba(11,11,12,.22); --check-ring:rgba(11,11,12,.4); --placeholder:rgba(11,11,12,.55);
+  color:var(--ink)
+}
+.blk-red{--paper:var(--red); --bg:var(--red); --warn:#ffffff; background:var(--red)}
+.blk-green{--paper:var(--green); --bg:var(--green); --warn:#0b0b0c; background:var(--green)}
+/* the expander keeps its height clip, but lets a band reach the screen's edges */
+.expander-in{overflow:visible;clip-path:inset(0 -100vmax)}
+
+/* intro */
+.intro{padding-top:clamp(36px,7vh,64px)}
+.intro-grid{padding:clamp(16px,2.6vw,24px)}
+.intro-grid figcaption{color:var(--mid)}
+@media (min-width:960px){.intro{min-height:calc(100vh - var(--hdr));min-height:calc(100svh - var(--hdr));padding-top:48px}.intro-grid{max-width:440px}}
+.discord{border-radius:var(--r-ctl)}
+/* the landing breathes (Malik, 2026-10-25: "there's a lot of... WORDS... heavily tweak the landing page of the life audit on
+   mobile so it's not so extremely text heavy"). Layout only, every word stays: the title, the lede and Start lead; his two
+   small lines sit quietly under the button; on phones the weeks come next as the picture, then the email ask, Discord, What
+   is this? and the privacy note, smaller, in their own section below. On laptops it's the same two columns as before. */
+.intro{grid-template-areas:"copy" "grid" "more";gap:44px}
+.intro-copy{grid-area:copy;min-width:0}
+.intro-grid{grid-area:grid}
+.intro-more{grid-area:more;min-width:0}
+.intro-actions{margin-top:30px;gap:12px;max-width:none;align-items:flex-start}
+.intro-actions>.btn{width:100%;max-width:360px}
+.intro-small{display:grid;gap:3px}
+.intro-small .intro-meta,.intro-small .intro-warn{margin:0;font-size:13px;line-height:1.45;color:var(--mid);text-wrap:pretty}
+.intro-more .signup{margin-top:0;padding-top:0;box-shadow:none}
+.intro-more .signup label{font-size:13.5px}
+.intro-more .about{margin-top:14px}
+.intro-more .disclose{font-size:15px}
+.intro-more .privacy{margin-top:10px;font-size:12px;line-height:1.5}
+@media (max-width:959px){
+  .intro{padding-bottom:calc(var(--sb) + 40px)}
+  .intro-grid{justify-self:start;width:100%;max-width:440px}
+  .intro-more{padding-top:28px;box-shadow:inset 0 1px 0 var(--line)}
+}
+@media (min-width:960px){
+  .intro{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-areas:"copy grid" "more grid";column-gap:56px;row-gap:0;align-content:center;align-items:start}
+  .intro-grid{align-self:center}
+  .intro-more{padding-top:34px;margin-top:30px;box-shadow:inset 0 1px 0 var(--line);max-width:420px}
+}
+
+/* audit fixes (2026-10-25) */
+/* the birthday: month, day and year each get the room their longest value needs (the year read "20" at 320 wide); on the
+   narrowest phones the month takes its own row */
+.bday{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(64px,.9fr) minmax(90px,1.1fr);gap:10px}
+.bday select,.adj-bday select{padding:0 32px 0 14px}
+.bday .select-wrap svg,.adj-bday .select-wrap svg{right:12px}
+.adj-bday{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(60px,.9fr) minmax(86px,1.1fr);gap:8px}
+@media (max-width:359px){.bday,.adj-bday{grid-template-columns:1fr 1fr}.bday .select-wrap:first-child,.adj-bday .select-wrap:first-child{grid-column:1 / -1}}
+/* the narrowest phones: the bar stays one row */
+@media (max-width:359px){.s1-top .name{font-size:15px;gap:8px}.s1-top .name img{width:28px;height:28px}.mp-act{padding:0 10px;font-size:12px;gap:6px}.mp-act .lbl>span{gap:6px}}
+/* every colour band gets black breathing room above it, so no box above sits on its edge (the time-worth box touched the red) */
+.band{margin-top:clamp(56px,9vw,96px)}
+/* quiet text on the red reads clearly */
+.blk-red{--mid:rgba(11,11,12,.84)}
+/* sliders in a row with their - and + buttons can always shrink (WebKit keeps an input's own width otherwise) */
+.dial-row input[type=range],.ctl input[type=range]{min-width:0}
+/* the narrowest phones: email field above its button */
+@media (max-width:359px){.notify .row,.signup .row{flex-direction:column}.notify .row input,.signup .row input{flex:none;width:100%}.notify .row .btn,.signup .row .btn{width:100%}}
+/* short phone screens (an iPhone SE, or any phone once Safari's bars take their share): the question, its number and its
+   slider all fit above the buttons, so nothing you need to touch starts hidden behind them */
+@media (max-width:719px) and (max-height:760px){
+  .quiz-top{height:40px}
+  .quiz-body{padding:12px 0 14px}
+  .q-pre{font-size:15px;margin-bottom:6px}
+  .q-title{font-size:clamp(25px,6.6vw,30px)}
+  .q-sub{margin-top:8px;font-size:15px;line-height:1.4}
+  .tip{margin-top:8px;font-size:13.5px}
+  .callout{margin-top:12px;padding:11px 13px;font-size:14px;line-height:1.45}
+  .dial,.bday{margin-top:14px}
+  .dial-num{font-size:clamp(54px,16vw,70px)}
+  .dial-unit{font-size:17px}
+  .dial-row{margin-top:8px}
+  .dial-feedback{margin-top:10px;font-size:15px;min-height:0}
+  .bday-out{margin-top:14px;font-size:15px;min-height:0}
+  .quiz-foot{padding:8px 0 calc(var(--sb) + 10px);gap:8px}
+  .lifebar{padding-bottom:4px}
+  .lifebar-head{margin-bottom:6px;font-size:13px}
+  .lifebar-head b{font-size:17px}
+  .lifebar-head #lifebarNote{font-size:13px}
+  .stack{height:8px}
+  .kbd-hint{display:none!important}
+}
+/* phone tap targets: the Weeks / Months / Years switch */
+@media (max-width:719px){.seg button{height:44px}}
+
+/* quiz */
+.quiz{min-height:calc(100vh - var(--hdr));min-height:calc(100svh - var(--hdr));padding-top:14px}
+.callout{background:var(--red);color:#0b0b0c;box-shadow:none;border-radius:var(--r-ctl)}
+html[data-theme="light"] .callout{background:var(--red);color:#0b0b0c}
+.loading{min-height:calc(100vh - var(--hdr));min-height:calc(100svh - var(--hdr))}
+/* the answer buttons stay in reach on short screens: the footer holds to the bottom while a long question scrolls */
+.quiz-body{padding:clamp(18px,4vh,56px) 0 22px}
+.dial,.bday{margin-top:clamp(18px,3.5vh,40px)}
+.quiz{padding-bottom:0}
+.quiz-foot{position:sticky;bottom:0;z-index:2;background:var(--bg);padding:12px 0 calc(var(--sb) + 16px);box-shadow:0 -14px 14px var(--bg)}
+/* the share card: its column is sized to the card itself (a canvas would otherwise size the column by its pixel width) */
+@media (min-width:960px){.poster{grid-template-columns:minmax(0,1fr) min(420px,calc((100vh - 110px) * 9 / 16))}.poster-card{width:100%}}
+
+/* the doom screen: the whole thing turns red */
+.hero{min-height:calc(min(100vh,860px) - var(--hdr));padding-top:48px}
+@supports (height:100svh){.hero{min-height:calc(min(100svh,860px) - var(--hdr))}}
+.hero-pre{color:var(--mid)}
+.hero-stats{width:100%;max-width:640px;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;justify-content:stretch}
+.hero-stats div{padding:16px 10px 14px;border-radius:14px;justify-items:center}
+.hero-stats div+div{box-shadow:none}
+.hero-stats span{color:var(--mid)}
+.hero-jump{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:4px}
+.hero-cue{color:var(--mid)}
+
+/* boxes, not hairline grids */
+.left-grid,.tiles{gap:8px;background:none;box-shadow:none;border-radius:0;overflow:visible}
+.left-grid div,.tiles div{border-radius:14px;padding:18px 18px 16px}
+.left-grid span,.tiles span{color:var(--mid)}
+.panel .outs div{background:var(--deep)}
+
+/* the grid card */
+.grid-tip{background:var(--tip-bg);color:var(--tip-ink);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 10px 28px rgba(0,0,0,.28)!important}
+.grid-tip span{color:inherit;opacity:.68}
+.now-dot{background:var(--c-now);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--ink)}
+.now-tag{color:var(--paper);background:var(--ink)}
+.scale-you{color:var(--ink)}
+.scale-you::after{background:var(--ink)}
+.insight.is-good .dot,.steps input:checked{background:var(--green)}
+.card.wide.glass{--paper:var(--green); --ink:#0b0b0c; --mid:rgba(11,11,12,.72); --accent-ink:#0b0b0c; background:var(--green)}
+.card.wide b{color:var(--ink)}
+.more-btn{border-radius:var(--r-card)}
+.toast{background:var(--toast-bg);color:var(--toast-ink);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.plan .turn{color:var(--mid)}
+
+/* more free tools */
+.more-tools{margin-top:clamp(64px,10vw,104px)}
+.mt-h{font-size:clamp(24px,4vw,30px);font-weight:700;letter-spacing:-.03em}
+.more-tools .links{margin-top:18px}
+
+/* the warning's punchline in the loss red (Malik, 2026-10-25) */
+.warn-red{color:#ff1a1a}
+html[data-theme="light"] .warn-red{color:#e00000}
+
+/* Option B (Malik, 2026-10-27): black on the bright red was harsh on the eyes, so red sections use white text on a
+   slightly deeper red (white passes contrast on it); the years number turns black so it still pops. Red text on black
+   or white stays #ff1a1a / #e00000. */
+.blk-red{
+  --paper:#e0141a; --bg:#e0141a; background:#e0141a; --warn:#0b0b0c;
+  --ink:#ffffff; --mid:rgba(255,255,255,.9); --line:rgba(255,255,255,.32);
+  --accent:#ffffff; --accent-ink:#ffffff; --on-ink:#0b0b0c; --ink-hover:#ececec;
+  --surf:rgba(255,255,255,.12); --surf-2:rgba(255,255,255,.18); --track:rgba(255,255,255,.32); --track-2:rgba(255,255,255,.16); --deep:rgba(255,255,255,.08);
+  --glass-hl:inset 0 0 0 1px rgba(255,255,255,.28); --sw-hl:inset 0 0 0 1px rgba(255,255,255,.3); --check-ring:rgba(255,255,255,.5); --placeholder:rgba(255,255,255,.7);
+  color:#ffffff}
+.callout,html[data-theme="light"] .callout{background:#e0141a;color:#ffffff}
+</style>
+
+<noscript><p style="padding:40px 20px;max-width:600px;margin:0 auto">The Life Audit needs JavaScript to do the math. Turn it on and reload.</p></noscript>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-right" viewBox="0 0 20 20"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 20 20"><path d="M4.5 7.5 10 13l5.5-5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 20 20"><path d="M5 10h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 20 20"><path d="M5 10h10M10 5v10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-discord" viewBox="0 0 71 55"><path fill="currentColor" d="M60.1 4.9A58.5 58.5 0 0 0 45.4.2a.2.2 0 0 0-.2.1 40.8 40.8 0 0 0-1.8 3.7 54 54 0 0 0-16.2 0A37.4 37.4 0 0 0 25.4.3a.2.2 0 0 0-.2-.1A58.4 58.4 0 0 0 10.5 5 59.5 59.5 0 0 0 .4 44.8a.3.3 0 0 0 .1.2 58.7 58.7 0 0 0 17.7 9 .2.2 0 0 0 .3-.1 42 42 0 0 0 3.6-5.9.2.2 0 0 0-.1-.3 38.7 38.7 0 0 1-5.5-2.6.2.2 0 0 1 0-.4l1.1-.9a.2.2 0 0 1 .2 0 41.9 41.9 0 0 0 35.6 0 .2.2 0 0 1 .2 0l1.1.9a.2.2 0 0 1 0 .4c-1.8 1-3.6 1.9-5.5 2.6a.2.2 0 0 0-.1.3 47.2 47.2 0 0 0 3.6 5.9.2.2 0 0 0 .3.1A58.5 58.5 0 0 0 70.1 45a.3.3 0 0 0 .1-.2c1.6-16.7-2.7-31.2-11.3-44.1zM23.7 36.7c-3.8 0-7-3.5-7-7.8s3.1-7.8 7-7.8 7.1 3.5 7 7.8c0 4.3-3.1 7.8-7 7.8zm25.9 0c-3.9 0-7-3.5-7-7.8s3-7.8 7-7.8 7 3.5 7 7.8-3.1 7.8-7 7.8z"/></symbol>
+  <symbol id="i-out" viewBox="0 0 20 20"><path d="M7 13 13 7M8 7h5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="s1-top"><div class="bar"><a class="name" data-home href="/"><img src="face.png" alt="">Malik Peace</a><div class="mp-acts"><button type="button" class="mp-act fb" data-flashbang aria-pressed="false"><span class="lbl"><span class="lb-l"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.8v3.1M10 15.1v3.1M1.8 10h3.1M15.1 10h3.1M4.2 4.2l2.2 2.2M13.6 13.6l2.2 2.2M4.2 15.8l2.2-2.2M13.6 6.4l2.2-2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="2.6" fill="currentColor"/></svg>Flash bang mode</span><span class="lb-d"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.8v3.1M10 15.1v3.1M1.8 10h3.1M15.1 10h3.1M4.2 4.2l2.2 2.2M13.6 13.6l2.2 2.2M4.2 15.8l2.2-2.2M13.6 6.4l2.2-2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="2.6" fill="currentColor"/></svg>Dark mode</span></span></button></div></div></header>
+
+<main>
+<!-- ============ INTRO ============ -->
+<section class="view on" id="v-intro" aria-label="Intro">
+  <div class="intro">
+    <div class="intro-copy">
+      <h1 class="intro-title">The Life Audit</h1>
+      <p class="intro-lede">A simple tool to help you see how much time you have left, and how much of it goes to waste.</p>
+      <div class="glass welcome" id="welcome" hidden>
+        <p><b>Welcome back.</b> <span id="welcomeText"></span></p>
+        <div class="row"><button class="btn btn-glass" id="seeLastBtn" type="button">See my last results</button></div>
+      </div>
+      <div class="intro-actions">
+        <button class="btn btn-primary" id="startBtn" type="button">Start the audit</button>
+        <div class="intro-small">
+          <p class="intro-meta">7 questions. Takes about 3 minutes. Completely free btw.</p>
+          <p class="intro-warn">Warning: <span class="warn-red">might get a bit existential lol</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="intro-more">
+      <form class="signup" id="introSignup" novalidate>
+        <label for="introEmail">To get direct updates on future bigger projects (I promise I won't spam lol)</label>
+        <div class="bh-plate"><div class="bh" data-bh="00d2e169-0ad8-422d-bf41-f7ccbf944ca5"></div></div>
+        <p class="preview-msg" data-preview-msg aria-live="polite"></p>
+        <a class="discord" href="https://discord.gg/UNbPAUc3y4" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-discord"/></svg>Join Discord</a>
+      </form>
+      <details class="about" id="aboutDetails">
+        <summary class="disclose"><svg><use href="#i-right"/></svg>What is this?</summary>
+        <div class="about-body">
+          <p>This is a simple tool here to help you visualize how much time you have left and how much of it goes to waste.</p>
+          <p>Time is arguably the most important thing you have.</p>
+          <p>Most of us live our entire lives rarely thinking about how much time we have and how we spend it. Mostly because we're busy spending that time distracted, but also because it's incredibly scary to think about what happens when the time runs out.</p>
+          <p>The goal is for you to understand how much or how little time you have, and where it's going, so you're at least aware to make changes if needed.</p>
+          <p class="quote">"A man has two lives. The second begins when he realizes he only has one."<span>Confucius</span></p>
+          <p class="sign">Anyways, I hope this is useful to you. Enjoy :)</p>
+        </div>
+      </details>
+      <p class="privacy">Nothing you type leaves your device. Your answers save in this browser so you can come back to them.</p>
+    </div>
+    <figure class="intro-grid" aria-label="A grid of 3,900 empty squares, one for each week of a 75 year life">
+      <canvas id="introGrid"></canvas>
+      <figcaption>You get about <b>3,900 weeks</b>. This is all of them.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="view" id="v-quiz" aria-label="Questions">
+  <div class="quiz">
+    <header class="quiz-top">
+      <button class="icon-btn" id="backBtn" type="button" aria-label="Back"><svg><use href="#i-back"/></svg></button>
+      <div class="progress" id="progress" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <span class="step-count num" id="stepCount" aria-live="polite">1 of 7</span>
+    </header>
+
+    <div class="quiz-body">
+      <div class="q" data-step="1">
+        <p class="q-pre">Okay, first question...</p>
+        <h2 class="q-title">Are you a human being?</h2>
+        <p class="q-sub">This gives you around 75 years of life to live.*</p>
+        <div class="dial">
+          <div class="dial-value"><span class="dial-num num">75</span><span class="dial-unit">years</span></div>
+          <p class="dial-feedback">About <b>3,900 weeks</b>. Around <b>2.4 billion seconds</b>. Sounds like a lot, right?</p>
+          <p class="fine">*Roughly the average. Some people get more, plenty get less. Nothing is guaranteed.</p>
+        </div>
+        <p class="egg human-no" id="eggHuman"></p>
+      </div>
+
+      <div class="q" data-step="2">
+        <h2 class="q-title">When's your birthday?</h2>
+        <p class="q-sub">So we can calculate exactly how much of your life you've used up already.</p>
+        <div class="bday" data-bday="quiz"></div>
+        <p class="bday-out" id="bdayOut" aria-live="polite"></p>
+        <div class="bday-bar" aria-hidden="true"><i id="bdayBar"></i></div>
+        <p class="egg" id="eggAge"></p>
+      </div>
+
+      <div class="q" data-step="3">
+        <h2 class="q-title">How many hours do you sleep per night?</h2>
+        <p class="q-sub">8 is recommended, but don't lie lol</p>
+        <div data-dial="sleep"></div>
+      </div>
+
+      <div class="q" data-step="4">
+        <h2 class="q-title">How many hours do you spend working and/or at school per day?</h2>
+        <p class="q-sub">Counted 5 days a week.</p>
+        <div data-dial="work"></div>
+      </div>
+
+      <div class="q" data-step="5">
+        <h2 class="q-title">How many hours go to human maintenance tasks?</h2>
+        <p class="q-sub">Cooking, cleaning, commuting, using the bathroom, showering, buying groceries, etc. The "boring" life tax stuff.</p>
+        <div data-dial="tax"></div>
+      </div>
+
+      <div class="q" data-step="6">
+        <h2 class="q-title">What's your average daily screen time?</h2>
+        <p class="q-sub">Actually, take a second to go check your real screen time right now. <b>It's probably higher than you think.</b></p>
+        <p class="tip">iPhone: <b>Settings, Screen Time</b>. Android: <b>Settings, Digital Wellbeing</b>.</p>
+        <div data-dial="screen"></div>
+      </div>
+
+      <div class="q" data-step="7">
+        <h2 class="q-title">What percentage of your screen time is vapid and useless?</h2>
+        <p class="q-sub">This is doomscrolling. Brainrotting. Wasting time.</p>
+        <p class="callout">And be 100% honest. This is the most subjective question, only you know the answer. You know when you're using your phone as a tool vs a distraction.</p>
+        <div data-dial="doom"></div>
+      </div>
+    </div>
+
+    <footer class="quiz-foot">
+      <div class="lifebar" id="lifebar" aria-hidden="true">
+        <div class="lifebar-head"><span>Your 75 years</span><span id="lifebarNote" class="num"></span></div>
+        <div class="stack" id="lifebarStack"></div>
+      </div>
+      <div class="row">
+        <button class="btn btn-glass" id="noBtn" type="button">No</button>
+        <button class="btn btn-primary" id="nextBtn" type="button">Yes</button>
+      </div>
+      <p class="kbd-hint">Enter to continue. Esc to go back.</p>
+    </footer>
+  </div>
+</section>
+
+<!-- ============ LOADING ============ -->
+<section class="view" id="v-loading" aria-label="Calculating">
+  <div class="loading">
+    <div class="loading-inner">
+      <canvas class="load-grid" id="loadGrid" aria-hidden="true"></canvas>
+      <p class="loading-text" id="loadingText" aria-live="polite">Counting your weeks...</p>
+      <p class="loading-count num" id="loadingCount"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="view" id="v-results" aria-label="Your results">
+  <header class="hero blk-red" id="secHero">
+    <div class="glass shared-banner" id="sharedBanner" hidden><span>You're looking at someone's shared results.</span><button class="btn btn-primary" id="ownBtn" type="button">Take your own</button></div>
+    <p class="hero-pre" id="heroPre">If you keep going at this rate...</p>
+    <h1 class="hero-line" id="heroLine">You'll lose <span class="big num" id="heroDoom">0.0</span> years to doomscrolling.</h1>
+    <div class="hero-stats" id="heroStats">
+      <div><b class="num" id="hHours">0</b><span>hours</span></div>
+      <div><b class="num" id="hDays">0</b><span>full days</span></div>
+      <div><b class="num" id="hMonths">0</b><span>months</span></div>
+    </div>
+    <p class="hero-note" id="heroNote" hidden></p>
+    <button class="linkish hero-jump" id="jumpPlan" type="button">Skip to how to fix it</button>
+    <p class="hero-cue" aria-hidden="true">Keep scrolling<svg><use href="#i-down"/></svg></p>
+  </header>
+
+  <div class="wrap">
+    <section class="sec summary reveal" id="secSummary">
+      <p class="summary-line" id="summaryLine"></p>
+      <p class="summary-kicker" id="summaryKicker"></p>
+    </section>
+
+    <section class="sec reveal" id="secWeeks">
+      <div class="sec-head">
+        <div>
+          <h2 id="gridTitle">Your life in weeks</h2>
+          <p class="sec-sub" id="gridCaption">Each square is one week.</p>
+        </div>
+        <div class="seg" role="tablist" aria-label="Grid unit">
+          <button type="button" role="tab" data-mode="weeks" aria-selected="true">Weeks</button>
+          <button type="button" role="tab" data-mode="months" aria-selected="false">Months</button>
+          <button type="button" role="tab" data-mode="years" aria-selected="false">Years</button>
+        </div>
+      </div>
+      <div class="glass grid-card">
+        <div class="grid-box" id="gridBox">
+          <canvas id="lifeGrid" aria-label="Your life drawn as a grid, colored by where the time goes"></canvas>
+          <span class="now-dot" id="nowDot"></span>
+          <span class="now-tag" id="nowTag">you are here</span>
+          <div class="grid-tip" id="gridTip"></div>
+        </div>
+        <ul class="legend" id="legend"></ul>
+        <p class="grid-foot" id="gridFoot"></p>
+      </div>
+    </section>
+
+    <section class="sec reveal" id="secInsights">
+      <h2>What stands out</h2>
+      <div class="insights" id="insights"></div>
+    </section>
+
+    <div class="see-more" id="seeMoreWrap">
+      <button class="glass more-btn" id="seeMoreBtn" type="button" aria-expanded="false" aria-controls="moreResults">
+        <span class="more-label" id="seeMoreLabel">See more</span>
+        <span class="more-note">Seconds left, where your years go, what your time is worth, and more</span>
+        <svg aria-hidden="true"><use href="#i-down"/></svg>
+      </button>
+      <div class="expander" id="moreResults">
+        <div class="expander-in">
+    <section class="sec reveal" id="secClock">
+      <h2>Seconds left of your existence*</h2>
+      <p class="clock-num num" id="secondsLeft">0.0</p>
+      <p class="sec-sub">Every second that ticks is one you'll never get back. Please, use it wisely.</p>
+      <div class="left-grid">
+        <div><b class="num" id="lYears" data-dec="1">0</b><span>years left</span></div>
+        <div><b class="num" id="lMonths">0</b><span>months left</span></div>
+        <div><b class="num" id="lWeeks">0</b><span>weeks left</span></div>
+        <div><b class="num" id="lDays">0</b><span>days left</span></div>
+        <div><b class="num" id="lHours">0</b><span>hours left</span></div>
+      </div>
+      <p class="fine">*Based on a 75 year life, which is roughly average. Plenty of people get less. Nothing is guaranteed.</p>
+    </section>
+
+    <section class="sec reveal" id="secWhere">
+      <h2>Where your years will go</h2>
+      <p class="sec-sub">All 75 of them, drawn to scale.</p>
+      <div class="scale">
+        <div class="scale-top"><span class="scale-you num" id="scaleYou">you</span></div>
+        <div class="stack" id="scaleStack"></div>
+        <div class="scale-ends"><span>Born</span><span>75</span></div>
+      </div>
+      <div class="wrows" id="wrows"></div>
+      <div class="callouts" id="callouts"></div>
+      <div class="more">
+        <details id="adjustDetails">
+          <summary class="disclose"><svg><use href="#i-right"/></svg>Adjust your answers</summary>
+          <div class="adjust" id="adjust">
+            <p class="adj-lbl">Birthday</p>
+            <div class="adj-bday" data-bday="adjust"></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="sec reveal" id="secWorth">
+      <div class="glass panel worth">
+        <div>
+        <h2>What's your time worth?</h2>
+        <p class="sec-sub">Set your hourly pay to see what you'd earn if that doomscrolling was paid work.</p>
+        </div>
+        <div>
+        <div class="ctl"><label for="rateRange">Your hourly rate</label><span class="rate"><span>$</span><input type="number" id="rateInput" inputmode="decimal" min="0" max="10000" value="30" aria-label="Hourly rate in dollars"></span><input type="range" id="rateRange" min="5" max="150" step="1" value="30"></div>
+        <div class="outs two">
+          <div><b class="num" id="costYear">$0</b><span>every year</span></div>
+          <div><b class="num" id="costLife">$0</b><span>over your life</span></div>
+        </div>
+        <p class="result-line">That's what those hours would be worth at your rate.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec reveal band blk-red" id="secDistance">
+      <h2>How much scrolling is this?</h2>
+      <p class="sec-sub">Your lifetime of doomscrolling, measured in thumb.</p>
+      <div class="tiles">
+        <div><b class="num" id="dScrolls">0</b><span>swipes</span></div>
+        <div><b class="num" id="dFeet">0</b><span>feet of thumb travel</span></div>
+        <div><b class="num" id="dMiles">0</b><span>miles</span></div>
+        <div><b class="num" id="dEverest">0</b><span>Mt. Everests, stacked</span></div>
+        <div><b class="num" id="dMarathons">0</b><span>marathons</span></div>
+        <div><b class="num" id="dBurj">0</b><span>Burj Khalifas</span></div>
+      </div>
+      <details class="math">
+        <summary class="disclose"><svg><use href="#i-right"/></svg>How I calculated this</summary>
+        <div class="calc" id="mathChain" role="group" aria-label="The calculation"></div>
+        <p class="chain-note" id="mathNote"></p>
+      </details>
+    </section>
+
+    <section class="sec reveal" id="secInstead">
+      <h2>Things you could do with that time instead</h2>
+      <p class="sec-sub" id="insteadSub"></p>
+      <div class="cards" id="cards"></div>
+    </section>
+
+        </div>
+      </div>
+    </div>
+
+    <section class="sec reveal plan band blk-green" id="secPlan">
+      <p class="turn">Okay, enough yapping.</p>
+      <h2>So how do you fix this?</h2>
+      <p class="sec-sub plan-lede">The obvious answer is to just get off your phone. Which is useful, but that alone simply doesn't work for a lot of people long term. Because if you put the phone down and have nothing better to do, you're gonna pick it right back up. Because your brain is no longer getting stimulation/reward from anything. And in my experience, the best thing to do to fix this, is to find something you care about more than anything else, that just the progress towards that goal feels more rewarding than anything your phone can give you.</p>
+      <div class="plan-grid">
+        <div class="glass panel">
+          <h3>1. Set a daily screen time target</h3>
+          <p class="sec-sub" id="targetNow"></p>
+          <div class="ctl"><label for="targetRange">Your target</label><span class="cv num" id="targetVal"></span><input type="range" id="targetRange" min="0" max="6" step="0.5" value="4.5"></div>
+          <div class="outs">
+            <div><b class="num" id="gYears">0</b><span>years back</span></div>
+            <div><b class="num" id="gMonths">0</b><span>months back</span></div>
+            <div><b class="num" id="gWeeks">0</b><span>weeks back</span></div>
+          </div>
+          <p class="result-line" id="gLine"></p>
+        </div>
+        <div class="glass panel memento-card">
+          <h3>2. Replace it with something you actually care about</h3>
+          <div class="mc-copy">
+            <p>A lot of people just remove but never replace. But if there's nothing on the other side, nothing important to make progress towards when you put your phone down, your brain goes right back to the phone because it's the easiest reward available.</p>
+            <p>To fix this, you simply need to make progress towards a goal you ACTUALLY care about. Once you can see yourself getting closer to something that matters to you, scrolling starts to feel repulsive to your brain.</p>
+            <p>To help with this, I've been building Memento. A tool I personally made to help people focus, reduce screen time, and make progress towards their goals. It helps you figure out what you actually want and why, what to do about it today, and keeps track with other tools. Might be out by the time you're reading this. If so, enjoy :)</p>
+          </div>
+          <a class="btn btn-primary" href="https://mementoapp.co" target="_blank" rel="noopener">Check out Memento</a>
+        </div>
+      </div>
+      <div class="glass panel week">
+        <h3>Your week, now vs with the plan</h3>
+        <p class="sec-sub">All 168 hours of a week, drawn to scale.</p>
+        <div class="wk">
+          <div class="wk-row"><span class="wk-l">Now</span><div class="stack" id="wkNow"></div></div>
+          <div class="wk-row"><span class="wk-l">With the plan</span><div class="stack" id="wkPlan"></div></div>
+        </div>
+        <ul class="legend" id="wkLegend"></ul>
+        <p class="result-line" id="wkLine"></p>
+      </div>
+      <div class="glass panel steps-card">
+        <h3>3. Things to do this week</h3>
+        <ol class="steps" id="steps"></ol>
+        <p class="steps-after">Start before you feel like it. The motivation usually shows up after you start. Small and every day beats big every once in a while. And if you miss a day, don't worry about it. Just go again tomorrow.</p>
+        <p class="steps-test">Before you open an app, ask yourself <b>"will I remember this a year from now?"</b> If not, it's probably brain rot.</p>
+      </div>
+      <div class="keep">
+        <p id="keepText"></p>
+        <div class="keep-row">
+          <button class="btn btn-glass" id="copyLinkBtn" type="button">Copy a link to these results</button>
+          <button class="btn btn-glass" id="forgetBtn" type="button">Forget my results</button>
+        </div>
+        <input class="custom" id="linkField" type="text" readonly aria-label="Link to these results" hidden>
+      </div>
+    </section>
+
+    <section class="sec reveal" id="secShare">
+      <div class="poster">
+        <div class="share-head">
+          <h2>Your life, in one picture</h2>
+          <p class="sec-sub">Pick weeks, months or years. Then screenshot it and send it to the friend who needs to see this.</p>
+        </div>
+        <div class="seg poster-seg" role="tablist" aria-label="Card scale">
+          <button type="button" role="tab" data-scale="weeks" aria-selected="true">Weeks</button>
+          <button type="button" role="tab" data-scale="months" aria-selected="false">Months</button>
+          <button type="button" role="tab" data-scale="years" aria-selected="false">Years</button>
+        </div>
+        <canvas class="poster-card" id="posterCard" role="img" aria-label="Your life drawn as a grid, with your numbers"></canvas>
+        <div class="story-actions">
+          <button class="btn btn-primary" id="saveCardBtn" type="button">Save this card</button>
+          <p>Or just screenshot it lol</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec reveal" id="secMori">
+      <h2>Memento mori</h2>
+      <div class="mori-text">
+        <p class="m1">We don't have forever to live. It's a scary thought to think about how much time we have left and even scarier to imagine what happens when it runs out. Our time alive may be brief, but that doesn't mean we can't make it worthwhile.</p>
+        <p class="m1">We're living in the best time in history thus far, with the potential to do things our ancestors could only dream of. But living in the modern world is a double-edged sword. While we have more tools than ever to build a life we want, we also have more distractions than ever to move us away. I hope this helped put this into perspective for you.</p>
+        <p class="m2">Memento mori: remember you will die.</p>
+        <p class="m3">Get the most out of your existence.</p>
+      </div>
+      <p class="mori-quote">"A man has two lives. The second begins when he realizes he only has one."<span>Confucius</span></p>
+    </section>
+
+    <section class="sec reveal" id="secNext">
+      <h2>For those who want to fix this</h2>
+      <div class="next-copy">
+        <p>Hello, if you're reading this, you probably know me from YouTube. I'm also building something to help with this problem outside of just videos. It's called Memento.</p>
+        <p>If you want help actually using the time, that's what it's for. Or just join the Discord to chat with me and others.</p>
+        <p>Above all else, I hope this was helpful to you. Have a good one :)</p>
+      </div>
+      <div class="links">
+        <a class="glass link" href="https://www.youtube.com/@malikpeace_" target="_blank" rel="noopener"><b>YouTube</b><span>Long videos about attention, comfort and ambition.</span><svg><use href="#i-out"/></svg></a>
+        <a class="glass link" href="https://mementoapp.co" target="_blank" rel="noopener"><b>Memento</b><span>If you want help actually using the time.</span><svg><use href="#i-out"/></svg></a>
+        <a class="link discord-card" id="discordLink" href="https://discord.gg/UNbPAUc3y4" target="_blank" rel="noopener"><b><svg aria-hidden="true"><use href="#i-discord"/></svg>Join Discord</b><span>Come hang out and chat with me and others.</span><svg><use href="#i-out"/></svg></a>
+      </div>
+      <form class="glass notify" id="notifyForm" novalidate>
+        <label for="notifyEmail">Get notified when Memento launches</label>
+        <div class="bh-plate always"><div class="bh" data-bh="00d2e169-0ad8-422d-bf41-f7ccbf944ca5"></div></div>
+        <p class="fine">I never spam, don't worry lol</p>
+        <p class="preview-msg" id="notifyMsg" data-preview-msg aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="more-tools" aria-label="More free tools">
+      <h2 class="mt-h">More free tools</h2>
+      <div class="links">
+        <a class="glass link" data-tool="focus" href="/focus/"><b>Focus Room</b><span>A timer that fills the screen.</span><svg><use href="#i-out"/></svg></a>
+        <a class="glass link" data-tool="freedom" href="/freedom/"><b>Your Freedom Number</b><span>How much you need to be free.</span><svg><use href="#i-out"/></svg></a>
+        <a class="glass link" data-tool="25" href="/25/"><b>25+5 Lessons</b><span>What I learned by 25. $25.</span><svg><use href="#i-out"/></svg></a>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>Made by <a href="https://www.youtube.com/@malikpeace_" target="_blank" rel="noopener">Malik Peace</a>. 75 years is average. No second is guaranteed.</p>
+      <button class="btn btn-glass" id="restartBtn" type="button">Start over</button>
+    </footer>
+  </div>
+</section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= constants + state ================= */
+const LIFE = 75;
+const DAY_MS = 864e5, YEAR_DAYS = 365.25, YEAR_MS = YEAR_DAYS * DAY_MS;
+const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const S = { bday: new Date(2000, 0, 1), sleep: 8, work: 8, tax: 2.5, screen: 6, doom: 50 };
+const DEMOS = {
+  demo:  { bday: [2001, 5, 15], sleep: 7.5, work: 8, tax: 2.5, screen: 6, doom: 50 },
+  demo2: { bday: [2005, 2, 3],  sleep: 6, work: 12, tax: 3, screen: 10, doom: 70 },
+  demo3: { bday: [1966, 9, 20], sleep: 7, work: 8, tax: 3, screen: 4, doom: 25 },
+  demo4: { bday: [2010, 3, 10], sleep: 8, work: 7, tax: 2, screen: 9, doom: 60 },
+  demo5: { bday: [1945, 1, 2], sleep: 7, work: 0, tax: 3, screen: 3, doom: 30 }
+};
+
+const SL = {
+  sleep:  { min: 4, max: 12, step: .5, unit: 'hours', label: 'Sleep', per: 'a night' },
+  work:   { min: 0, max: 14, step: .5, unit: 'hours', label: 'Work or school', per: 'a day, 5 days a week' },
+  tax:    { min: 0, max: 8,  step: .5, unit: 'hours', label: 'Life tax', per: 'a day' },
+  screen: { min: 0, max: 20, step: .5, unit: 'hours', label: 'Screen time', per: 'a day' },
+  doom:   { min: 0, max: 100, step: 5, unit: '%', label: 'Doomscrolling', per: 'of screen time' }
+};
+
+/* categories, in the order they are laid out on the grid. Colors come from the theme. */
+const CAT = {
+  lived:  { name: 'Lived',          v: 'lived' },
+  now:    { name: 'This week',      v: 'now' },
+  sleep:  { name: 'Sleep',          v: 'sleep' },
+  work:   { name: 'Work or school', v: 'work' },
+  tax:    { name: 'Life tax',       v: 'tax' },
+  screenOnly: { name: 'Screens, the useful part', v: 'screen' },
+  free:   { name: 'Truly free',     v: 'free' },
+  doom:   { name: 'Doomscrolling',  v: 'doom' },
+  gain:   { name: 'Your goal',      v: 'gain' }
+};
+const col = k => `var(--c-${CAT[k].v})`;
+const PAL = {}, PALB = {};
+/* PAL is the page (the loading grid); PALB is the white box the life grid sits in (black in Flash bang) */
+function readOne(into, el) {
+  const cs = getComputedStyle(el);
+  for (const k in CAT) into[k] = cs.getPropertyValue(`--c-${CAT[k].v}`).trim();
+  into.empty = cs.getPropertyValue('--c-empty').trim();
+  into.intro = cs.getPropertyValue('--c-intro').trim();
+  into.mid = cs.getPropertyValue('--mid').trim();
+}
+function readPalette() { readOne(PAL, document.documentElement); readOne(PALB, document.querySelector('.grid-card') || document.documentElement); }
+readPalette();
+
+/* ================= formatting ================= */
+const NF = [0, 1, 2].map(d => new Intl.NumberFormat('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const fmt = (v, d = 0) => NF[d].format(d === 0 ? Math.round(v) : v);
+const fmtSmart = v => { if (!isFinite(v)) return '0'; if (v >= 10) return fmt(v, 0); const s = fmt(v, 1); return s.endsWith('.0') ? s.slice(0, -2) : s; };
+const hrs = v => String(Math.round(v * 100) / 100);
+const plural = (n, one, many) => (n === 1 ? one : many);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+/* ================= the math ================= */
+function calendarAge(b, now) {
+  let y = now.getFullYear() - b.getFullYear();
+  let m = now.getMonth() - b.getMonth();
+  let d = now.getDate() - b.getDate();
+  if (d < 0) { m--; d += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+  if (m < 0) { y--; m += 12; }
+  return { y: Math.max(0, y), m: y < 0 ? 0 : m, d: y < 0 ? 0 : d };
+}
+function addYears(b, n) { const d = new Date(b.getTime()); d.setFullYear(d.getFullYear() + n); return d; }
+function gridWeeksLived(b, now) {
+  const { y } = calendarAge(b, now);
+  const last = addYears(b, y);
+  const days = Math.max(0, Math.floor((now - last) / DAY_MS));
+  return y * 52 + Math.min(51, Math.floor(days / 7));
+}
+
+/* ov lets the quiz compute a partial picture (unanswered = 0) */
+function compute(ov) {
+  const P = Object.assign({}, S, ov || {});
+  const now = new Date();
+  const age = Math.max(0, (now - P.bday) / YEAR_MS);
+  const rem = Math.max(0, LIFE - age);
+  const death = addYears(P.bday, LIFE);
+  const secsLeft = Math.max(0, (death - now) / 1000);
+
+  let sleep = P.sleep, work = P.work * 5 / 7, tax = P.tax, screen = P.screen, doom = P.screen * P.doom / 100;
+  const raw = sleep + work + tax + screen;
+  let overlap = 0, squeezed = false;
+  if (raw > 24) {
+    overlap = raw - 24;
+    const wt = work + tax, take = Math.min(overlap, wt);
+    if (wt > 0) { const w0 = work, t0 = tax; work -= take * w0 / wt; tax -= take * t0 / wt; }
+    const room = 24 - sleep - work - tax;
+    if (screen > room + 1e-9) { const k = Math.max(0, room) / screen; screen *= k; doom *= k; squeezed = true; }
+  }
+  const screenOnly = Math.max(0, screen - doom);
+  const free = Math.max(0, 24 - sleep - work - tax - screen);
+  const h = { sleep, work, tax, screen, screenOnly, doom, free };
+  const y = {}; for (const k in h) y[k] = rem * h[k] / 24;
+  const doomYear = doom * YEAR_DAYS;           // hours of doomscrolling per year
+  const doomLife = doomYear * rem;             // hours over the rest of your life
+  return { P, now, age, rem, death, secsLeft, cal: calendarAge(P.bday, now), weeksLived: gridWeeksLived(P.bday, now),
+           h, y, raw, overlap, squeezed, doomYear, doomLife, waking: 24 - sleep };
+}
+
+/* largest remainder: integer counts that add up exactly */
+function allocate(total, weights) {
+  const sum = weights.reduce((a, b) => a + b, 0);
+  if (total <= 0 || sum <= 0) return weights.map(() => 0);
+  const raw = weights.map(w => w / sum * total);
+  const out = raw.map(Math.floor);
+  let left = total - out.reduce((a, b) => a + b, 0);
+  const order = raw.map((r, i) => [r - out[i], i]).sort((a, b) => b[0] - a[0]);
+  for (let i = 0; left > 0; i++, left--) out[order[i % order.length][1]]++;
+  return out;
+}
+
+/* cells for a grid: perYear = 52 weeks, 12 months or 1 year per square */
+function buildCells(c, perYear) {
+  const total = LIFE * perYear;
+  let lived = perYear === 52 ? c.weeksLived : perYear === 12 ? c.cal.y * 12 + c.cal.m : c.cal.y;
+  lived = Math.min(total, lived);
+  const cells = new Array(total);
+  for (let i = 0; i < lived; i++) cells[i] = 'lived';
+  let nowIdx = -1;
+  if (lived < total) { nowIdx = lived; cells[lived] = 'now'; }
+  const rest = total - lived - 1;
+  if (rest > 0) {
+    const keys = ['sleep', 'work', 'tax', 'screenOnly', 'free', 'doom'];
+    const n = allocate(rest, keys.map(k => c.h[k]));
+    let p = lived + 1;
+    keys.forEach((k, i) => { for (let j = 0; j < n[i]; j++) cells[p++] = k; });
+  }
+  return { cells, total, lived, nowIdx };
+}
+
+/* ================= small helpers ================= */
+const toastEl = $('#toast'); let toastT = 0;
+function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2600); }
+
+function setNum(el, v, dec = 0, pre = '', suf = '') {
+  if (!el) return;
+  el.dataset.v = v; el.dataset.dec = dec; el.dataset.pre = pre; el.dataset.suf = suf;
+  if (el.dataset.counted === '1' || RM) el.textContent = pre + fmt(v, dec) + suf;
+  else if (!el.dataset.running) el.textContent = pre + fmt(0, dec) + suf;
+}
+function countUp(el, dur = 900, delay = 0) {
+  if (!el || el.dataset.counted === '1' || el.dataset.running) return;
+  if (RM) { el.dataset.counted = '1'; el.textContent = el.dataset.pre + fmt(+el.dataset.v, +el.dataset.dec) + el.dataset.suf; return; }
+  el.dataset.running = '1';
+  let t0 = null;
+  const step = ts => {
+    if (t0 === null) t0 = ts + delay;
+    const p = clamp((ts - t0) / dur, 0, 1);
+    const v = +el.dataset.v, d = +el.dataset.dec;
+    el.textContent = el.dataset.pre + fmt(v * easeOut(p), d) + el.dataset.suf;
+    if (p < 1) requestAnimationFrame(step);
+    else { el.dataset.counted = '1'; delete el.dataset.running; el.textContent = el.dataset.pre + fmt(v, d) + el.dataset.suf; }
+  };
+  requestAnimationFrame(step);
+}
+
+/* ================= views ================= */
+let view = 'intro';
+function show(name) {
+  $$('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + name));
+  view = name;
+  window.scrollTo(0, 0);
+  if (name !== 'results') stopTicker();
+}
+
+/* ================= inputs: dials, compact sliders, birthday ================= */
+function paintRange(r) { const p = (r.value - r.min) / (r.max - r.min) * 100; r.style.setProperty('--p', p + '%'); }
+function valText(key) { return key === 'doom' ? S.doom + '%' : hrs(S[key]); }
+
+function buildDial(host) {
+  const key = host.dataset.dial, c = SL[key];
+  host.className = 'dial';
+  host.innerHTML =
+    `<div class="dial-value"><span class="dial-num num${key === 'doom' ? ' is-doom' : ''}" data-val="${key}">${valText(key)}</span>` +
+    (key === 'doom' ? '' : `<span class="dial-unit">${c.unit}</span>`) + `</div>` +
+    `<div class="dial-row">` +
+      `<button class="icon-btn" type="button" data-nudge="-1" aria-label="Less"><svg><use href="#i-minus"/></svg></button>` +
+      `<input type="range" data-key="${key}" min="${c.min}" max="${c.max}" step="${c.step}" value="${S[key]}" aria-label="${c.label}"${key === 'doom' ? ' class="is-doom"' : ''}>` +
+      `<button class="icon-btn" type="button" data-nudge="1" aria-label="More"><svg><use href="#i-plus"/></svg></button>` +
+    `</div>` +
+    `<div class="dial-scale num" aria-hidden="true"><span>${c.min}${key === 'doom' ? '%' : ''}</span><span>${c.max}${key === 'doom' ? '%' : ''}</span></div>` +
+    `<p class="dial-feedback" data-fb="${key}" aria-live="polite"></p>` +
+    `<p class="egg" data-egg="${key}"></p>`;
+  $$('[data-nudge]', host).forEach(b => b.addEventListener('click', () => setVal(key, S[key] + (+b.dataset.nudge) * c.step)));
+}
+function buildCompact(key) {
+  const c = SL[key], id = 'adj-' + key;
+  const d = document.createElement('div'); d.className = 'adj';
+  d.innerHTML = `<label for="${id}">${c.label}</label><span class="av num"><span data-val="${key}">${valText(key)}</span>${key === 'doom' ? '' : 'h ' + c.per}</span>` +
+    `<input type="range" id="${id}" data-key="${key}" min="${c.min}" max="${c.max}" step="${c.step}" value="${S[key]}"${key === 'doom' ? ' class="is-doom"' : ''}>`;
+  return d;
+}
+function setVal(key, v, src) {
+  const c = SL[key];
+  v = clamp(Math.round(v / c.step) * c.step, c.min, c.max);
+  v = Math.round(v * 100) / 100;
+  S[key] = v;
+  $$(`input[type=range][data-key="${key}"]`).forEach(r => { if (r !== src) r.value = v; paintRange(r); });
+  $$(`[data-val="${key}"]`).forEach(el => { el.textContent = valText(key); });
+  changed();
+}
+
+/* birthday selects */
+function daysIn(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function buildBday(host) {
+  const nowY = new Date().getFullYear();
+  const chev = '<svg><use href="#i-down"/></svg>';
+  const years = []; for (let y = nowY; y >= nowY - 100; y--) years.push(y);
+  host.innerHTML =
+    `<label class="select-wrap"><span class="sr">Birth month</span><select data-b="m">${MONTHS.map((n, i) => `<option value="${i}">${n}</option>`).join('')}</select>${chev}</label>` +
+    `<label class="select-wrap"><span class="sr">Birth day</span><select data-b="d"></select>${chev}</label>` +
+    `<label class="select-wrap"><span class="sr">Birth year</span><select data-b="y">${years.map(y => `<option value="${y}">${y}</option>`).join('')}</select>${chev}</label>`;
+  $$('select', host).forEach(s => s.addEventListener('change', () => readBday(host)));
+}
+function syncBday() {
+  $$('[data-bday]').forEach(host => {
+    const m = $('[data-b=m]', host), d = $('[data-b=d]', host), y = $('[data-b=y]', host);
+    const max = daysIn(S.bday.getFullYear(), S.bday.getMonth());
+    if (d.options.length !== max) d.innerHTML = Array.from({ length: max }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
+    m.value = S.bday.getMonth(); d.value = S.bday.getDate(); y.value = S.bday.getFullYear();
+  });
+}
+function readBday(host) {
+  const m = +$('[data-b=m]', host).value, y = +$('[data-b=y]', host).value;
+  let d = +$('[data-b=d]', host).value;
+  d = clamp(d || 1, 1, daysIn(y, m));
+  S.bday = new Date(y, m, d);
+  syncBday();
+  changed();
+}
+
+/* ================= quiz ================= */
+let step = 1;
+const TOTAL = 7;
+const nextBtn = $('#nextBtn'), noBtn = $('#noBtn');
+
+/* what the quiz knows so far: later answers count as zero */
+function partial(n) {
+  if (n <= 1) return null;
+  const ov = {};
+  if (n < 3) ov.sleep = 0;
+  if (n < 4) ov.work = 0;
+  if (n < 5) ov.tax = 0;
+  if (n < 6) ov.screen = 0;
+  if (n < 7) ov.doom = 0;
+  return ov;
+}
+
+function showStep(n, dir = 1) {
+  step = n;
+  $$('.q').forEach(q => {
+    const on = +q.dataset.step === n;
+    q.classList.toggle('on', on);
+    q.classList.toggle('from-left', on && dir < 0);
+  });
+  $$('#progress i').forEach((i, k) => i.classList.toggle('on', k < n));
+  $('#stepCount').textContent = `${n} of ${TOTAL}`;
+  nextBtn.textContent = n === 1 ? 'Yes' : n === TOTAL ? 'Run the numbers' : 'Next';
+  noBtn.hidden = n !== 1;
+  if (n !== 1) $('#eggHuman').textContent = '';
+  updateQuiz();
+  const r = $(`.q[data-step="${n}"] input[type=range]`);
+  if (r && window.matchMedia('(hover:hover) and (pointer:fine)').matches) r.focus({ preventScroll: true });
+}
+
+function eggFor(key) {
+  const v = S[key];
+  switch (key) {
+    case 'sleep':
+      if (v <= 4) return ['go to bed lol', 'warn'];
+      if (v <= 5.5) return ['you need more sleep.', 'warn'];
+      if (v >= 7 && v <= 9) return ['golden range', 'good'];
+      if (v >= 9.5 && v <= 10.5) return ["that's a lot of sleep...", ''];
+      if (v >= 11) return ['...', ''];
+      return ['', ''];
+    case 'work':
+      if (v === 0) return ['this is either really good or really bad lol', ''];
+      if (v >= 14) return ['DAMN.', 'warn'];
+      if (v >= 12) return ['damn.', ''];
+      return ['', ''];
+    case 'tax':
+      if (v >= 7) return ['how???', ''];
+      if (v >= 2 && v <= 4) return ['about the average', ''];
+      return ['', ''];
+    case 'screen':
+      if (v === 0) return ['lies.', 'warn'];
+      if (v >= 16) return ['bro.', 'warn'];
+      if (v <= 3) return ['very impressive', 'good'];
+      if (v >= 8 && v <= 10) return ['average for younger people', ''];
+      if (v >= 6 && v <= 7.5) return ['about the average', ''];
+      return ['', ''];
+    case 'doom':
+      if (v === 0) return ['LIES.', 'warn'];
+      if (v <= 25) return ['solid', 'good'];
+      if (v >= 80) return ["at least you're honest", 'warn'];
+      return ['', ''];
+  }
+  return ['', ''];
+}
+function generation(year) {
+  if (year >= 2013) return 'Generation Alpha';
+  if (year >= 1997) return 'Generation Z (best generation)';
+  if (year >= 1981) return 'Millennial';
+  if (year >= 1965) return 'Generation X';
+  if (year >= 1946) return 'Baby Boomer';
+  return 'Silent Generation';
+}
+
+function feedbackFor(key, c) {
+  const rem = c.rem, yr = hours => rem * hours / 24;
+  if (c.rem <= 0) return "You're past 75. By this math, every hour from here is a bonus.";
+  switch (key) {
+    case 'sleep': return `That's <b>${fmt(yr(S.sleep), 1)} years</b> of your remaining ${fmt(rem, 1)} spent asleep.`;
+    case 'work': return S.work === 0 ? 'Zero years at work or school.' : `${hrs(S.work * 5)} hours a week. That's <b>${fmt(yr(S.work * 5 / 7), 1)} years</b> at work or school.`;
+    case 'tax': return `That's <b>${fmt(yr(S.tax), 1)} years</b> of cooking, cleaning, commuting and showering.`;
+    case 'screen': return `${hrs(S.screen * 7)} hours a week. That's <b>${fmt(yr(S.screen), 1)} years</b> looking at a screen.`;
+    case 'doom': { const dh = S.screen * S.doom / 100; return `${hrs(Math.round(dh * 100) / 100)} hours a day. That's <b class="w">${fmt(yr(dh), 1)} years</b> of your life.`; }
+  }
+  return '';
+}
+
+function stackHTML(parts, total = LIFE) {
+  return parts.filter(p => p[1] > 0.0001).map(p => `<i style="width:${(p[1] / total * 100).toFixed(3)}%;background:${col(p[0])}" title="${CAT[p[0]].name}"></i>`).join('');
+}
+
+function updateQuiz() {
+  const full = compute();
+  // birthday
+  const now = new Date();
+  const future = S.bday > now;
+  if (step === 2) {
+    const a = full.cal;
+    if (future) {
+      $('#bdayOut').innerHTML = "That date hasn't happened yet lol. Try again.";
+      $('#bdayBar').style.width = '0%';
+      $('#eggAge').textContent = '';
+    } else {
+      const pct = clamp(full.age / LIFE * 100, 0, 100);
+      $('#bdayOut').innerHTML = `You're <b>${a.y} ${plural(a.y, 'year', 'years')}, ${a.m} ${plural(a.m, 'month', 'months')} and ${a.d} ${plural(a.d, 'day', 'days')}</b> old. ` +
+        (full.age >= LIFE ? "That's past 75. Every week from here is a bonus." : `That's ${fmt(full.weeksLived)} weeks lived, <b>${fmt(pct, 1)}%</b> of 75 years.`);
+      $('#bdayBar').style.width = pct + '%';
+      const e = $('#eggAge'); e.textContent = generation(S.bday.getFullYear()); e.className = 'egg';
+    }
+  }
+  nextBtn.disabled = step === 2 && future;
+
+  // dials
+  ['sleep', 'work', 'tax', 'screen', 'doom'].forEach(k => {
+    const fb = $(`[data-fb="${k}"]`); if (fb) fb.innerHTML = feedbackFor(k, full);
+    const eg = $(`[data-egg="${k}"]`); if (eg) { const [t, cls] = eggFor(k); eg.textContent = t; eg.className = 'egg' + (cls ? ' ' + cls : ''); }
+  });
+
+  // the live 75 year bar
+  const ov = partial(step);
+  const note = $('#lifebarNote'), stack = $('#lifebarStack');
+  if (!ov && step === 1) { stack.innerHTML = ''; note.textContent = '75 years'; return; }
+  const c = compute(ov || {});
+  const parts = [['lived', Math.min(LIFE, c.age)]];
+  if (step >= 3) parts.push(['sleep', c.y.sleep]);
+  if (step >= 4) parts.push(['work', c.y.work]);
+  if (step >= 5) parts.push(['tax', c.y.tax]);
+  if (step >= 6) parts.push(['screenOnly', c.y.screenOnly]);
+  if (step >= 7) { parts.push(['doom', c.y.doom]); parts.push(['free', c.y.free]); }
+  stack.innerHTML = stackHTML(parts);
+  if (future) note.textContent = '';
+  else if (step === 2) note.innerHTML = `<b>${fmt(c.rem, 1)}</b> years left`;
+  else if (step < 7) note.innerHTML = `<b>${fmt(c.y.free, 1)}</b> years unaccounted for`;
+  else note.innerHTML = `<b class="t">${fmt(c.y.free, 1)}</b> years actually free`;
+}
+
+function next() {
+  if (nextBtn.disabled) return;
+  if (step < TOTAL) showStep(step + 1, 1);
+  else runLoading();
+}
+function back() {
+  if (step > 1) showStep(step - 1, -1);
+  else show('intro');
+}
+
+/* ================= loading: your weeks fill in, in your real colors ================= */
+let loadRaf = 0;
+function fadeText(el, t) { el.style.opacity = '0'; setTimeout(() => { el.textContent = t; el.style.opacity = '1'; }, 180); }
+function runLoading() {
+  show('loading');
+  const c = compute();
+  const { cells, total, lived } = buildCells(c, 52);
+  const left = total - lived, cols = 52, rows = LIFE;
+  const cv = $('#loadGrid'), txt = $('#loadingText'), cnt = $('#loadingCount');
+  const cell = Math.max(3, Math.min(Math.min(window.innerWidth * 0.8, 340) / cols, (window.innerHeight * 0.52) / rows));
+  const W = cols * cell, H = rows * cell, dpr = Math.min(3, window.devicePixelRatio || 1);
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const sz = cell - Math.max(1, cell * .22);
+  const draw = (pA, pB) => {
+    x.clearRect(0, 0, W, H);
+    const nL = Math.round(lived * pA), nR = Math.round(left * pB);
+    for (let i = 0; i < total; i++) {
+      let f = PAL.empty;
+      if (i < lived) { if (i < nL) f = PAL.lived; }
+      else if (i - lived < nR) f = PAL[cells[i]];
+      x.fillStyle = f;
+      x.fillRect((i % cols) * cell, Math.floor(i / cols) * cell, sz, sz);
+    }
+  };
+  txt.style.opacity = '1';
+  txt.textContent = 'Counting your weeks...';
+  cancelAnimationFrame(loadRaf);
+  if (RM) {
+    draw(1, 1);
+    cnt.textContent = `${fmt(lived)} weeks lived. ${fmt(left)} to go.`;
+    setTimeout(() => { if (view === 'loading') showResults({ record: true }); }, 900);
+    return;
+  }
+  const D1 = 1000, D2 = 1400, HOLD = 420;
+  const easeInOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  let t0 = null, phase = 1;
+  const frame = ts => {
+    if (view !== 'loading') return;
+    if (t0 === null) t0 = ts;
+    const t = ts - t0;
+    const pA = easeOut(clamp(t / D1, 0, 1)), pB = easeInOut(clamp((t - D1) / D2, 0, 1));
+    draw(pA, pB);
+    if (t < D1) cnt.textContent = `${fmt(lived * pA)} weeks lived`;
+    else {
+      if (phase === 1) { phase = 2; fadeText(txt, "Now let's see where the rest go..."); }
+      cnt.textContent = `${fmt(left * pB)} weeks to go`;
+    }
+    if (t < D1 + D2 + HOLD) loadRaf = requestAnimationFrame(frame);
+    else showResults({ record: true });
+  };
+  loadRaf = requestAnimationFrame(frame);
+}
+
+/* ================= results ================= */
+let C = null, gridMode = 'weeks', gridRevealed = false, gridAnimating = false;
+
+function showResults(opts = {}) {
+  // fresh reveal every time you finish the quiz
+  $$('#v-results [data-counted]').forEach(el => { delete el.dataset.counted; delete el.dataset.running; });
+  $$('#v-results .reveal').forEach(el => el.classList.remove('in'));
+  gridRevealed = false; setMore(false);
+  $('#nowDot').classList.remove('show', 'ping'); $('#nowTag').classList.remove('show');
+  show('results');
+  $('#sharedBanner').hidden = !opts.shared;
+  renderAll();
+  renderKeep(opts);
+  if (opts.record && persist) save(true);
+  countUp($('#heroDoom'), 1500, 350);
+  ['#hHours', '#hDays', '#hMonths'].forEach(s => countUp($(s), 1200, 600));
+  observeReveals();
+  startTicker();
+}
+
+function renderAll() {
+  C = compute();
+  renderHero(); renderSummary(); renderLegend(); drawGrid(gridRevealed ? 1 : 0);
+  renderClock(); renderWhere(); renderCost(); renderDistance(); renderInsights(); renderInstead(); renderPlan(); renderPoster();
+}
+let rq = 0;
+function changed() {
+  if (view === 'quiz') updateQuiz();
+  if (view === 'results') { cancelAnimationFrame(rq); rq = requestAnimationFrame(renderAll); saveSoon(); }
+}
+
+function renderHero() {
+  const c = C;
+  const note = $('#heroNote');
+  setNum($('#heroDoom'), c.y.doom, 1);
+  setNum($('#hHours'), c.doomLife);
+  setNum($('#hDays'), c.doomLife / 24);
+  setNum($('#hMonths'), c.y.doom * 12);
+  if (c.rem <= 0) {
+    $('#heroPre').textContent = "Okay, so...";
+    $('#heroLine').innerHTML = "You've made it past 75.";
+    $('#heroStats').hidden = true;
+    note.hidden = false; note.textContent = 'By this math, every week from here is extra. Use it on stuff you actually care about.';
+  } else if (c.h.doom === 0) {
+    $('#heroStats').hidden = true;
+    note.hidden = false; note.textContent = "Either you're a monk or you lied on question 7 lol.";
+  } else {
+    $('#heroStats').hidden = false; note.hidden = true;
+  }
+}
+
+function renderSummary() {
+  const c = C, y = c.y;
+  const line = $('#summaryLine'), kick = $('#summaryKicker');
+  if (c.rem <= 0) { line.innerHTML = 'You beat the average. Everything from here is extra.'; kick.textContent = ''; return; }
+  line.innerHTML = y.free < 0.05
+    ? `You have <span class="num">${fmt(c.rem, 1)}</span> years left. <span class="dim">Basically none of them are free, and you're on track to spend</span> <span class="w num">${fmt(y.doom, 1)}</span> <span class="dim">scrolling.</span>`
+    : `You have <span class="num">${fmt(c.rem, 1)}</span> years left. <span class="dim">Only</span> <span class="t num">${fmt(y.free, 1)}</span> <span class="dim">of them are actually free, and you're on track to spend</span> <span class="w num">${fmt(y.doom, 1)}</span> <span class="dim">scrolling.</span>`;
+  let k;
+  if (y.free < 0.05) k = 'This basically leaves you with zero free time.';
+  else if (c.h.doom === 0) k = "Zero doomscrolling? Respect. (if that's true lol)";
+  else if (y.doom > y.free) k = "That's more time scrolling than free time. Which is kinda insane when you think about it.";
+  else if (y.doom > y.free * 0.5) k = `Your scrolling adds up to ${fmt(y.doom / y.free * 100)}% of your free time. That's a lot of life to give to an app.`;
+  else k = "Not the worst! But that's still years of your life.";
+  kick.textContent = k;
+}
+
+/* ---------- the grid ---------- */
+const gridBox = $('#gridBox'), gridCv = $('#lifeGrid'), nowDot = $('#nowDot'), nowTag = $('#nowTag'), tip = $('#gridTip');
+let geo = null;
+
+function gridLayout(mode, width) {
+  if (mode === 'weeks') { const ypr = width >= 700 ? 2 : 1; return { perYear: 52, cols: 52 * ypr, ypr }; }
+  if (mode === 'months') { const ypr = width >= 700 ? 5 : 2; return { perYear: 12, cols: 12 * ypr, ypr }; }
+  return { perYear: 1, cols: 10, ypr: 10 };
+}
+
+function drawGrid(progress) {
+  if (!C || view !== 'results') return;
+  const w = gridBox.clientWidth; if (!w) return;
+  const L = gridLayout(gridMode, w);
+  const { cells, total, lived, nowIdx } = buildCells(C, L.perYear);
+  const gutter = 30;
+  const gridW = gridMode === 'years' ? Math.min(w, 520) - gutter : w - gutter;
+  const cell = gridW / L.cols;
+  const rows = Math.ceil(total / L.cols);
+  const H = Math.ceil(rows * cell);
+  const cssW = gridMode === 'years' ? Math.min(w, 520) : w;
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+  gridBox.classList.toggle('is-years', gridMode === 'years');
+  gridCv.style.width = cssW + 'px'; gridCv.style.height = H + 'px';
+  gridCv.width = Math.round(cssW * dpr); gridCv.height = Math.round(H * dpr);
+  const x = gridCv.getContext('2d');
+  x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  x.clearRect(0, 0, cssW, H);
+  const gap = gridMode === 'years' ? Math.max(3, cell * .12) : Math.max(1, cell * .2);
+  const sz = cell - gap;
+  const rad = gridMode === 'years' ? 4 : gridMode === 'months' ? 2 : 0;
+
+  // reveal: lived fills first, then the rest of your life
+  const p1 = clamp(progress / .38, 0, 1), p2 = clamp((progress - .38) / .62, 0, 1);
+  const shownLived = Math.round(lived * easeOut(p1));
+  const shownRest = Math.round((total - lived) * easeOut(p2));
+  for (let i = 0; i < total; i++) {
+    const cat = cells[i];
+    let f = PALB.empty;
+    if (i < lived) { if (i < shownLived) f = PALB.lived; }
+    else if (i - lived < shownRest) f = cat === 'now' ? PALB.empty : PALB[cat];
+    x.fillStyle = f;
+    const cx = gutter + (i % L.cols) * cell, cy = Math.floor(i / L.cols) * cell;
+    if (rad && x.roundRect) { x.beginPath(); x.roundRect(cx, cy, sz, sz, rad); x.fill(); }
+    else x.fillRect(cx, cy, sz, sz);
+  }
+  // age labels in the gutter, every 10 years
+  x.fillStyle = PALB.mid; x.font = '11px Arial, "Helvetica Neue", Helvetica, sans-serif'; x.textAlign = 'right'; x.textBaseline = 'middle';
+  for (let r = 0; r < rows; r++) {
+    const age = r * L.ypr;
+    if (age % 10 === 0) x.fillText(String(age), gutter - 8, Math.max(7, r * cell + sz / 2));
+  }
+  const offX = Math.max(0, (w - cssW) / 2) * (gridMode === 'years' ? 1 : 0);
+  geo = { L, cells, total, lived, nowIdx, gutter, cell, sz, cssW, H };
+
+  // this week
+  if (nowIdx >= 0) {
+    const nx = offX + gutter + (nowIdx % L.cols) * cell, ny = Math.floor(nowIdx / L.cols) * cell;
+    Object.assign(nowDot.style, { left: nx + 'px', top: ny + 'px', width: sz + 'px', height: sz + 'px', borderRadius: (rad || 1) + 'px' });
+    const tagRight = nx < offX + cssW * .62;
+    nowTag.style.top = (ny + sz / 2 - 12) + 'px';
+    nowTag.style.left = tagRight ? (nx + sz + 10) + 'px' : 'auto';
+    nowTag.style.right = tagRight ? 'auto' : (gridBox.clientWidth - nx + 10) + 'px';
+    const on = progress >= 1;
+    nowDot.classList.toggle('show', on); nowTag.classList.toggle('show', on);
+  } else { nowDot.classList.remove('show'); nowTag.classList.remove('show'); }
+
+  const unit = gridMode === 'weeks' ? 'week' : gridMode === 'months' ? 'month' : 'year';
+  const rowTxt = gridMode === 'years' ? 'Each row is a decade.' : L.ypr === 1 ? 'Each row is one year.' : `Each row is ${L.ypr} years.`;
+  $('#gridCaption').textContent = `Each square is one ${unit}. ${rowTxt} Hover or tap a square.`;
+  $('#gridTitle').textContent = `Your life in ${unit}s`;
+  const nowName = $('#legend [data-k=now]'); if (nowName) nowName.textContent = `This ${unit}`;
+  $('#gridFoot').innerHTML = C.rem > 0
+    ? `Future squares are grouped by where the time goes, drawn to scale. Doomscrolling, all added up, fills the end.`
+    : `You've lived past the grid. Every square from here is a bonus.`;
+}
+
+function revealGrid() {
+  if (gridRevealed || gridAnimating) return;
+  if (RM) { gridRevealed = true; drawGrid(1); return; }
+  gridAnimating = true;
+  const D = 2600; let t0 = null;
+  const stepF = ts => {
+    if (t0 === null) t0 = ts;
+    const p = clamp((ts - t0) / D, 0, 1);
+    drawGrid(p);
+    if (p < 1) requestAnimationFrame(stepF);
+    else { gridAnimating = false; gridRevealed = true; nowDot.classList.add('ping'); }
+  };
+  requestAnimationFrame(stepF);
+}
+
+function renderLegend() {
+  const c = C, y = c.y;
+  const items = [
+    ['lived', `${fmt(c.age, 1)} years`],
+    ['now', 'you are here'],
+    ['sleep', `${fmt(y.sleep, 1)} years`],
+    ['work', `${fmt(y.work, 1)} years`],
+    ['tax', `${fmt(y.tax, 1)} years`],
+    ['screenOnly', `${fmt(y.screenOnly, 1)} years`],
+    ['free', `${fmt(y.free, 1)} years`],
+    ['doom', `${fmt(y.doom, 1)} years`]
+  ];
+  const unit = gridMode === 'weeks' ? 'week' : gridMode === 'months' ? 'month' : 'year';
+  $('#legend').innerHTML = items.map(([k, v]) => `<li><span class="sw" style="background:${col(k)}"></span><span data-k="${k}">${k === 'now' ? 'This ' + unit : CAT[k].name}</span><span class="lv num">${v}</span></li>`).join('');
+}
+
+// tooltip
+function tipAt(ev) {
+  if (!geo) return;
+  const r = gridCv.getBoundingClientRect();
+  const px = ev.clientX - r.left, py = ev.clientY - r.top;
+  const col = Math.floor((px - geo.gutter) / geo.cell), row = Math.floor(py / geo.cell);
+  const i = row * geo.L.cols + col;
+  if (col < 0 || col >= geo.L.cols || row < 0 || i >= geo.total) { tip.classList.remove('show'); return; }
+  const per = geo.L.perYear, age = Math.floor(i / per), within = i % per + 1;
+  const where = per === 52 ? `Age ${age}, week ${within}` : per === 12 ? `Age ${age}, ${MONTHS[within - 1]}` : `Age ${age}`;
+  const cat = geo.cells[i];
+  tip.innerHTML = `${where}<br><span>${cat === 'now' ? 'This one. Right now.' : CAT[cat].name}</span>`;
+  tip.classList.add('show');
+  const br = gridBox.getBoundingClientRect(), bx = ev.clientX - br.left, by = ev.clientY - br.top;
+  const bw = gridBox.clientWidth;
+  let tx = bx + 14, ty = by + 14;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  if (tx + tw > bw) tx = bx - tw - 14;
+  if (ty + th > geo.H) ty = by - th - 14;
+  tip.style.left = Math.max(0, tx) + 'px'; tip.style.top = Math.max(0, ty) + 'px';
+}
+gridCv.addEventListener('pointermove', tipAt);
+gridCv.addEventListener('pointerdown', tipAt);
+gridCv.addEventListener('pointerleave', () => tip.classList.remove('show'));
+
+$$('.seg button').forEach(b => b.addEventListener('click', () => {
+  gridMode = b.dataset.mode;
+  $$('.seg button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  tip.classList.remove('show');
+  drawGrid(gridRevealed ? 1 : 0);
+  if (!gridRevealed) revealGrid();
+}));
+if ('ResizeObserver' in window) new ResizeObserver(() => { if (!gridAnimating) drawGrid(gridRevealed ? 1 : 0); }).observe(gridBox);
+
+/* ---------- live seconds ---------- */
+let tickRaf = 0, lastTick = 0;
+function startTicker() {
+  cancelAnimationFrame(tickRaf);
+  const el = $('#secondsLeft');
+  const tick = ts => {
+    if (view !== 'results') return;
+    if (ts - lastTick > 90) {
+      lastTick = ts;
+      const s = Math.max(0, (addYears(S.bday, LIFE) - Date.now()) / 1000);   // from the clock, so it never drifts
+      el.textContent = NF[1].format(Math.floor(s * 10) / 10);
+    }
+    tickRaf = requestAnimationFrame(tick);
+  };
+  tickRaf = requestAnimationFrame(tick);
+}
+function stopTicker() { cancelAnimationFrame(tickRaf); }
+
+function renderClock() {
+  const c = C;
+  setNum($('#lYears'), c.rem, 1);
+  setNum($('#lMonths'), c.rem * 12);
+  setNum($('#lWeeks'), Math.floor(c.secsLeft / 604800));
+  setNum($('#lDays'), Math.floor(c.secsLeft / 86400));
+  setNum($('#lHours'), Math.floor(c.secsLeft / 3600));
+}
+
+/* ---------- where your years go ---------- */
+function renderWhere() {
+  const c = C, y = c.y, h = c.h, P = c.P;
+  const lived = Math.min(LIFE, c.age);
+  $('#scaleStack').innerHTML = stackHTML([['lived', lived], ['sleep', y.sleep], ['work', y.work], ['tax', y.tax], ['screenOnly', y.screenOnly], ['free', y.free], ['doom', y.doom]]);
+  const you = $('#scaleYou');
+  you.textContent = `you, ${c.cal.y}`;
+  you.style.left = clamp(lived / LIFE * 100, 4, 96) + '%';
+
+  const workSub = P.work === 0 ? 'None' : `${hrs(P.work)}h a day, 5 days a week` + (c.overlap > 0 && h.work < P.work * 5 / 7 - .005 ? `, minus overlap` : '');
+  const taxSub = `${hrs(P.tax)}h a day` + (c.overlap > 0 && h.tax < P.tax - .005 ? ', minus overlap' : '');
+  const rows = [
+    ['lived', 'Life lived', `${c.cal.y} years so far`, lived],
+    ['sleep', 'Sleep', `${hrs(P.sleep)}h a night`, y.sleep],
+    ['work', 'Work or school', workSub, y.work],
+    ['tax', 'Life tax', taxSub, y.tax],
+    ['screenOnly', 'Screens, the useful part', `${hrs(Math.round(h.screenOnly * 100) / 100)}h a day`, y.screenOnly],
+    ['doom', 'Doomscrolling', `${hrs(Math.round(h.doom * 100) / 100)}h a day, ${P.doom}% of your screen time`, y.doom],
+    ['free', 'Truly free', `${hrs(Math.round(h.free * 100) / 100)}h a day. What's left for everything else.`, y.free]
+  ];
+  $('#wrows').innerHTML = rows.map(([k, name, sub, val]) =>
+    `<div class="wrow${k === 'free' ? ' is-free' : k === 'doom' ? ' is-doom' : ''}">` +
+      `<div class="wrow-top"><span class="sw" style="background:${col(k)}"></span><span class="wl">${name}</span><span class="ws">${sub}</span><span class="wv num">${fmt(val, 1)}<small>yrs</small></span></div>` +
+      `<div class="wbar"><i style="width:${(val / LIFE * 100).toFixed(2)}%;background:${col(k)}"></i></div>` +
+    `</div>`).join('');
+
+  const pctRem = v => c.rem > 0 ? fmt(v / c.rem * 100) : '0';
+  const pctWake = v => fmt(v / c.waking * 100);
+  let html = `<p class="glass">All together, you'll spend <b>${fmt(y.screen, 1)} years</b> looking at a screen. That's ${pctRem(y.screen)}% of the life you have left and <b>${pctWake(h.screen)}% of the time you're awake</b>. Doomscrolling alone is <b class="w">${pctWake(h.doom)}%</b>.</p>`;
+  if (c.overlap > 0.001) {
+    html += `<p class="glass">Your answers add up to <b>${hrs(Math.round(c.raw * 10) / 10)} hours a day</b>, which is more than a day has lol. So I counted <b>${hrs(Math.round(c.overlap * 10) / 10)} hours</b> of your screen time as happening during work, school or life tax.` +
+      (c.squeezed ? " Even then it didn't fit, so I cut screen time down to what a day can hold." : '') + `</p>`;
+  }
+  $('#callouts').innerHTML = html;
+}
+
+/* ---------- things you could do instead ---------- */
+function renderInstead() {
+  const H = C.doomLife;
+  $('#insteadSub').innerHTML = H > 0
+    ? `At this rate you'll doomscroll <b class="num">${fmt(C.doomYear)} hours</b> every year, and <b class="num">${fmt(H)} hours</b> over your life. Here's what you could do with that instead.`
+    : `You said zero doomscrolling, so here's what an hour a day would cost you instead.`;
+  const base = H > 0 ? H : YEAR_DAYS * C.rem;
+  const list = [
+    [base / 200, 'close friends made', 'About 200 hours to go from stranger to close friend'],
+    [base / 600, 'languages learned', 'About 600 hours to get fluent in an easier one, like Spanish'],
+    [base / 8, 'books read', 'At about 8 hours per book'],
+    [base / 300, 'books written', 'About 300 focused hours per book'],
+    [base / 500, 'instruments learned', 'About 500 hours to play one well'],
+    [base, 'workouts', 'At about 1 hour each'],
+    [base / 4, 'deep work sessions', '4 hour focus blocks'],
+    [base / 10000, 'high level skills mastered', 'The 10,000 hour rule'],
+    [base / 930, 'walks across America', 'About 2,800 miles at 3 mph is roughly 930 hours'],
+    [base / 224, 'countries properly explored', 'Two weeks each, counting waking hours only'],
+  ];
+  $('#cards').innerHTML = list.map(([n, l, note]) =>
+    `<div class="glass card"><b class="num">${fmtSmart(n)}</b><span class="cl">${l}</span><span class="cn">${note}</span></div>`).join('') +
+    `<div class="glass card wide"><b class="num">${fmt(base)}</b><span class="cl">hours toward literally anything else</span><span class="cn">Towards something, anything, more meaningful and useful.</span></div>`;
+}
+
+/* ---------- keep: saved in this browser, share link ---------- */
+const STORE_KEY = 'lifeAudit.v2';
+const DEFAULT_S = Object.assign({}, S, { bday: new Date(S.bday.getTime()) });
+const PLAN = { target: null, done: {} };
+let persist = true, saveT = 0;
+const store = {
+  read() { try { const v = localStorage.getItem(STORE_KEY); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+  write(o) { try { localStorage.setItem(STORE_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } },
+  clear() { try { localStorage.removeItem(STORE_KEY); } catch (e) { /* storage blocked, nothing to clear */ } }
+};
+let saved = store.read();
+const pad2 = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+function parseYmd(v) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+const fmtDate = t => new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const r1 = v => Math.round(v * 10) / 10;
+
+function save(finished) {
+  if (!persist) return;
+  const o = saved || {};
+  o.answers = { bday: ymd(S.bday), sleep: S.sleep, work: S.work, tax: S.tax, screen: S.screen, doom: S.doom };
+  o.plan = { target: PLAN.target, done: Object.assign({}, PLAN.done) };
+  if (C) o.last = { at: finished || !o.last ? Date.now() : o.last.at, doomY: Math.round(C.y.doom * 100) / 100 };
+  delete o.history;
+  saved = o;
+  store.write(o);
+}
+function saveSoon() { if (!persist) return; clearTimeout(saveT); saveT = setTimeout(() => save(false), 400); }
+function applyAnswers(a) {
+  const b = parseYmd(a.bday); if (b) S.bday = b;
+  ['sleep', 'work', 'tax', 'screen', 'doom'].forEach(k => { const v = +a[k]; if (isFinite(v)) S[k] = clamp(v, SL[k].min, SL[k].max); });
+  syncBday();
+  ['sleep', 'work', 'tax', 'screen', 'doom'].forEach(k => setVal(k, S[k]));
+}
+function applyPlan(pl) {
+  PLAN.target = pl && pl.target !== null && pl.target !== undefined && isFinite(pl.target) ? +pl.target : null;
+  PLAN.done = {};
+  if (pl && pl.done && typeof pl.done === 'object') for (const k in pl.done) PLAN.done[k] = !!pl.done[k];
+}
+function resetAll() { applyAnswers(Object.assign({}, DEFAULT_S, { bday: ymd(DEFAULT_S.bday) })); applyPlan(null); }
+function loadOwn() { if (saved && saved.answers) { applyAnswers(saved.answers); applyPlan(saved.plan); } else resetAll(); }
+
+function refreshWelcome() {
+  const last = saved && (saved.last || (saved.history && saved.history[saved.history.length - 1]));
+  const has = !!(saved && saved.answers && last);
+  $('#welcome').hidden = !has;
+  $('#startBtn').textContent = has ? 'Retake the audit' : 'Start the audit';
+  if (has) $('#welcomeText').textContent = `Last time (${fmtDate(last.at)}) you were on track to lose ${fmt(last.doomY, 1)} years to doomscrolling.`;
+}
+function renderKeep(opts = {}) {
+  const t = $('#keepText');
+  if (opts.shared) t.textContent = "These are someone else's results, so nothing here gets saved.";
+  else if (!persist) t.textContent = 'Nothing from this audit is saved.';
+  else t.textContent = "Your answers and your list are saved in this browser (only this browser). Come back in a month, retake it, and see if that number went down.";
+  $('#forgetBtn').hidden = !persist;
+}
+function shareURL() {
+  const b = S.bday;
+  const parts = [`${b.getFullYear()}-${pad2(b.getMonth() + 1)}`, S.sleep, S.work, S.tax, S.screen, S.doom, planTarget()];
+  return location.href.split('#')[0] + '#r=' + parts.join(',');
+}
+function parseShare(v) {
+  const p = v.split(',');
+  const m = /^(\d{4})-(\d{2})$/.exec(p[0] || ''); if (!m) return null;
+  const nums = p.slice(1, 7).map(Number);
+  if (nums.length < 5 || nums.slice(0, 5).some(n => !isFinite(n))) return null;
+  const [sleep, work, tax, screen, doom, target] = nums;
+  return { answers: { bday: `${m[1]}-${m[2]}-15`, sleep, work, tax, screen, doom }, plan: { target: isFinite(target) ? target : null } };
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch (e) { /* fall through to the old way */ }
+  try {
+    const ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok;
+  } catch (e) { return false; }
+}
+
+/* ---------- what stands out ---------- */
+function insightsFor(c) {
+  const P = c.P, h = c.h, out = [];
+  const doomRaw = P.screen * P.doom / 100;
+  const add = (p, tone, title, body) => out.push({ p, tone, title, body });
+  if (c.rem <= 0) return [{ tone: 'good', title: 'Every week is extra now', body: 'You beat the average.' }];
+  if (P.sleep < 6) add(100, 'warn', 'You need more sleep', `${hrs(P.sleep)} hours a night isn't enough. Before any focus hack, sleep right, eat right and move. If you don't have those down, you're running at like 30% of what you're capable of.`);
+  else if (P.sleep < 7) add(80, 'warn', "You're a little short on sleep", `${hrs(P.sleep)} hours is under the 7+ most adults need. If you scroll in bed, charge your phone outside your room.`);
+  else if (P.sleep >= 10.5) add(45, '', "That's a lot of sleep", `${hrs(P.sleep)} hours a night. If you're still tired after that, it might be worth talking to a doctor.`);
+  if (c.overlap > 0.05) add(75, 'warn', "Your hours don't fit in a day", `Your answers add up to ${hrs(r1(c.raw))} hours a day. Usually that means you're on your phone during work or school. Which costs you time AND focus.`);
+  if (doomRaw >= 1 && P.doom >= 50) add(90, 'warn', P.doom > 50 ? 'Most of your screen time is doomscrolling' : 'Half your screen time is doomscrolling', "That's the easiest time to take back.");
+  if (doomRaw >= 1 && h.doom > h.free) add(85, 'warn', 'Your phone is taking up your free time', (h.free < 0.05 ? `You scroll ${hrs(r1(doomRaw))} hours a day and have basically no free time left.` : `You scroll ${hrs(r1(doomRaw))} hours a day and only have ${hrs(r1(h.free))} hours of actual free time.`) + " That's what the plan below is for.");
+  else if (h.free < 1.5 && c.overlap <= 0.05) add(70, '', "You don't have much free time", `About ${hrs(r1(h.free))} hours a day is actually yours. Don't try to add 5 new habits. Swap 20 minutes of scrolling for one thing and do it every day.`);
+  if (P.work * 5 >= 50) add(60, '', `${hrs(P.work * 5)} hours a week at work or school`, "That's a lot. It makes the hours you do have left way more valuable. And if it's work you don't care about, it drains you way more than the hours say.");
+  if (P.screen >= 8) add(50, '', `${hrs(P.screen)} hours a day on screens`, `That's ${fmt(P.screen / (24 - P.sleep) * 100)}% of the time you're awake. Set an actual limit in your phone settings. Promising yourself you'll use it less doesn't really work.`);
+  if (P.tax >= 4) add(40, '', 'Your life tax is high', `${hrs(P.tax)} hours a day on chores and commuting. Batch what you can, like cooking once for a few days, and turn the commute into audiobook or podcast time.`);
+  if (doomRaw < 1 && P.screen > 0) add(35, 'good', 'Your scrolling is under control', "Less than an hour a day. Most people are way above that. Keep those apps off your home screen and keep it that way.");
+  if (h.free >= 4) add(20, 'good', 'You actually have free time', `${hrs(r1(h.free))} hours a day is yours.`);
+  if (P.sleep >= 7 && P.sleep <= 9) add(10, 'good', 'Your sleep is solid', `${hrs(P.sleep)} hours a night. Good! Keep it that way.`);
+  return out.sort((a, b) => b.p - a.p).slice(0, 3);
+}
+function renderInsights() {
+  $('#insights').innerHTML = insightsFor(C).map(i =>
+    `<div class="glass insight${i.tone ? ' is-' + i.tone : ''}"><span class="dot"></span><div><b>${i.title}</b><p>${i.body}</p></div></div>`).join('');
+}
+
+/* ---------- the plan ---------- */
+function defaultTarget() {
+  const doomRaw = S.screen * S.doom / 100;
+  const cut = Math.max(0.5, Math.round(doomRaw) / 2);
+  return clamp(Math.round((S.screen - cut) * 2) / 2, 0, S.screen);
+}
+function planTarget() { return PLAN.target === null ? defaultTarget() : clamp(PLAN.target, 0, S.screen); }
+function planCalc(c) {
+  const target = planTarget();
+  const cut = Math.min(Math.max(0, c.P.screen - target), c.h.screen);   // hours a day back
+  const doomCut = Math.min(cut, c.h.doom), usefulCut = cut - doomCut;  // doomscrolling goes first
+  return { target, cut, doomCut, usefulCut, yearsBack: c.rem * cut / 24 };
+}
+
+function weekList(pl) {
+  const has = pl.cut > 0;
+  return [
+    ['memento', 'Try Memento', 'Shameless plug, I know lol. But it\'s literally built for this. <a href="https://mementoapp.co" target="_blank" rel="noopener">mementoapp.co</a>'],
+    ['delete', 'Delete the app you scroll the most', 'Just for 7 days. You can always download it again. See how the week feels without it.'],
+    ['limit', has ? `Set your screen time limit to ${hrs(pl.target)} hours` : 'Set a daily screen time limit', 'iPhone: Settings, Screen Time, App Limits. Android: Settings, Digital Wellbeing, App timers.'],
+    ['room', 'Put your phone in another room', "Whenever you're doing something that matters. If it's right next to you, you're gonna grab it."],
+    ['bed', 'Charge it outside your bedroom', "Then you can't scroll in bed, and your phone won't be the first thing you grab in the morning."],
+    ['book', 'Pick up a good book', 'Start with something simple or even an audiobook.'],
+    ['move', 'Move your body', 'Gym, run, walk, whatever.']
+  ];
+}
+
+function renderPlan() {
+  const c = C, P = c.P, pl = planCalc(c);
+  const doomRaw = P.screen * P.doom / 100;
+  const tr = $('#targetRange');
+  tr.max = Math.max(0.5, P.screen); tr.disabled = P.screen <= 0; tr.value = pl.target; paintRange(tr);
+  $('#targetVal').textContent = `${hrs(pl.target)} ${pl.target === 1 ? 'hour' : 'hours'} a day`;
+  $('#targetNow').textContent = P.screen > 0
+    ? `Right now you're at ${hrs(P.screen)} hours a day, and ${hrs(r1(doomRaw))} of that is doomscrolling.`
+    : 'You said zero screen time. Respect. Skip to step 2.';
+  setNum($('#gYears'), pl.yearsBack, 1); setNum($('#gMonths'), pl.yearsBack * 12); setNum($('#gWeeks'), pl.yearsBack * YEAR_DAYS / 7);
+  $('#gLine').innerHTML = pl.cut <= 0
+    ? `Drag it down. Even 30 minutes a day is <b>${fmt(c.rem * 0.5 / 24, 1)} years</b> over your life.`
+    : `That's <b>${hrs(r1(pl.cut * 7))} hours a week</b> and <b>${fmt(pl.cut * YEAR_DAYS)} hours a year</b> back.` +
+      (pl.usefulCut > 0.01 ? ` Below ${hrs(r1(P.screen - doomRaw))} hours you're cutting into useful screen time too. Which is fine if you're serious.` : '') +
+      (c.overlap > 0.05 ? ' Some of it overlaps work or school, so part of it comes back as focus.' : '');
+
+  // your week, now vs with the plan (168 hours)
+  const h = c.h, W7 = v => Math.max(0, v) * 7;
+  const now = [['sleep', W7(h.sleep)], ['work', W7(h.work)], ['tax', W7(h.tax)], ['screenOnly', W7(h.screenOnly)], ['doom', W7(h.doom)], ['free', W7(h.free)]];
+  const plan = [['sleep', W7(h.sleep)], ['work', W7(h.work)], ['tax', W7(h.tax)], ['screenOnly', W7(h.screenOnly - pl.usefulCut)], ['doom', W7(h.doom - pl.doomCut)], ['gain', W7(pl.cut)], ['free', W7(h.free)]];
+  $('#wkNow').innerHTML = stackHTML(now, 168);
+  $('#wkPlan').innerHTML = stackHTML(plan, 168);
+  const leg = [['sleep', now[0][1]], ['work', now[1][1]], ['tax', now[2][1]], ['screenOnly', plan[3][1]], ['doom', plan[4][1]], ['gain', plan[5][1]], ['free', now[5][1]]];
+  $('#wkLegend').innerHTML = leg.map(([k, v]) => `<li><span class="sw" style="background:${col(k)}"></span><span>${CAT[k].name}</span><span class="lv num">${hrs(r1(v))}h a week${k === 'doom' || k === 'screenOnly' ? ' with the plan' : ''}</span></li>`).join('');
+  $('#wkLine').innerHTML = pl.cut > 0
+    ? `Right now that's <b>${hrs(r1(W7(h.doom)))} hours</b> a week of doomscrolling. With the plan it's <b>${hrs(r1(W7(h.doom - pl.doomCut)))}</b>, and you get <b class="t">${hrs(r1(W7(pl.cut)))} hours</b> a week back for your goal.`
+    : 'Set a target in step 1 to see the difference.';
+
+  // things to do this week
+  $('#steps').innerHTML = weekList(pl).map(([id, t, d]) =>
+    `<li><label><input type="checkbox" data-step-id="${id}"${PLAN.done[id] ? ' checked' : ''}><span><b>${t}</b><span class="st">${d}</span></span></label></li>`).join('');
+}
+
+const targetRange = $('#targetRange');
+targetRange.addEventListener('input', () => { PLAN.target = +targetRange.value; if (C) { renderPlan(); renderPoster(); } saveSoon(); });
+$('#steps').addEventListener('change', e => { const id = e.target.dataset.stepId; if (!id) return; PLAN.done[id] = e.target.checked; saveSoon(); });
+const canShare = !!(navigator.share && window.matchMedia && matchMedia('(pointer:coarse)').matches);
+if (canShare) $('#copyLinkBtn').textContent = 'Share a link to these results';
+$('#copyLinkBtn').addEventListener('click', async () => {
+  const url = shareURL(), field = $('#linkField');
+  if (canShare) {
+    try { await navigator.share({ title: 'My Life Audit', url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  if (await copyText(url)) { field.hidden = true; toast('Link copied! Your answers are inside the link itself (birth month and year only, never the day).'); return; }
+  field.value = url; field.hidden = false; field.focus(); field.select();
+  toast("Couldn't copy it here. The link is in the box below.");
+});
+$('#forgetBtn').addEventListener('click', () => {
+  store.clear(); saved = null; persist = false; renderKeep(); refreshWelcome();
+  toast('Done. Your results are gone from this browser.');
+});
+
+/* ---------- what your time is worth ---------- */
+const rateRange = $('#rateRange'), rateInput = $('#rateInput');
+let rate = 30;
+function renderCost() {
+  paintRange(rateRange);
+  setNum($('#costYear'), C.doomYear * rate, 0, '$');
+  setNum($('#costLife'), C.doomLife * rate, 0, '$');
+}
+rateRange.addEventListener('input', () => { rate = +rateRange.value; rateInput.value = rate; if (C) renderCost(); });
+rateInput.addEventListener('input', () => { const v = parseFloat(rateInput.value); if (!isNaN(v) && v >= 0) { rate = Math.min(v, 10000); rateRange.value = clamp(rate, 5, 150); if (C) renderCost(); } });
+
+/* ---------- scrolling distance (Malik's original math) ---------- */
+function renderDistance() {
+  const H = C.doomLife, dh = C.h.doom;
+  const FT_PER_HR = 120, SWIPES_PER_HR = 720, BURJ = 2717, EVEREST_FT = 29032, MARATHON = 26.2;
+  const feet = H * FT_PER_HR, miles = feet / 5280, swipes = H * SWIPES_PER_HR;
+  /* no pointless decimals: whole numbers from 100 up, one decimal below that, and never a trailing .0 */
+  const nice = v => { if (v >= 100) return fmt(v); const s = fmt(v, 1); return s.endsWith('.0') ? s.slice(0, -2) : s; };
+  const dec = v => v >= 100 ? 0 : 1;
+  const big = v => v >= 1e6 ? nice(v / 1e6) + ' million' : fmt(v);
+  setNum($('#dScrolls'), swipes / 1e6, 1, '', 'M');
+  setNum($('#dFeet'), feet);
+  setNum($('#dMiles'), miles, dec(miles));
+  setNum($('#dEverest'), feet / EVEREST_FT, dec(feet / EVEREST_FT));
+  setNum($('#dMarathons'), miles / MARATHON, dec(miles / MARATHON));
+  setNum($('#dBurj'), feet / BURJ);
+  /* printed like a terminal: operator, number (right aligned), what it is; a rule before each result */
+  const R = (o, v, l, res) => `<div class="cr${res ? ' res' : ''}"><span class="op" aria-hidden="true">${o}</span><span class="v">${v}</span><span class="u">${l}</span></div>`;
+  const RULE = dbl => `<div class="rule${dbl ? ' dbl' : ''}" aria-hidden="true"></div>`;
+  $('#mathChain').innerHTML = [
+    R('', '2 in', 'per swipe'), R('\u00d7', '12', 'swipes a minute (1 every 5 sec)'), RULE(),
+    R('=', '2 ft', 'a minute'), R('\u00d7', '60', 'minutes'), RULE(),
+    R('=', '120 ft', 'an hour'), R('\u00d7', hrs(r1(dh)), 'hours a day'), R('\u00d7', '365.25', 'days a year'),
+    R('\u00d7', fmt(C.rem, 1), 'years you have left'), RULE(true),
+    R('=', `${big(feet)} ft`, 'of thumb', true)
+  ].join('');
+  $('#mathNote').innerHTML = H > 0
+    ? `That's about <b>${nice(miles)} miles</b>. From there it's just dividing. A marathon is 26.2 miles, so <b>${nice(miles / MARATHON)} marathons</b>. Everest is 29,032 feet tall, so <b>${nice(feet / EVEREST_FT)} Everests</b>. The Burj Khalifa is 2,717 feet, so <b>${fmt(feet / BURJ)}</b> of those. And one swipe every 5 seconds is 720 an hour, so <b>${big(swipes)} swipes</b>.`
+    : 'Zero hours of doomscrolling means zero feet. Nice.';
+}
+
+/* ---------- the share card: your whole life as one poster, in weeks, months or years ---------- */
+/* Pure black, white type. Red only for doomscrolling, green only for free time. Every number comes from the answers. */
+const SW = 1080, SH = 1920, FONT = 'Arial, "Helvetica Neue", Helvetica, sans-serif';
+const K = { bg: '#000000', ink: '#f2f2f3', mid: '#a7a7ad', teal: '#3fd94e', red: '#ff1a1a', rest: '#2e2e34' };
+const M = 96, TW = SW - 2 * M;
+const SCALE = {
+  weeks:  { per: 52, cols: 52, unit: 'week',  units: 'weeks',  gap: 2.4, rad: 0, rate: c => `${hrs(r1(c.h.doom * 7))} hours every week` },
+  months: { per: 12, cols: 24, unit: 'month', units: 'months', gap: 5,   rad: 3, rate: c => `${fmt(c.h.doom * YEAR_DAYS / 12)} hours every month` },
+  years:  { per: 1,  cols: 10, unit: 'year',  units: 'years',  gap: 12,  rad: 8, rate: c => `${fmt(c.h.doom * YEAR_DAYS)} hours every year` }
+};
+let posterScale = 'weeks';
+
+function rr(x, X, Y, w, h, r) { x.beginPath(); if (r && x.roundRect) x.roundRect(X, Y, w, h, r); else x.rect(X, Y, w, h); x.fill(); }
+function tight(x, px) { if ('letterSpacing' in x) x.letterSpacing = px + 'px'; }
+
+function drawPoster(x, scale) {
+  const c = C, sc = SCALE[scale];
+  const { cells, total, lived } = buildCells(c, sc.per);
+  let doomN = 0, freeN = 0;
+  for (const k of cells) { if (k === 'doom') doomN++; else if (k === 'free') freeN++; }
+  const left = total - lived, past = c.rem <= 0, isYears = scale === 'years';
+  const num = (n, yrs) => isYears ? fmt(yrs, 1) : fmt(n);
+
+  x.save();
+  x.fillStyle = K.bg; x.fillRect(0, 0, SW, SH);
+  x.textBaseline = 'alphabetic'; x.textAlign = 'left'; tight(x, 0);
+  x.fillStyle = K.ink; x.font = `700 36px ${FONT}`; x.fillText('The Life Audit', M, 132);
+  x.fillStyle = K.mid; x.font = `400 34px ${FONT}`; x.textAlign = 'right'; x.fillText('by Malik Peace', SW - M, 132); x.textAlign = 'left';
+
+  x.fillStyle = K.ink; x.font = `700 96px ${FONT}`; tight(x, -4.5); x.fillText(`My life in ${sc.units}`, M - 4, 296); tight(x, 0);
+  x.fillStyle = K.mid; x.font = `400 40px ${FONT}`; x.fillText(`I'm ${c.cal.y}. Every square is one ${sc.unit}.`, M, 362);
+
+  // the grid: lived in white, everything you have to do in grey, free in teal, doomscrolling in red
+  const areaTop = 424, areaH = 880;
+  const rows = Math.ceil(total / sc.cols);
+  const cell = Math.min(TW / sc.cols, areaH / rows);
+  const gw = sc.cols * cell, gh = rows * cell;
+  const gx = (SW - gw) / 2, gy = areaTop + (areaH - gh) / 2;
+  const sz = cell - sc.gap;
+  for (let k = 0; k < total; k++) {
+    const kind = cells[k];
+    x.fillStyle = k <= lived || kind === 'lived' || kind === 'now' ? K.ink : kind === 'doom' ? K.red : kind === 'free' ? K.teal : K.rest;
+    rr(x, gx + (k % sc.cols) * cell, gy + Math.floor(k / sc.cols) * cell, sz, sz, sc.rad);
+  }
+
+  // legend
+  const legend = [[K.ink, 'Lived'], [K.rest, 'Sleep, work and the rest'], [K.teal, 'Free'], [K.red, 'Doomscrolling']];
+  x.font = `400 30px ${FONT}`;
+  const itemW = legend.map(([, t]) => 26 + 12 + x.measureText(t).width);
+  const totalW = itemW.reduce((a, b) => a + b, 0) + 34 * (legend.length - 1);
+  let lx = (SW - totalW) / 2; const ly = areaTop + areaH + 62;
+  legend.forEach(([col, t], k) => {
+    x.fillStyle = col; rr(x, lx, ly - 24, 26, 26, 4);
+    x.fillStyle = K.mid; x.fillText(t, lx + 38, ly);
+    lx += itemW[k] + 34;
+  });
+
+  // the one number that matters at this scale
+  let big, bigCol, line1, line2;
+  if (past) {
+    big = fmt(lived); bigCol = K.ink; line1 = `lived. Every ${sc.unit} from here is extra.`; line2 = '';
+  } else {
+    big = num(doomN, c.y.doom); bigCol = K.red;
+    line1 = c.h.doom > 0 ? `doomscrolling. That's ${sc.rate(c)}.` : "doomscrolling. Either you're a monk or you lied lol.";
+    line2 = c.y.free < 0.05 ? [num(left, c.rem), `${sc.units} left. Basically none of them are free.`] : [num(left, c.rem), `${sc.units} left. Only`, num(freeN, c.y.free), 'are actually free.'];
+  }
+  const by = ly + 240;
+  x.font = `700 200px ${FONT}`; tight(x, -10);
+  x.fillStyle = bigCol; x.fillText(big, M - 8, by);
+  const bw = x.measureText(big).width; tight(x, -3);
+  x.font = `700 84px ${FONT}`; x.fillStyle = K.ink; x.fillText(` ${sc.units}`, M - 8 + bw, by);
+  tight(x, 0);
+  x.font = `400 44px ${FONT}`; x.fillStyle = K.ink; x.fillText(line1, M, by + 78);
+  if (line2) {
+    x.font = `400 40px ${FONT}`; let tx = M;
+    const seg = (t, col) => { x.fillStyle = col; x.fillText(t, tx, by + 142); tx += x.measureText(t).width; };
+    if (line2.length === 2) seg(`${line2[0]} ${line2[1]}`, K.mid);
+    else { seg(`${line2[0]} ${line2[1]} `, K.mid); seg(line2[2], K.teal); seg(` ${line2[3]}`, K.mid); }
+  }
+
+  // footer
+  x.font = `400 34px ${FONT}`; x.fillStyle = K.mid; const lead = 'Find yours at ';
+  x.fillText(lead, M, 1846);
+  const lw = x.measureText(lead).width; x.font = `700 34px ${FONT}`; x.fillStyle = K.ink;
+  const url = 'malikpeace.com/audit'; x.fillText(url, M + lw, 1846);
+  x.fillRect(M + lw, 1856, x.measureText(url).width, 3);
+  x.restore();
+}
+
+const posterCv = $('#posterCard');
+function renderPoster() {
+  if (!C) return;
+  const w = posterCv.clientWidth || 360, dpr = Math.min(2, window.devicePixelRatio || 1);
+  posterCv.width = Math.round(w * dpr); posterCv.height = Math.round(w * dpr * SH / SW);
+  const x = posterCv.getContext('2d'), k = posterCv.width / SW;
+  x.setTransform(k, 0, 0, k, 0, 0);
+  drawPoster(x, posterScale);
+  posterCv.setAttribute('aria-label', `My life in ${posterScale}, drawn as a grid, with my numbers`);
+}
+$$('.poster-seg button').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.scale === posterScale) return;
+  posterScale = b.dataset.scale;
+  $$('.poster-seg button').forEach(o => o.setAttribute('aria-selected', String(o === b)));
+  if (RM) { renderPoster(); return; }
+  posterCv.style.opacity = '0';
+  setTimeout(() => { renderPoster(); posterCv.style.opacity = '1'; }, 150);
+}));
+$('#saveCardBtn').addEventListener('click', () => {
+  const cv = document.createElement('canvas'); cv.width = SW; cv.height = SH;
+  drawPoster(cv.getContext('2d'), posterScale);
+  const go = href => { const a = document.createElement('a'); a.href = href; a.download = `my-life-in-${posterScale}.png`; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 500); };
+  if (cv.toBlob) cv.toBlob(b => { if (!b) return; const u = URL.createObjectURL(b); go(u); setTimeout(() => URL.revokeObjectURL(u), 4000); }, 'image/png');
+  else go(cv.toDataURL('image/png'));
+});
+if ('ResizeObserver' in window) new ResizeObserver(() => { if (C && view === 'results') renderPoster(); }).observe(posterCv);
+
+/* ---------- see more: the rest of the results expand in place ---------- */
+const moreBtn = $('#seeMoreBtn'), moreBox = $('#moreResults'), moreIn = moreBox.querySelector('.expander-in');
+function setMore(open) {
+  moreBox.classList.toggle('open', open);
+  moreBtn.setAttribute('aria-expanded', String(open));
+  $('#seeMoreLabel').textContent = open ? 'See less' : 'See more';
+  moreIn.inert = !open;
+}
+moreBtn.addEventListener('click', () => setMore(moreBtn.getAttribute('aria-expanded') !== 'true'));
+setMore(false);
+
+/* ---------- reveal on scroll ---------- */
+let io = null;
+function observeReveals() {
+  const els = $$('#v-results .reveal');
+  const fire = el => {
+    el.classList.add('in');
+    $$('[data-v]', el).forEach((n, i) => countUp(n, 900, 80 + i * 40));
+    if (el.id === 'secWeeks') { if (RM) revealGrid(); else setTimeout(revealGrid, 200); }
+  };
+  if (!('IntersectionObserver' in window)) { els.forEach(fire); return; }
+  if (io) io.disconnect();
+  io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { fire(e.target); io.unobserve(e.target); } }), { threshold: .15, rootMargin: '0px 0px -6% 0px' });
+  els.forEach(el => io.observe(el));
+}
+
+/* ================= wiring ================= */
+$$('[data-dial]').forEach(buildDial);
+const adjust = $('#adjust');
+['sleep', 'work', 'tax', 'screen', 'doom'].forEach(k => adjust.appendChild(buildCompact(k)));
+$$('[data-bday]').forEach(buildBday);
+syncBday();
+$$('input[type=range][data-key]').forEach(r => { paintRange(r); r.addEventListener('input', () => setVal(r.dataset.key, +r.value, r)); });
+paintRange(rateRange);
+
+function startQuiz() { persist = true; loadOwn(); show('quiz'); showStep(1); }
+$('#startBtn').addEventListener('click', startQuiz);
+$('#seeLastBtn').addEventListener('click', () => { persist = true; loadOwn(); showResults(); });
+$('#ownBtn').addEventListener('click', () => { history.replaceState(null, '', location.pathname + location.search); startQuiz(); });
+$('#jumpPlan').addEventListener('click', () => $('#secPlan').scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' }));
+nextBtn.addEventListener('click', next);
+noBtn.addEventListener('click', () => { const e = $('#eggHuman'); e.textContent = "hm. suspicious. we'll count you as one anyway lol"; e.className = 'egg human-no'; });
+$('#backBtn').addEventListener('click', back);
+$('#restartBtn').addEventListener('click', () => { refreshWelcome(); show('intro'); });
+
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (view === 'quiz') {
+    if (e.key === 'Enter') { if (document.activeElement && document.activeElement.tagName === 'BUTTON' && document.activeElement !== nextBtn) return; e.preventDefault(); next(); }
+    else if (e.key === 'Escape') { e.preventDefault(); back(); }
+  } else if (view === 'intro' && e.key === 'Enter' && document.activeElement === document.body) { startQuiz(); }
+});
+
+// email boxes are preview only for now: nothing is sent anywhere
+$$('#introSignup, #notifyForm').forEach(f => f.addEventListener('submit', e => { e.preventDefault(); $('[data-preview-msg]', f).textContent = '(preview) nothing was saved'; }));
+
+/* Flash bang mode: the homepage's switch (malikpeace.com assets/site.js), the same 'mp-theme' key and the same circle */
+function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+const fbBtn = $('[data-flashbang]');
+function setTheme(t) {
+  const root = document.documentElement;
+  if (t === 'light') root.setAttribute('data-theme', 'light'); else root.removeAttribute('data-theme');
+  try { localStorage.setItem('mp-theme', t); } catch (e) { /* private mode: it just won't stick */ }
+  fbBtn.setAttribute('aria-pressed', String(t === 'light'));
+  const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute('content', t === 'light' ? '#ffffff' : '#000000');
+  readPalette(); drawIntro();
+  if (C && view === 'results') drawGrid(gridRevealed ? 1 : 0);
+}
+(function () {
+  const root = document.documentElement;
+  let mode = currentTheme(), swap = false, owed = false;
+  const noop = () => {};
+  fbBtn.setAttribute('aria-pressed', String(mode === 'light'));
+  (function () { const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute('content', mode === 'light' ? '#ffffff' : '#000000'); })();
+  const go = () => {
+    mode = mode === 'light' ? 'dark' : 'light';
+    if (RM || !document.startViewTransition) { setTheme(mode); return; }
+    root.classList.add('mp-swap'); swap = true;
+    const vt = document.startViewTransition(() => setTheme(mode));
+    vt.ready.catch(noop); vt.updateCallbackDone.catch(noop);
+    vt.finished.catch(noop).then(() => { swap = false; if (owed) { owed = false; go(); } else root.classList.remove('mp-swap'); });
+  };
+  const tap = () => { if (swap) owed = !owed; else go(); };
+  document.addEventListener('click', e => {
+    let hit = e.target.closest && e.target.closest('[data-flashbang]');
+    if (!hit && swap && e.clientX) { const b = fbBtn.getBoundingClientRect(); hit = e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom; }
+    if (hit) tap();
+  }, true);
+})();
+/* on malikpeace.com these are plain paths; anywhere else (the preview) they open the preview pages */
+(function () {
+  if (/(^|\.)malikpeace\.com$/.test(location.hostname)) return;
+  const A = { focus: 'DDR3TBcMUh6wieQ4qbF3zp', audit: 'UkGU5Nz97VMmvfB6Xo1eGb', freedom: '4UaJZ8jCyXkzyDijseL9Wx', '25': 'UZsMJUYnqtwsjdVKqHyQNr' };
+  $$('[data-tool]').forEach(a => { const id = A[a.dataset.tool]; if (id) { a.href = 'https://claude.ai/artifact/' + id; a.target = '_blank'; a.rel = 'noopener'; } });
+  $$('[data-home]').forEach(a => { a.href = 'https://malikpeace.com/'; a.target = '_blank'; a.rel = 'noopener'; });
+})();
+
+/* "What is this?" opens and closes with a slide, not a pop */
+(function () {
+  const d = $('#aboutDetails'), sum = d.querySelector('summary'), body = d.querySelector('.about-body');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let anim = null;
+  sum.addEventListener('click', e => {
+    if (reduce) return;
+    e.preventDefault();
+    if (anim) anim.cancel();
+    if (!d.open) {
+      d.open = true;
+      const h = body.scrollHeight;
+      anim = body.animate([{ height: '0px', opacity: 0, transform: 'translateY(-6px)' }, { height: h + 'px', opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.7,.2,1)' });
+      anim.onfinish = () => { anim = null; };
+    } else {
+      const h = body.offsetHeight;
+      d.classList.add('closing');
+      anim = body.animate([{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }], { duration: 260, easing: 'cubic-bezier(.4,0,1,1)' });
+      anim.onfinish = () => { d.open = false; d.classList.remove('closing'); anim = null; };
+    }
+  });
+})();
+
+/* intro: all 3,900 weeks, empty, in a white box (black in Flash bang) */
+function drawIntro() {
+  const cv = $('#introGrid'), w = cv.clientWidth; if (!w) return;
+  const cols = 52, cell = w / cols, rows = LIFE, H = Math.ceil(rows * cell);
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+  cv.style.height = H + 'px'; cv.width = Math.round(w * dpr); cv.height = Math.round(H * dpr);
+  const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const sz = cell - Math.max(1, cell * .22);
+  x.clearRect(0, 0, w, H);
+  x.fillStyle = getComputedStyle($('.intro-grid')).getPropertyValue('--c-intro').trim() || '#e6e6ea';
+  for (let i = 0; i < cols * rows; i++) x.fillRect((i % cols) * cell, Math.floor(i / cols) * cell, sz, sz);
+}
+drawIntro();
+if ('ResizeObserver' in window) new ResizeObserver(drawIntro).observe($('.intro-grid'));
+
+/* deep links: #r=... (a shared result), and for previews #demo, #demo2, #demo3, #demo:secPlan, #q3 */
+(function route() {
+  const raw = location.hash.slice(1).replace(/^aurora\+?/, '');
+  if (raw.startsWith('r=')) {
+    const sh = parseShare(raw.slice(2));
+    if (sh) { persist = false; applyAnswers(sh.answers); applyPlan(sh.plan); showResults({ shared: true }); return; }
+  }
+  refreshWelcome();
+  const h = decodeURIComponent(raw);
+  const [name, target] = h.split(':');
+  if (DEMOS[name]) {
+    const d = DEMOS[name];
+    persist = false;
+    applyAnswers(Object.assign({}, d, { bday: ymd(new Date(d.bday[0], d.bday[1], d.bday[2])) }));
+    applyPlan(null);
+    showResults();
+    if (target) {
+      const el = document.getElementById(target);
+      if (el) requestAnimationFrame(() => el.scrollIntoView({ block: 'start' }));
+    }
+  } else if (/^q[1-7]$/.test(name)) {
+    show('quiz'); showStep(+name[1]);
+  }
+})();
+})();
+</script>
+
+<style>
+.bh-plate { margin-top: 4px; max-width: 460px; }
+.bh { min-height: 56px; --bh-inset: 19px; width: calc(100% + var(--bh-inset) * 2) !important; max-width: none !important; margin-left: calc(-1 * var(--bh-inset)) !important; }
+.bh iframe { width: 100%; border: 0; background: transparent; color-scheme: normal; }
+html[data-theme="light"] .bh-plate, .bh-plate.always { background: #0b0b0c; border-radius: 16px; padding: 6px 4px 2px; }   /* .always: on a card that's white in dark mode */
+</style>
+<script>
+document.querySelectorAll('[data-bh]').forEach(function (b) {
+  var sc = document.createElement('script'); sc.async = true; sc.src = 'https://subscribe-forms.beehiiv.com/v3/loader.js';
+  sc.setAttribute('data-beehiiv-form', b.getAttribute('data-bh')); b.appendChild(sc);
+});
+</script>

@@ -1,0 +1,2901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Your Freedom Number</title>
+<meta name="description" content="The amount of money you need invested to live off the returns and stop trading time for money. Two minutes from now, you'll know yours.">
+<link rel="icon" href="data:,">
+<script>
+// Flash bang mode (light) is the homepage's one switch, remembered under the same key so it carries across malikpeace.com.
+try { if (localStorage.getItem('mp-theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
+</script>
+<style>
+/* ---------- Tokens ----------
+   The malikpeace.com look (SHARED-LOOK.md, Malik 2026-10-25): a plain black page, key content in white boxes with black
+   text (Memento's contrast), big colour blocks like the homepage's bands. Green = gain (your number, being free),
+   red = loss (working for the rest of your life). Flash bang mode turns the page white and the boxes black; green and
+   red stay. Text sizes, layout and every word are the Green version he picked. */
+:root{
+  --bg:#000000; --ink:#f2f2f3; --mid:#a7a7ad; --line:#1d1d21;
+  --accent:#3fd94e; --green:#3fd94e; --accent-ink:#3fd94e; --green-ink:#3fd94e; --warn:#ff1a1a;
+  --glass:rgba(255,255,255,.07); --glass-2:rgba(255,255,255,.11); --edge:rgba(255,255,255,0);
+  --hi:0 0 0 transparent; --shadow:0 0 0 transparent;
+  --ph:#4a4a50; --dot:#4a4a50; --tick:#3a3a40;
+  --btn-bg:#3fd94e; --btn-ink:#000000; --btn-hover:#3fd94e;
+  --thumb:#f2f2f3; --thumb-shadow:0 2px 10px rgba(0,0,0,.6);
+  --focus:#3fd94e; --chip-on:#3fd94e;
+  --glow:rgba(0,0,0,0); --glow-2:rgba(0,0,0,0); --glow-0:rgba(0,0,0,0);
+  --tip-bg:rgba(14,14,16,.97); --toast-bg:rgba(20,20,22,.97); --pop-shadow:0 16px 40px rgba(0,0,0,.6);
+  --sum-bg:#000000; --sum-glow:rgba(0,0,0,0); --sum-edge:rgba(0,0,0,0); --sum-line:rgba(255,255,255,.1);
+  --soft:rgba(255,255,255,.05); --plan-bg:#000000; --plan-edge:rgba(0,0,0,0); --band:rgba(63,217,78,.16);
+  --underline:rgba(167,167,173,.4); --link-line:#3fd94e;
+  --topbg:rgba(0,0,0,.82); --link:#6fcfd6; --fill2:rgba(255,255,255,.085);
+  --r-ctl:10px;
+  --r-card:16px;
+  --font:Arial,"Helvetica Neue",Helvetica,sans-serif;
+  --st:env(safe-area-inset-top,0px);
+  --sb:env(safe-area-inset-bottom,0px);
+  --sl:env(safe-area-inset-left,0px);
+  --sr:env(safe-area-inset-right,0px);
+  --gut:16px;
+  --hd:57px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+/* Flash bang mode: the homepage's light tokens */
+:root[data-theme="light"]{
+  --bg:#ffffff; --ink:#0b0b0c; --mid:#5c5c66; --line:#e3e3e8;
+  --accent:#18a030; --accent-ink:#18a030; --green-ink:#137a25; --warn:#e00000;
+  --glass:rgba(0,0,0,.05); --glass-2:rgba(0,0,0,.085);
+  --ph:#a2a2aa; --dot:#c4c4cc; --tick:#c9c9d0;
+  --thumb:#0b0b0c; --thumb-shadow:none; --focus:#137a25;
+  --tip-bg:rgba(255,255,255,.98); --toast-bg:rgba(255,255,255,.98); --pop-shadow:0 16px 40px rgba(20,20,40,.18);
+  --sum-line:rgba(0,0,0,.08); --soft:#f3f3f5; --band:rgba(24,160,48,.14);
+  --topbg:rgba(255,255,255,.86); --link:#0b8a93; --fill2:rgba(0,0,0,.06);
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--ink);
+  font:17px/1.5 var(--font);
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  min-height:100vh;min-height:100svh;overflow-x:hidden;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+b,strong{font-weight:700}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+
+
+main{position:relative;z-index:1}
+
+/* ---------- Primitives ---------- */
+.glass{
+  background:var(--glass);
+  border-radius:var(--r-card);
+  box-shadow:inset 0 0 0 1px var(--edge), var(--hi), var(--shadow);
+  -webkit-backdrop-filter:blur(32px) saturate(1.4);
+  backdrop-filter:blur(32px) saturate(1.4);
+}
+.btn{
+  appearance:none;border:0;border-radius:var(--r-ctl);
+  height:56px;padding:0 26px;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-size:17px;font-weight:700;letter-spacing:-.005em;white-space:nowrap;
+  transition:transform .15s var(--ease), background-color .2s var(--ease), opacity .2s var(--ease), box-shadow .2s var(--ease);
+  -webkit-tap-highlight-color:transparent;text-decoration:none;
+}
+.btn:active{transform:scale(.985)}
+.btn-primary{background:var(--btn-bg);color:var(--btn-ink)}
+.btn-primary:hover{background:var(--btn-hover)}
+.btn-primary:disabled{opacity:.3;cursor:default;transform:none}
+.btn-glass{
+  background:var(--glass);color:var(--ink);
+  box-shadow:inset 0 0 0 1px var(--edge), var(--hi);
+  -webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);
+}
+.btn-glass:hover{background:var(--glass-2)}
+.btn-sm{height:44px;padding:0 16px;font-size:15px}
+.btn-text{
+  appearance:none;border:0;background:none;color:var(--ink);
+  height:44px;padding:0 6px;font-size:15px;text-decoration:underline;text-underline-offset:4px;
+  text-decoration-thickness:2px;text-decoration-color:var(--link-line);
+}
+.btn-text:hover{text-decoration-color:var(--ink)}
+.icon{width:20px;height:20px;flex:none}
+
+.chip{
+  appearance:none;border:0;border-radius:var(--r-ctl);
+  min-height:44px;padding:0 14px;
+  background:var(--glass);color:var(--ink);font-size:15px;
+  box-shadow:inset 0 0 0 1px var(--edge), var(--hi);
+  transition:background-color .15s var(--ease), box-shadow .15s var(--ease);
+  -webkit-tap-highlight-color:transparent;white-space:nowrap;
+}
+.chip:hover{background:var(--glass-2)}
+.chip[aria-pressed="true"]{background:var(--chip-on);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.chip .c-amt{color:var(--mid);margin-left:6px}
+.chip[aria-pressed="true"] .c-amt{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+
+/* range */
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:36px;background:transparent;
+  --p:0%;touch-action:pan-y;cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:4px;border-radius:2px;
+  background:linear-gradient(to right, var(--accent) 0, var(--accent) var(--p), var(--line) var(--p), var(--line) 100%);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;
+  background:var(--thumb);margin-top:-10px;border:0;
+  box-shadow:var(--thumb-shadow);
+}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--accent)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:var(--thumb);box-shadow:var(--thumb-shadow)}
+input[type=range].green{--c:var(--green)}
+input[type=range].green::-webkit-slider-runnable-track{background:linear-gradient(to right, var(--green) 0, var(--green) var(--p), var(--line) var(--p), var(--line) 100%)}
+input[type=range].green::-moz-range-progress{background:var(--green)}
+
+/* ---------- Views ---------- */
+.view{min-height:100vh;min-height:100svh}
+.view.enter{animation:viewIn .28s var(--ease) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+
+/* ---------- Landing ---------- */
+#v-landing{display:flex;flex-direction:column}
+.land{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  width:100%;max-width:1200px;margin:0 auto;
+  padding:48px calc(var(--gut) + var(--sr)) 32px calc(var(--gut) + var(--sl));
+}
+.land-grid{display:grid;grid-template-columns:1fr;gap:48px;align-items:center}
+.land-ex{display:none}
+.land h1{font-size:clamp(46px, 7.4vw, 96px);line-height:.95;letter-spacing:-.05em;font-weight:700;max-width:12ch}
+.land h1 .t{color:var(--accent-ink)}
+.land .lede{margin-top:24px;font-size:clamp(19px, 2vw, 23px);line-height:1.45;max-width:30ch;color:var(--ink)}
+.land .lede span{color:var(--mid)}
+.land .cta-row{margin-top:36px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.land .cta-row .btn{flex:1 1 100%}
+.land .fine{margin-top:18px;color:var(--mid);font-size:14px}
+.what{
+  margin-top:56px;display:grid;grid-template-columns:1fr;gap:0;max-width:880px;
+  border-top:1px solid var(--line);
+}
+.what > div{padding:18px 0;border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:baseline}
+.what .n{color:var(--accent-ink);font-weight:700;font-size:15px;width:18px;flex:none}
+.what .w-t{font-weight:700}
+.what .w-d{color:var(--mid);font-size:15px}
+details.explain{margin-top:28px;max-width:640px}
+details.explain summary{
+  list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:10px;
+  color:var(--ink);font-weight:700;font-size:16px;min-height:44px;
+}
+details.explain summary::-webkit-details-marker{display:none}
+details.explain summary .plus{width:18px;height:18px;transition:transform .2s var(--ease)}
+details.explain[open] summary .plus{transform:rotate(45deg)}
+details.explain .body{padding:6px 0 4px;color:var(--mid);font-size:16px;line-height:1.6}
+details.explain .body p + p{margin-top:12px}
+.land-foot{
+  width:100%;max-width:1200px;margin:0 auto;color:var(--mid);font-size:13px;
+  padding:0 calc(var(--gut) + var(--sr)) calc(var(--sb) + 20px) calc(var(--gut) + var(--sl));
+}
+
+/* ---------- Wizard ---------- */
+.wz-top{
+  display:flex;align-items:center;gap:14px;
+  width:100%;max-width:640px;margin:0 auto;
+  padding:14px calc(var(--gut) + var(--sr)) 0 calc(var(--gut) + var(--sl));
+}
+.icon-btn{
+  appearance:none;border:0;width:44px;height:44px;border-radius:var(--r-ctl);flex:none;
+  display:grid;place-items:center;background:var(--glass);color:var(--ink);
+  box-shadow:inset 0 0 0 1px var(--edge), var(--hi);
+  -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+}
+.icon-btn:hover{background:var(--glass-2)}
+.segs{flex:1;display:flex;gap:6px}
+.segs i{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background-color .25s var(--ease)}
+.segs i.on{background:var(--accent)}
+.wz-count{color:var(--mid);font-size:14px;min-width:42px;text-align:right}
+.wz-body{
+  width:100%;max-width:640px;margin:0 auto;
+  padding:clamp(36px, 9vh, 104px) calc(var(--gut) + var(--sr)) calc(var(--sb) + 40px) calc(var(--gut) + var(--sl));
+}
+.step.enter{animation:stepIn .26s var(--ease) both}
+.step.enter.back{animation-name:stepInBack}
+@keyframes stepIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes stepInBack{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.q-title{font-size:clamp(30px, 5.2vw, 42px);line-height:1.08;letter-spacing:-.03em;font-weight:700}
+.q-help{margin-top:12px;color:var(--mid);font-size:17px;line-height:1.5;max-width:46ch}
+.q-ctl{margin-top:32px}
+.big-field{
+  display:flex;align-items:center;gap:4px;height:88px;padding:0 20px;
+  border-radius:var(--r-card);background:var(--glass);
+  box-shadow:inset 0 0 0 1px var(--edge), var(--hi);
+  -webkit-backdrop-filter:blur(32px) saturate(1.4);backdrop-filter:blur(32px) saturate(1.4);
+  transition:box-shadow .2s var(--ease);
+}
+.big-field:focus-within{box-shadow:inset 0 0 0 1.5px var(--focus), var(--hi)}
+.big-pre,.big-suf{font-size:clamp(30px, 6vw, 40px);font-weight:700;color:var(--mid);letter-spacing:-.02em}
+.big-suf{font-size:18px;font-weight:400;margin-left:6px;white-space:nowrap}
+.big-input{
+  flex:1;min-width:0;border:0;background:none;outline:none;
+  font-size:clamp(34px, 7.4vw, 48px);font-weight:700;letter-spacing:-.03em;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.big-input::placeholder{color:var(--ph)}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper .big-field{flex:1;justify-content:center;text-align:center}
+.stepper .big-input{text-align:center;flex:0 0 auto;width:2.6ch;min-width:0}
+/* WebKit gives a flex item holding an <input> the input's wide default size as its minimum, which pushed the + button
+   off a 402pt iPhone. min-width:0 lets the field shrink to what's actually in it. */
+.stepper .big-field{min-width:0}
+.stepper .big-suf{flex:none}
+@media (max-width:379px){ .stepper{gap:8px} .stepper .icon-btn{width:52px} }
+.stepper .big-suf{margin-left:0}
+.stepper .icon-btn{width:64px;height:88px;border-radius:var(--r-card)}
+.q-chips{margin-top:16px}
+.q-cta{margin-top:36px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.q-cta .btn-primary{flex:1 1 220px;max-width:100%}
+.q-note{margin-top:14px;color:var(--mid);font-size:14px}
+.sub-field{margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}
+.sub-field label{display:block;font-weight:700;font-size:16px}
+.sub-field .hint{color:var(--mid);font-size:14px;margin-top:2px}
+.small-field{
+  margin-top:12px;display:flex;align-items:center;gap:4px;height:56px;padding:0 16px;max-width:320px;
+  border-radius:var(--r-ctl);background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge), var(--hi);
+}
+.small-field:focus-within{box-shadow:inset 0 0 0 1.5px var(--focus)}
+.small-field span{color:var(--mid);font-weight:700;font-size:20px}
+.small-field input{flex:1;min-width:0;width:100%;border:0;background:none;outline:none;font-size:22px;font-weight:700}
+.small-field input::placeholder{color:var(--ph)}
+.small-field .suf{font-weight:400;font-size:15px}
+
+.build-toggle{
+  margin-top:14px;appearance:none;border:0;background:none;color:var(--accent-ink);font-size:16px;font-weight:700;
+  display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0;
+}
+.build-toggle svg{transition:transform .2s var(--ease)}
+.build-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+.bd{margin-top:8px;border-top:1px solid var(--line)}
+.bd-row{padding:18px 0;border-bottom:1px solid var(--line)}
+.bd-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bd-label{font-weight:700}
+.bd-note{color:var(--mid);font-size:14px;margin-top:2px}
+.bd-amt{
+  display:flex;align-items:center;height:44px;width:128px;flex:none;padding:0 12px;border-radius:var(--r-ctl);
+  background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge);
+}
+.bd-amt:focus-within{box-shadow:inset 0 0 0 1.5px var(--focus)}
+.bd-amt span{color:var(--mid)}
+.bd-amt input{width:100%;min-width:0;border:0;background:none;outline:none;text-align:right;font-weight:700;font-size:17px}
+.bd-row .chips{margin-top:12px}
+.bd-row .chip{min-height:40px;font-size:14px;padding:0 12px}
+.bd-total{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0 0;font-weight:700;font-size:19px}
+.bd-total span:first-child{color:var(--mid);font-weight:400;font-size:16px}
+
+/* ---------- Results ---------- */
+.rs{
+  width:100%;max-width:1200px;margin:0 auto;
+  padding:0 calc(var(--gut) + var(--sr)) calc(var(--sb) + 32px) calc(var(--gut) + var(--sl));
+}
+.sec{margin-top:72px}
+.sec-h{font-size:clamp(24px, 3vw, 30px);line-height:1.15;letter-spacing:-.025em;font-weight:700}
+.sec-sub{margin-top:8px;color:var(--mid);max-width:60ch;font-size:18px;line-height:1.55}
+.grid{display:grid;grid-template-columns:minmax(0, 1fr);gap:16px}
+.grid > *{min-width:0}
+
+.hero{padding-top:clamp(40px, 9vh, 96px)}
+.hero-k{font-size:clamp(19px, 2vw, 22px);color:var(--mid)}
+.hero-num{
+  margin-top:6px;font-size:clamp(60px, 17.5vw, 136px);line-height:.95;letter-spacing:-.055em;font-weight:700;
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.hero-sub{margin-top:22px;font-size:clamp(18px, 1.9vw, 21px);line-height:1.5;max-width:40ch}
+.hero-note{margin-top:10px;color:var(--mid);font-size:15px;max-width:52ch}
+.fade-late{transition:opacity .3s var(--ease), transform .3s var(--ease)}
+.pre-reveal .fade-late{opacity:0;transform:translateY(6px)}
+
+.card{padding:24px}
+.card-k{color:var(--mid);font-size:15px}
+.card-big{margin-top:4px;font-size:clamp(34px, 4.4vw, 46px);line-height:1.05;letter-spacing:-.03em;font-weight:700}
+.card-line{margin-top:10px;font-size:16px;line-height:1.5}
+.muted{color:var(--mid)}
+.t{color:var(--accent-ink)}
+.g{color:var(--green-ink)}
+
+/* guess */
+.guess-rows{margin-top:10px}
+.guess-rows > div{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.guess-rows .k{color:var(--mid);font-size:15px}
+.guess-rows .v{font-size:24px;font-weight:700;letter-spacing:-.02em}
+
+/* progress */
+.prog{margin-top:22px}
+.bar{position:relative;height:10px;border-radius:5px;background:var(--line)}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--green);min-width:4px;transition:width .5s var(--ease)}
+.bar .tick{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;background:var(--bg);border-radius:1px}
+.bar .tick::after{content:"";position:absolute;left:0;right:0;top:5px;bottom:5px;background:var(--mid);opacity:.5}
+.bar-ends{display:flex;justify-content:space-between;margin-top:10px;font-size:14px;color:var(--mid)}
+.bar-ends b{color:var(--ink)}
+.stages{margin-top:22px;border-top:1px solid var(--line)}
+.stage{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}
+.stage:last-child{border-bottom:0;padding-bottom:0}
+.stage .dot{width:14px;height:14px;border-radius:50%;margin-top:4px;box-shadow:inset 0 0 0 1.5px var(--dot)}
+.stage.done .dot{background:var(--green);box-shadow:none}
+.stage .s-t{font-weight:700;font-size:16px}
+.stage .s-d{color:var(--mid);font-size:14px;line-height:1.45;margin-top:2px}
+.stage .s-r{text-align:right;font-size:16px;font-weight:700;white-space:nowrap}
+.stage .s-r small{display:block;font-weight:400;font-size:13px;color:var(--mid);margin-top:2px}
+.stage.done .s-r small{color:var(--green-ink)}
+
+/* hours */
+.hours-big{display:flex;align-items:baseline;gap:10px;margin-top:4px;flex-wrap:wrap}
+.hours-big .card-big{margin-top:0}
+.hours-big .of{color:var(--mid);font-size:18px}
+.hgrid{margin-top:20px;display:grid;grid-template-columns:repeat(52, 1fr);gap:2px}
+.hgrid i{aspect-ratio:1/2.2;border-radius:1.5px;background:var(--line)}
+.hgrid i.on{background:var(--green)}
+.hgrid i.part{background:linear-gradient(to top, var(--green) var(--h), var(--line) var(--h))}
+.hgrid-cap{display:flex;justify-content:space-between;margin-top:8px;color:var(--mid);font-size:13px}
+.hmarks{margin-top:18px;border-top:1px solid var(--line)}
+.hmark{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.hmark:last-child{border-bottom:0;padding-bottom:0}
+.hmark .t1{font-weight:700;font-size:16px}
+.hmark .t2{color:var(--mid);font-size:13px;margin-top:2px}
+.hmark .r{text-align:right;font-weight:700;white-space:nowrap}
+.hmark .r small{display:block;font-weight:400;font-size:13px;color:var(--mid);margin-top:2px}
+.hmark.done .r small{color:var(--green-ink)}
+
+/* timeline */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+.stat{padding:18px 18px 16px}
+.stat .k{color:var(--mid);font-size:14px;line-height:1.35}
+.stat .v{margin-top:6px;font-size:clamp(26px, 3vw, 34px);font-weight:700;letter-spacing:-.025em;line-height:1.05}
+.stat .f{margin-top:6px;color:var(--mid);font-size:13px;line-height:1.4}
+.verdict{margin-top:20px;font-size:clamp(18px, 1.9vw, 21px);line-height:1.5;max-width:52ch}
+.verdict b{font-weight:700}
+
+.chart-card{padding:20px 12px 16px 12px;position:relative}
+.chart-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 8px;flex-wrap:wrap}
+.chart-head .ct{font-weight:700}
+.chart-head .cs{color:var(--mid);font-size:13px}
+.chart-wrap{position:relative;margin-top:12px;touch-action:pan-y}
+.chart-wrap svg{display:block;width:100%;overflow:visible}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;padding:12px 8px 0;font-size:13px;color:var(--mid)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid var(--accent)}
+.legend i.need{border-top:1.5px dashed var(--mid)}
+.legend i.alt{border-top-color:var(--ink)}
+.legend i.newfn{border-top:2px dotted var(--ink)}
+.legend i.fnl{border-top:1.5px dashed var(--ink)}
+.tip{
+  position:absolute;top:0;left:0;pointer-events:none;z-index:3;min-width:150px;
+  padding:10px 12px;border-radius:var(--r-ctl);font-size:13px;line-height:1.5;
+  background:var(--tip-bg);box-shadow:inset 0 0 0 1px var(--edge), var(--pop-shadow);color:var(--ink);
+  -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  opacity:0;transition:opacity .15s var(--ease);
+}
+.tip.on{opacity:1}
+.tip .ta{font-weight:700;color:var(--ink);margin-bottom:2px}
+.tip .tr{display:flex;justify-content:space-between;gap:14px;color:var(--mid)}
+.tip .tr b{color:var(--ink)}
+.tip .tr span{display:inline-flex;align-items:center;gap:6px}
+.tip .sw{display:inline-block;width:12px;height:0;border-top:2.5px solid var(--accent)}
+.tip .sw.alt{border-top-color:var(--ink)}
+.tip .sw.fnl{border-top:1.5px dashed var(--ink)}
+
+/* what if */
+.lever{padding:10px 0 6px;border-bottom:1px solid var(--line)}
+.lever:first-child{padding-top:4px}
+.lever-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.lever-top .l{font-weight:700;font-size:16px}
+.lever-top .v{font-weight:700;font-size:17px}
+.lever .h{color:var(--mid);font-size:13px;margin-top:0}
+.out{margin-top:12px}
+.out-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;font-size:16px}
+.out-row .k{color:var(--mid)}
+.out-row .v{font-weight:700;text-align:right}
+.out-row .v s{color:var(--mid);font-weight:400;text-decoration:none;margin-right:6px}
+.out-big{margin-top:12px;font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.out-note{margin-top:6px;color:var(--mid);font-size:14px;line-height:1.45}
+.out-note:empty{display:none}
+.lev-reset{margin-top:2px;padding-left:0}
+.lev-reset.off{display:none}
+
+/* how + assumptions */
+.how-lede{font-size:clamp(18px, 1.9vw, 21px);line-height:1.55;max-width:56ch}
+.math{margin-top:22px}
+.math-row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:16px}
+.math-row .k{color:var(--mid)}
+.math-row .v{font-weight:700;text-align:right;white-space:nowrap}
+.math-row.total .k{color:var(--ink);font-weight:700}
+.math-row.total .v{color:var(--accent-ink)}
+.notes{margin-top:22px;display:grid;gap:12px}
+.notes p{font-size:15px;line-height:1.5;color:var(--mid);padding-left:16px;position:relative}
+.notes p::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--dot)}
+.notes b{color:var(--ink)}
+.asm{padding:24px}
+.asm-row{padding:14px 0;border-bottom:1px solid var(--line)}
+.asm-row:last-of-type{border-bottom:0}
+.asm-row .lever-top .v{color:var(--ink)}
+.asm-row .h{color:var(--mid);font-size:13px;line-height:1.45}
+.asm-real{margin-top:12px;padding:14px 16px;border-radius:var(--r-ctl);background:var(--soft);box-shadow:inset 0 0 0 1px var(--line);font-size:14px;color:var(--mid)}
+.asm-real b{color:var(--ink)}
+.asm-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+
+/* summary card */
+.g-share{grid-template-areas:"head" "card" "acts";gap:20px}
+.share-head{grid-area:head}
+.sum{grid-area:card}
+.share-acts{grid-area:acts}
+.sum{
+  position:relative;overflow:hidden;width:100%;padding:28px 26px 22px;
+  border-radius:var(--r-card);
+  background:
+    radial-gradient(90% 70% at 0% 0%, var(--sum-glow), var(--glow-0) 70%),
+    var(--sum-bg);
+  box-shadow:inset 0 0 0 1px var(--sum-edge), var(--hi), var(--shadow);
+}
+.sum .sk{color:var(--mid);font-size:15px}
+.sum .sv{margin-top:4px;font-size:clamp(40px, 10vw, 52px);line-height:1;font-weight:700;letter-spacing:-.04em}
+.sum .srow{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--sum-line);font-size:15px}
+.sum .sbar + .srow{border-top:0}
+.sum .srow span:first-child{color:var(--mid)}
+.sum .srow span:last-child{font-weight:700;text-align:right}
+.sum .sbar{margin:20px 0 6px}
+.sum .sfoot{margin-top:18px;padding-top:14px;border-top:1px solid var(--sum-line);display:flex;justify-content:space-between;color:var(--mid);font-size:13px}
+.sum .sfoot b{color:var(--ink)}
+.share-actions{display:flex;flex-wrap:wrap;gap:8px}
+.land-ex .sum{max-width:420px}
+.land-ex .cap{margin-top:12px;color:var(--mid);font-size:14px}
+
+/* next */
+.links{margin-top:22px;border-top:1px solid var(--line)}
+.link{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 2px;border-bottom:1px solid var(--line);text-decoration:none;transition:background-color .15s var(--ease)}
+.link:hover .lt{color:var(--accent-ink)}
+.link .lt{font-weight:700;transition:color .15s var(--ease)}
+.link .ld{color:var(--mid);font-size:15px;margin-top:2px}
+.link svg{color:var(--mid);flex:none}
+
+.foot{margin-top:72px;padding-top:20px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;color:var(--mid);font-size:13px}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(var(--sb) + 24px);z-index:20;transform:translate(-50%, 12px);
+  padding:12px 18px;border-radius:var(--r-ctl);font-size:15px;font-weight:700;
+  background:var(--toast-bg);color:var(--ink);box-shadow:inset 0 0 0 1px var(--edge), var(--pop-shadow);
+  -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  opacity:0;pointer-events:none;transition:opacity .2s var(--ease), transform .2s var(--ease);
+}
+.toast.on{opacity:1;transform:translate(-50%, 0)}
+
+
+/* plan line */
+.plan-line{margin-top:22px;display:flex;flex-direction:column;gap:4px;padding:16px 18px;border-radius:14px;max-width:600px;
+  background:var(--plan-bg);box-shadow:inset 0 0 0 1px var(--plan-edge), var(--hi)}
+.plan-line .pl-k{color:var(--accent-ink);font-size:14px;font-weight:700}
+.plan-line .pl-v{font-size:17px;line-height:1.45}
+.plan-line:empty{display:none}
+
+/* scenarios */
+.scen{margin-top:12px;padding:20px 20px 8px}
+.scen-grid{margin-top:14px;display:grid;grid-template-columns:1fr;border-top:1px solid var(--line)}
+.sc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.sc:last-child{border-bottom:0}
+.sc .n{font-weight:700;font-size:16px}
+.sc .n small{display:block;font-weight:400;color:var(--mid);font-size:13px;margin-top:2px}
+.sc .fa{text-align:right;font-size:22px;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.sc .fa small{display:block;font-size:13px;font-weight:400;color:var(--mid);letter-spacing:0;margin-top:2px}
+.sc.cur .n{color:var(--accent-ink)}
+.sc .tag{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:var(--accent-ink);padding:2px 7px;border-radius:6px;background:var(--chip-on)}
+
+/* plan table */
+.ptable{margin-top:12px;border-top:1px solid var(--line)}
+.pr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:13px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.pr .a{font-weight:700;font-size:16px}
+.pr .a small{display:block;color:var(--mid);font-weight:400;font-size:13px;margin-top:2px}
+.pr .m{text-align:right;font-weight:700;font-size:18px;white-space:nowrap}
+.pr .m small{display:block;color:var(--mid);font-weight:400;font-size:13px;margin-top:2px}
+.pr.goal .a{color:var(--accent-ink)}
+.pr.ok .m small{color:var(--green-ink)}
+
+/* lever */
+.lv-head{margin-top:6px;font-size:clamp(22px, 2.6vw, 28px);font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.lbars{margin-top:18px;display:grid;gap:14px}
+.lbar .lt2{display:flex;justify-content:space-between;gap:12px;font-size:15px}
+.lbar .lt2 b{white-space:nowrap}
+.lbar .track{margin-top:7px;height:8px;border-radius:4px;background:var(--line);position:relative;overflow:hidden}
+.lbar .track i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--dot);transition:width .3s var(--ease)}
+.lbar.best .track i{background:var(--green)}
+.lbar.best .lt2 span{font-weight:700}
+
+/* moves */
+.qcheck{padding:8px 24px}
+.qrow{padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:14px}
+.qrow:last-child{border-bottom:0}
+.qrow .qt{font-size:15px;line-height:1.4}
+.yn{display:flex;gap:6px;flex:none}
+.yn .chip{min-width:56px;min-height:40px;padding:0 12px}
+.moves{list-style:none;display:grid;gap:12px;counter-reset:mv}
+.mv{display:grid;grid-template-columns:36px minmax(0,1fr);gap:14px;padding:18px 20px;border-radius:var(--r-card);background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge), var(--hi);
+  -webkit-backdrop-filter:blur(32px) saturate(1.4);backdrop-filter:blur(32px) saturate(1.4)}
+.mv .num{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:15px;color:var(--bg);background:var(--ink)}
+.mv .mt{font-weight:700;font-size:17px;line-height:1.3}
+.mv .md{color:var(--mid);font-size:15px;line-height:1.5;margin-top:4px}
+.moves-foot{color:var(--mid);font-size:14px;margin-top:4px}
+
+/* keep it */
+.share-minor{display:flex;gap:18px;margin-top:8px}
+.share-minor .btn-text{padding:0}
+.email{margin-top:28px;padding-top:22px;border-top:1px solid var(--line);max-width:520px}
+.email label{display:block;font-weight:700;font-size:16px}
+.email .hint{color:var(--mid);font-size:14px;margin-top:2px}
+.email-row{margin-top:12px;display:flex;gap:8px}
+.email-row input{flex:1;min-width:0;height:44px;padding:0 14px;border:0;border-radius:var(--r-ctl);background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge);font-size:16px;outline:none}
+.email-row input:focus{box-shadow:inset 0 0 0 1.5px var(--focus)}
+.email-row input::placeholder{color:var(--ph)}
+.email-msg{margin-top:10px;color:var(--accent-ink);font-size:14px;font-weight:700}
+
+/* chart band legend */
+.legend i.band{height:10px;border:0;border-radius:2px;background:var(--band);width:18px}
+
+
+/* Discord: its own brand purple so it stands out */
+.btn-discord{background:#5865F2;color:#fff;box-shadow:none}
+.btn-discord:hover{background:#4752c4}
+.btn-discord svg{width:18px;height:18px;flex:none}
+.link .btn-discord{margin-top:12px;height:40px;padding:0 14px;font-size:14px;pointer-events:none}
+.link:hover .btn-discord{background:#4752c4}
+
+
+/* landing: quiet extras under the main button */
+.land-extra{margin-top:28px;max-width:460px}
+.land-extra .le-t{font-size:15px;color:var(--mid);line-height:1.45}
+.land-extra .email-row{margin-top:10px}
+.land-extra .email-msg{margin-top:8px}
+.land-extra .dc{margin-top:12px;display:inline-flex}
+
+/* business section */
+.biz-routes{margin-top:12px;border-top:1px solid var(--line)}
+.br{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;padding:14px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.br:last-child{border-bottom:0;padding-bottom:0}
+.br .a{font-weight:700;font-size:16px}
+.br .a small{display:block;color:var(--mid);font-weight:400;font-size:13px;line-height:1.45;margin-top:3px}
+.br .v{text-align:right;font-weight:700;font-size:19px;letter-spacing:-.01em;white-space:nowrap}
+.br.build .a,.br.build .v{color:var(--accent-ink)}
+.calc-in{margin-top:14px;display:grid;grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);gap:10px}
+.calc-in label{display:block;font-size:14px;color:var(--mid);margin-bottom:6px}
+.calc-in .small-field{margin-top:0;max-width:none;height:52px}
+.calc-in .small-field input{font-size:20px}
+.calc-chips{margin-top:12px}
+.calc-chips .chip{min-height:40px;font-size:14px;padding:0 12px}
+.calc-out{margin-top:18px;border-top:1px solid var(--line)}
+.co{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.co:last-child{border-bottom:0;padding-bottom:0}
+.co .k{color:var(--mid);font-size:15px}
+.co .k small{display:block;font-size:13px;margin-top:2px}
+.co .v{text-align:right;font-weight:700;font-size:20px;letter-spacing:-.01em}
+.co .v small{display:block;font-weight:400;color:var(--mid);font-size:13px;letter-spacing:0;margin-top:2px}
+.biz-note{margin-top:22px;font-size:17px;line-height:1.55;max-width:62ch}
+.biz-fine{margin-top:10px;color:var(--mid);font-size:14px}
+
+
+/* what the number assumes */
+.assume{margin-top:20px;max-width:600px;padding-top:16px;border-top:1px solid var(--line)}
+.assume .as-t{font-weight:700;font-size:16px}
+.as-list{list-style:none;margin-top:8px;display:grid;gap:6px}
+.as-list li{position:relative;padding-left:16px;font-size:15px;line-height:1.5;color:var(--mid)}
+.as-list li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--dot)}
+.as-list li b{color:var(--ink);font-weight:700}
+.as-more{margin-top:6px}
+.as-more summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:40px;font-weight:700;font-size:15px;color:var(--ink)}
+.as-more summary::-webkit-details-marker{display:none}
+.as-more summary .plus{width:16px;height:16px;transition:transform .2s var(--ease)}
+.as-more[open] summary .plus{transform:rotate(45deg)}
+.as-more .as-list{margin-top:2px;gap:8px}
+.as-foot{margin-top:8px;font-size:15px;line-height:1.5;color:var(--mid)}
+.as-foot .btn-text{height:auto;padding:0;font-size:15px;vertical-align:baseline}
+
+/* lessons from the ebook */
+.lessons{margin-top:32px}
+.ls-k{font-weight:700;font-size:16px}
+.lessons .links{margin-top:12px}
+
+/* ---------- Wider screens ---------- */
+@media (min-width:720px){
+  :root{--gut:32px}
+  .land .cta-row .btn{flex:0 0 auto;min-width:220px}
+  .what{grid-template-columns:repeat(3, 1fr);gap:0 32px;border-top:0}
+  .what > div{border-top:1px solid var(--line);border-bottom:0;flex-direction:column;gap:6px}
+  .stats{grid-template-columns:repeat(4, 1fr)}
+  .scen-grid{grid-template-columns:repeat(3, 1fr);gap:0 28px;border-top:0}
+  .sc{border-bottom:0;border-top:1px solid var(--line);grid-template-columns:1fr;padding:14px 0 12px}
+  .sc .fa{text-align:left;margin-top:6px}
+}
+@media (min-width:1024px){
+  :root{--gut:48px}
+  .g-hero{grid-template-columns:minmax(0, 1fr) 360px;align-items:start;gap:48px}
+  .g-2{grid-template-columns:1fr 1fr;gap:16px}
+  .g-chart{grid-template-columns:minmax(0, 1fr) 360px;gap:16px;align-items:start}
+  .g-how{grid-template-columns:minmax(0, 1fr) 420px;gap:48px;align-items:start}
+  .g-moves{grid-template-columns:400px minmax(0, 1fr);gap:16px;align-items:start}
+  .g-share{grid-template-columns:440px minmax(0, 1fr);grid-template-areas:"card head" "card acts";gap:0 48px}
+  .share-head{align-self:end}
+  .share-acts{align-self:start;margin-top:20px}
+  .g-chart{align-items:stretch}
+  /* fixed heights here so the stretched chart doesn't jump while dragging */
+  .out-big{min-height:29px}
+  .out-note{min-height:61px}
+  .out-note:empty{display:block}
+  .lev-reset.off{display:inline-flex;visibility:hidden}
+  .chart-card{display:flex;flex-direction:column}
+  .chart-wrap{flex:1;min-height:320px}
+  .chart-wrap svg{position:absolute;left:0;top:0;width:100%;height:100%}
+  .land-grid{grid-template-columns:minmax(0, 1fr) 420px;gap:64px}
+  .land-ex{display:block}
+  .links{display:grid;grid-template-columns:repeat(4, 1fr);gap:0 24px;border-top:0}
+  .links.links-2{grid-template-columns:repeat(2, 1fr)}
+  .link{border-top:1px solid var(--line);border-bottom:0;align-items:flex-start}
+  .card{padding:28px}
+}
+
+
+/* ---------- The Green look (his pick) ----------
+   Full-bleed spring green on the two moments that carry hope: the landing example and the answer. */
+
+/* shared pieces */
+.btn-glass{background:var(--glass);color:var(--ink);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.btn-discord,
+.link:hover .btn-discord{background:#5865F2;color:#fff}
+.btn-discord svg{color:#fff}
+.btn-primary:hover{opacity:.92}
+.chip{box-shadow:none;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--btn-bg);color:var(--btn-ink);box-shadow:none}
+.chip[aria-pressed="true"] .c-amt{color:var(--btn-ink);opacity:.75}
+/* a picked chip keeps its colour under the pointer, so its words never go dark on dark */
+.chip[aria-pressed="true"]:hover{background:var(--btn-bg);color:var(--btn-ink)}
+.glass{-webkit-backdrop-filter:none;backdrop-filter:none}
+.icon-btn{-webkit-backdrop-filter:none;backdrop-filter:none}
+.btn-text{font-weight:700}
+
+/* landing */
+.land h1{font-size:clamp(64px, 10.4vw, 156px);line-height:.88;letter-spacing:-.06em;max-width:9ch}
+.land .lede{font-weight:700;letter-spacing:-.01em}
+.land .lede span{font-weight:400;color:var(--ink)}
+.land .fine,
+.land-foot{color:var(--ink)}
+.what .w-d{color:var(--ink)}
+details.explain .body{color:var(--ink)}
+.land-extra .le-t{color:var(--ink)}
+
+/* questions: pure black */
+.segs i{height:4px}
+.q-title{font-size:clamp(40px, 7.4vw, 58px);line-height:1;letter-spacing:-.045em}
+.q-help{color:var(--ink);opacity:.86}
+.big-field{background:none;box-shadow:none;border-radius:0;padding:0 2px;height:86px;
+  border-bottom:3px solid var(--accent);-webkit-backdrop-filter:none;backdrop-filter:none}
+.big-field:focus-within{box-shadow:none}
+.big-pre{color:var(--ink)}
+.big-input{font-size:clamp(44px, 11vw, 62px);letter-spacing:-.04em;caret-color:var(--accent)}
+.stepper .icon-btn{height:86px}
+.q-chips{display:flex;flex-wrap:wrap;gap:8px}
+.q-chips .chip{flex:1 1 calc(50% - 4px);min-height:52px;font-size:16px}
+.q-cta{flex-direction:column;align-items:stretch;gap:6px}
+.q-cta .btn-primary{flex:none;width:100%}
+.q-cta .btn-text{align-self:center;text-decoration:none}
+.q-note,
+.bd-note,
+.sub-field .hint{color:var(--mid)}
+.small-field,
+.bd-amt,
+.email-row input{box-shadow:none}
+.small-field:focus-within,
+.bd-amt:focus-within,
+.email-row input:focus{box-shadow:inset 0 0 0 2px var(--focus)}
+
+/* results: green answer, black work */
+.g-hero{padding-bottom:clamp(48px, 8vh, 88px)}
+/* phones and tablets stack the hero, so the last card sits right before the next section: no extra gap on top of its margin */
+@media (max-width:1023px){.g-hero{padding-bottom:0}}
+.hero-k{color:var(--ink);font-weight:700}
+.hero-num{font-size:clamp(64px, 18vw, 160px);letter-spacing:-.065em;line-height:.92}
+.hero-note,
+.g-hero .as-list li,
+.g-hero .as-foot{color:var(--ink)}
+.plan-line .pl-k{font-size:15px}
+.sec-h{font-size:clamp(30px, 4.2vw, 48px);letter-spacing:-.04em;line-height:1.05}
+.card-big{letter-spacing:-.045em}
+.mv{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+.sc .tag{background:var(--green);color:#000}
+.mv .num{background:var(--green);color:#000}
+.sum .sv{font-size:clamp(46px, 12vw, 60px);letter-spacing:-.055em}
+@media (min-width:720px){
+  .q-chips .chip{flex:1 1 0}
+}
+
+/* Half green: black page with green accents; a green panel holds the example card and the answer */
+.land h1{font-size:clamp(52px, 7.6vw, 112px);line-height:.92;letter-spacing:-.055em;max-width:10ch}
+.hero-num{font-size:clamp(56px, 15vw, 128px)}
+.assume{border-top:1px solid var(--line)}
+
+.land-ex{display:block;padding:32px 0;border-image:conic-gradient(#3fd94e 0 0) fill 0 // 0 100vw}
+.land-ex .sum{max-width:none}
+.hero-main{
+  --bg:#3fd94e;--ink:#000000;--mid:rgba(0,0,0,.72);--accent:#000000;--accent-ink:#000000;
+  color:var(--ink);padding:28px 0 32px;border-image:conic-gradient(#3fd94e 0 0) fill 0 // 0 100vw}
+.hero{padding-top:clamp(24px, 5vh, 56px)}
+@media (min-width:1024px){
+  .land-grid{grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);gap:64px;align-items:stretch}
+  .land-ex{display:flex;flex-direction:column;justify-content:center;padding:56px 0 56px 56px;
+    border-image:conic-gradient(#3fd94e 0 0) fill 0 // 0 100vw 0 0}
+  .land-ex .sum{max-width:440px}
+  .hero-main{border-image:none;background:#3fd94e;border-radius:var(--r-card);padding:36px 36px 40px}
+}
+
+/* example card on phones: under the main buttons, compact */
+@media (max-width:1023px){
+  .land-grid{gap:0}
+  .land-grid > div:first-child{display:contents}
+  .land-grid h1{order:1}.land .lede{order:2}.land .cta-row{order:3}.land .fine{order:4}
+  .land-ex{display:block;order:5;margin-top:28px}
+  .land-extra{order:6}
+  #v-landing .land-ex .sum{max-width:none;padding:20px 20px 16px}
+  #v-landing .land-ex .sum .sv{font-size:clamp(34px, 10vw, 44px)}
+  #v-landing .land-ex .sum .sbar{margin:14px 0 4px}
+  #v-landing .land-ex .sum .srow{padding:9px 0;font-size:14px}
+  #v-landing .land-ex .sum .sfoot{margin-top:10px;padding-top:10px}
+}
+#v-landing .land-ex .sbar .fill{transition:width .4s var(--ease)}
+
+/* ---------- malikpeace.com: white boxes, colour blocks, the top bar ---------- */
+/* white boxes: Memento's contrast for the key content. In Flash bang they turn black. */
+.wbox,.mv{
+  --bg:#ffffff; --ink:#0b0b0c; --mid:#5c5c66; --line:#e3e3e8;
+  --accent:#18a030; --accent-ink:#137a25; --green-ink:#137a25; --warn:#e00000;
+  --glass:rgba(0,0,0,.05); --glass-2:rgba(0,0,0,.085); --edge:rgba(0,0,0,.08);
+  --ph:#a2a2aa; --dot:#c4c4cc; --tick:#c9c9d0;
+  --thumb:#0b0b0c; --thumb-shadow:none; --focus:#137a25;
+  --tip-bg:rgba(255,255,255,.98); --pop-shadow:0 12px 32px rgba(0,0,0,.18);
+  --sum-bg:#ffffff; --sum-line:rgba(0,0,0,.08); --soft:#f4f4f6; --band:rgba(24,160,48,.14); --link-line:#18a030;
+  color-scheme:light;
+  background:var(--bg); color:var(--ink); box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+:root[data-theme="light"] :is(.wbox,.mv){
+  --bg:#0b0b0c; --ink:#f2f2f3; --mid:#a7a7ad; --line:#26262a;
+  --accent:#3fd94e; --accent-ink:#3fd94e; --green-ink:#3fd94e; --warn:#ff1a1a;
+  --glass:rgba(255,255,255,.07); --glass-2:rgba(255,255,255,.11); --edge:rgba(255,255,255,.08);
+  --ph:#4a4a50; --dot:#4a4a50; --tick:#3a3a40;
+  --thumb:#f2f2f3; --thumb-shadow:0 2px 10px rgba(0,0,0,.6); --focus:#3fd94e;
+  --tip-bg:rgba(14,14,16,.97); --pop-shadow:0 16px 40px rgba(0,0,0,.6);
+  --sum-bg:#0b0b0c; --sum-line:rgba(255,255,255,.1); --soft:rgba(255,255,255,.05); --band:rgba(63,217,78,.16); --link-line:#3fd94e;
+  color-scheme:dark;
+}
+.wbox .card-k,.wbox .sk{color:var(--mid)}
+/* green blocks (gain): the landing example and the answer. The same in both modes. */
+.land-ex,.hero-main{
+  --bg:#3fd94e; --ink:#000000; --mid:rgba(0,0,0,.72); --line:rgba(0,0,0,.14);
+  --accent:#000000; --accent-ink:#000000; --green-ink:#000000; --dot:rgba(0,0,0,.4);
+  color:var(--ink);
+}
+/* the business band (Malik, 2026-10-25: "change the red to white instead. So it's a full white background with black
+   text and the other elements are visible"): a full-bleed white band whose cards turn black. Flash bang flips it, like the
+   homepage's bands: a black band with white cards. */
+.wband{
+  --band-bg:#ffffff;
+  --bg:#ffffff; --ink:#0b0b0c; --mid:#5c5c66; --line:rgba(0,0,0,.12);
+  --accent:#0b0b0c; --accent-ink:#137a25; --green-ink:#137a25; --dot:rgba(0,0,0,.4);
+  color:var(--ink);
+  padding:clamp(48px, 8vw, 72px) 0;
+  border-image:conic-gradient(var(--band-bg) 0 0) fill 0 // 0 100vw;
+}
+:root[data-theme="light"] .wband{
+  --band-bg:#000000;
+  --bg:#000000; --ink:#f2f2f3; --mid:#a7a7ad; --line:rgba(255,255,255,.14);
+  --accent:#f2f2f3; --accent-ink:#3fd94e; --green-ink:#3fd94e; --dot:rgba(255,255,255,.4);
+}
+/* its cards: black on the white band, white on the black one */
+.wband .wbox{
+  --bg:#0b0b0c; --ink:#f2f2f3; --mid:#a7a7ad; --line:#26262a;
+  --accent:#3fd94e; --accent-ink:#3fd94e; --green-ink:#3fd94e; --warn:#ff1a1a;
+  --glass:rgba(255,255,255,.07); --glass-2:rgba(255,255,255,.11); --edge:rgba(255,255,255,.08);
+  --ph:#6a6a72; --dot:#4a4a50; --tick:#3a3a40;
+  --thumb:#f2f2f3; --thumb-shadow:0 2px 10px rgba(0,0,0,.6); --focus:#3fd94e;
+  --tip-bg:rgba(14,14,16,.97); --pop-shadow:0 16px 40px rgba(0,0,0,.6);
+  --sum-bg:#0b0b0c; --sum-line:rgba(255,255,255,.1); --soft:rgba(255,255,255,.05); --band:rgba(63,217,78,.16); --link-line:#3fd94e;
+  color-scheme:dark;
+}
+:root[data-theme="light"] .wband .wbox{
+  --bg:#ffffff; --ink:#0b0b0c; --mid:#5c5c66; --line:#e3e3e8;
+  --accent:#18a030; --accent-ink:#137a25; --green-ink:#137a25; --warn:#e00000;
+  --glass:rgba(0,0,0,.05); --glass-2:rgba(0,0,0,.085); --edge:rgba(0,0,0,.08);
+  --ph:#a2a2aa; --dot:#c4c4cc; --tick:#c9c9d0;
+  --thumb:#0b0b0c; --thumb-shadow:none; --focus:#137a25;
+  --tip-bg:rgba(255,255,255,.98); --pop-shadow:0 12px 32px rgba(0,0,0,.18);
+  --sum-bg:#ffffff; --sum-line:rgba(0,0,0,.08); --soft:#f4f4f6; --band:rgba(24,160,48,.14); --link-line:#18a030;
+  color-scheme:light;
+}
+.wband .sec-sub,.wband .biz-note{color:var(--ink)}
+.wband .biz-fine{color:var(--mid)}
+/* the losses, in red */
+.no,.stage .s-r small.no,.hmark .r small.no{color:var(--warn)}
+.stat .v.no{color:var(--warn)}
+.br.loss .v{color:var(--warn)}
+.br.build .a,.br.build .v{color:var(--green-ink)}
+
+/* the homepage's top bar (copied from malikpeace.com/assets/site.css): the name goes home, Flash bang mode on the right */
+.s1-top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--topbg);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+/* .bar is also this page's progress bar, so the header's own .bar resets it */
+.s1-top .bar{position:static;height:auto;border-radius:0;background:none;max-width:1200px;margin-inline:auto;padding:12px calc(var(--gut) + var(--sr)) 12px calc(var(--gut) + var(--sl));display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 18px}
+.s1-top .name{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.s1-top .name img{width:32px;height:32px;object-fit:contain}
+.mp-acts{display:flex;align-items:center;gap:8px}
+.mp-act{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border:0;border-radius:999px;font:700 13.5px/1 var(--font);letter-spacing:-.005em;cursor:pointer;text-decoration:none;white-space:nowrap;transition:transform .12s ease-out,background-color .2s ease-out,color .2s ease-out}
+.mp-act svg{width:15px;height:15px;flex:none}
+.mp-act:active{transform:scale(.96)}
+.mp-act.fb{background:var(--ink);color:var(--bg)}
+.mp-act .lbl{display:inline-grid;justify-items:center}
+.mp-act .lbl > span{grid-area:1 / 1;display:inline-flex;align-items:center;gap:7px}
+html[data-theme="light"] .mp-act .lb-l,html:not([data-theme="light"]) .mp-act .lb-d{visibility:hidden}
+.mp-act.dm{background:var(--fill2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.mp-act:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+@media (max-width:720px){
+  :root{--hd:53px}
+  .s1-top .bar{padding-block:10px}
+  .mp-act{height:32px;padding:0 11px;font-size:13px}
+  .mp-act.dm .lbl{display:none}
+  .mp-act.dm{width:32px;padding:0;justify-content:center}
+}
+.view{min-height:calc(100vh - var(--hd));min-height:calc(100svh - var(--hd))}
+/* switching modes: the homepage's circle out of the centre (site.css), colour fades off while it runs */
+html.mp-swap *,html.mp-swap *::before,html.mp-swap *::after{transition:none!important}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+html.mp-swap::view-transition-new(root){animation:mp-orb .5s linear both}
+::view-transition{pointer-events:none}
+@keyframes mp-orb{
+  0%{clip-path:circle(calc(6px + (71% - 2px) * 0.0000) at 50% 50%)}
+  5%{clip-path:circle(calc(6px + (71% - 2px) * 0.0061) at 50% 50%)}
+  10%{clip-path:circle(calc(6px + (71% - 2px) * 0.0134) at 50% 50%)}
+  15%{clip-path:circle(calc(6px + (71% - 2px) * 0.0220) at 50% 50%)}
+  20%{clip-path:circle(calc(6px + (71% - 2px) * 0.0323) at 50% 50%)}
+  25%{clip-path:circle(calc(6px + (71% - 2px) * 0.0445) at 50% 50%)}
+  30%{clip-path:circle(calc(6px + (71% - 2px) * 0.0590) at 50% 50%)}
+  35%{clip-path:circle(calc(6px + (71% - 2px) * 0.0762) at 50% 50%)}
+  40%{clip-path:circle(calc(6px + (71% - 2px) * 0.0968) at 50% 50%)}
+  45%{clip-path:circle(calc(6px + (71% - 2px) * 0.1212) at 50% 50%)}
+  50%{clip-path:circle(calc(6px + (71% - 2px) * 0.1502) at 50% 50%)}
+  55%{clip-path:circle(calc(6px + (71% - 2px) * 0.1847) at 50% 50%)}
+  60%{clip-path:circle(calc(6px + (71% - 2px) * 0.2258) at 50% 50%)}
+  65%{clip-path:circle(calc(6px + (71% - 2px) * 0.2746) at 50% 50%)}
+  70%{clip-path:circle(calc(6px + (71% - 2px) * 0.3327) at 50% 50%)}
+  75%{clip-path:circle(calc(6px + (71% - 2px) * 0.4018) at 50% 50%)}
+  80%{clip-path:circle(calc(6px + (71% - 2px) * 0.4839) at 50% 50%)}
+  85%{clip-path:circle(calc(6px + (71% - 2px) * 0.5815) at 50% 50%)}
+  90%{clip-path:circle(calc(6px + (71% - 2px) * 0.6977) at 50% 50%)}
+  95%{clip-path:circle(calc(6px + (71% - 2px) * 0.8358) at 50% 50%)}
+  100%{clip-path:circle(calc(6px + (71% - 2px) * 1.0000) at 50% 50%)}
+}
+
+/* more free tools: one quiet box per other tool, at the bottom */
+.more-tools{margin-top:56px}
+.more-tools .mft-k{font-weight:700;font-size:16px}
+.mft-row{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.mft{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:12px;background:var(--soft);box-shadow:inset 0 0 0 1px var(--line);text-decoration:none;color:var(--ink);transition:background-color .2s var(--ease),transform .15s var(--ease)}
+.mft:hover{background:var(--glass-2)}
+.mft:active{transform:scale(.985)}
+.mft b{display:block;font-size:16px;font-weight:700}
+.mft span{display:block;color:var(--mid);font-size:14px;margin-top:2px}
+.mft svg{flex:none;width:18px;height:18px;color:var(--mid)}
+#v-landing .more-tools{max-width:880px}
+@media (min-width:720px){.mft-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* More free tools: white boxes like the Life Audit's and the 25+5's, so the set matches (black in Flash bang) */
+.mft{background:#fff;color:#0b0b0c;box-shadow:none;border-radius:14px;padding:16px 18px}
+.mft:hover{background:#ececef}
+.mft span,.mft svg{color:#5c5c66}
+html[data-theme="light"] .mft{background:#0b0b0c;color:#f2f2f3}
+html[data-theme="light"] .mft:hover{background:#1c1c1f}
+html[data-theme="light"] .mft span,html[data-theme="light"] .mft svg{color:#a7a7ad}
+
+
+/* ---------- phones: rows that crowded their words (audit, 2026-10-25) ---------- */
+@media (max-width:559px){
+  /* stages: the amount and the when drop under the words, so the words get the whole row */
+  .stage{grid-template-columns:22px minmax(0,1fr)}
+  .stage .s-r{grid-column:2;text-align:left;white-space:normal;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin-top:-4px}
+  .stage .s-r small{display:inline;margin-top:0}
+  /* business routes: the title and its number share the first line, the explanation gets the full width under them */
+  .br .a{display:contents}
+  .br .a small{grid-column:1 / -1;grid-row:2}
+  .br .v{grid-column:2;grid-row:1}
+  /* the calculator's examples, two to a row */
+  .calc-chips{display:grid;grid-template-columns:1fr 1fr}
+}
+.sc .tag{white-space:nowrap}
+@media (max-width:379px){
+  .sc{grid-template-columns:minmax(0,1fr)}
+  .sc .fa{text-align:left;margin-top:6px}
+}
+/* the top bar stays one row on small phones (375pt iPhones wrapped it to two, 93px tall) */
+@media (max-width:399px){ .s1-top .bar{column-gap:10px} }
+@media (max-width:359px){
+  .s1-top .name{font-size:16px;gap:8px}
+  .mp-act{padding:0 9px}
+  .mp-act.dm{display:none}   /* on the tiniest phones Edit answers stays in Save your number */
+}
+/* five quick picks (the goal ages): three to a row, so none is left alone across the whole width */
+@media (max-width:719px){
+  .q-chips:has(> .chip:nth-child(5):last-child) .chip{flex-basis:calc(33.333% - 6px)}
+}
+
+.no-motion *,.no-motion *::before,.no-motion *::after{animation:none!important;transition:none!important}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<header class="s1-top"><div class="bar"><a class="name" data-link="site" href="https://malikpeace.com/"><img src="data:image/png;base64,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" alt="">Malik Peace</a><div class="mp-acts"><button type="button" class="mp-act dm" id="btn-edit" hidden aria-label="Edit answers"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.8 3.6l3.6 3.6M3.5 16.5l.7-3.6 9.4-9.4a1.6 1.6 0 0 1 2.3 0l1.3 1.3a1.6 1.6 0 0 1 0 2.3l-9.4 9.4z"/></svg><span class="lbl">Edit answers</span></button><button type="button" class="mp-act fb" data-flashbang aria-pressed="false"><span class="lbl"><span class="lb-l"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.8v3.1M10 15.1v3.1M1.8 10h3.1M15.1 10h3.1M4.2 4.2l2.2 2.2M13.6 13.6l2.2 2.2M4.2 15.8l2.2-2.2M13.6 6.4l2.2-2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="2.6" fill="currentColor"/></svg>Flash bang mode</span><span class="lb-d"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.8v3.1M10 15.1v3.1M1.8 10h3.1M15.1 10h3.1M4.2 4.2l2.2 2.2M13.6 13.6l2.2 2.2M4.2 15.8l2.2-2.2M13.6 6.4l2.2-2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="2.6" fill="currentColor"/></svg>Dark mode</span></span></button></div></div></header>
+
+<main id="app">
+
+<!-- ================= LANDING ================= -->
+<section id="v-landing" class="view">
+  <div class="land">
+   <div class="land-grid">
+    <div>
+    <h1>Your <span class="t">Freedom</span> Number</h1>
+    <p class="lede">The amount of money you need invested to live off the returns and stop trading time for money. <span>Two minutes from now, you'll know yours.</span></p>
+    <div class="cta-row">
+      <button class="btn btn-primary" id="btn-start" type="button">Find my number</button>
+      <button class="btn btn-glass" id="btn-resume" type="button" hidden>See my last result</button>
+    </div>
+    <p class="fine">6 questions. Nothing you type leaves your browser.</p>
+    <div class="land-extra">
+      <p class="le-t">Join my email list to get direct updates on future projects! (I promise I won't spam lol)</p>
+      <form id="land-email" novalidate><div class="bh-plate"><div class="bh" data-bh="00d2e169-0ad8-422d-bf41-f7ccbf944ca5"></div></div></form>
+      <p class="email-msg" id="land-email-msg" hidden>(preview) nothing was saved.</p>
+      <a class="btn btn-sm btn-discord dc" data-link="discord" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.1 14.1 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Join Discord</a>
+    </div>
+    </div>
+    <div class="land-ex" aria-hidden="true">
+      <div class="sum wbox">
+        <div class="sk" id="ex-name">Frugal</div>
+        <div class="sv" id="ex-fn">$600,000</div>
+        <div class="bar sbar"><div class="fill" id="ex-fill" style="width:6%"></div></div>
+        <div class="srow"><span>Lifestyle costs</span><span id="ex-spend">$2,000 a month</span></div>
+        <div class="srow"><span>Per year</span><span id="ex-year">$24,000</span></div>
+        <div class="srow"><span>Free in 20 years from $0</span><span id="ex-need">$1,670/mo</span></div>
+        <div class="sfoot"><span><b>Your Freedom Number</b></span><span>Malik Peace</span></div>
+      </div>
+      <p class="cap">Just examples. Yours takes about two minutes.</p>
+    </div>
+   </div>
+
+    <div class="what">
+      <div><span class="n">1</span><div><div class="w-t">Your number</div><div class="w-d">How much the life you actually want costs.</div></div></div>
+      <div><span class="n">2</span><div><div class="w-t">How close you are</div><div class="w-d">In dollars, and in hours of work you've already bought back.</div></div></div>
+      <div><span class="n">3</span><div><div class="w-t">When you're free</div><div class="w-d">At your pace, and what would change it.</div></div></div>
+    </div>
+
+    <details class="explain">
+      <summary>What is a freedom number?
+        <svg class="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </summary>
+      <div class="body">
+        <p>Your freedom number is the amount of money you need invested to live off returns and stop trading time for money. This is also what a lot of people think about with retirement. Your number depends on the life you actually want, where you live, and how much of a buffer you want in the future. Two minutes from now, you'll know yours.</p>
+        <p>Knowing your freedom number can significantly change the actions you take for the rest of your life if you're serious about it.</p>
+      </div>
+    </details>
+
+    <nav class="more-tools" aria-label="More free tools">
+      <p class="mft-k">More free tools</p>
+      <div class="mft-row">
+        <a class="mft" data-tool="focus" href="/focus/"><div><b>Focus Room</b><span>A timer that fills the screen.</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a class="mft" data-tool="audit" href="/audit/"><div><b>The Life Audit</b><span>See where your time goes.</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a class="mft" data-tool="25" href="/25/"><div><b>25+5 Lessons</b><span>What I learned by 25. $25.</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+      </div>
+    </nav>
+  </div>
+  <footer class="land-foot">Educational, not financial advice.</footer>
+</section>
+
+<!-- ================= WIZARD ================= -->
+<section id="v-wizard" class="view" hidden>
+  <div class="wz-top">
+    <button class="icon-btn" id="btn-back" type="button" aria-label="Back">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="segs" id="segs" aria-hidden="true"></div>
+    <div class="wz-count" id="wz-count"></div>
+  </div>
+  <div class="wz-body">
+    <div id="step" class="step"></div>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="v-results" class="view" hidden>
+
+  <div class="rs">
+
+    <!-- Hero -->
+    <div class="grid g-hero hero">
+      <div>
+        <div class="hero-main">
+        <p class="hero-k">Your freedom number is</p>
+        <h1 class="hero-num" id="fn-num">$0</h1>
+        <p class="hero-sub fade-late" id="fn-sub"></p>
+        <p class="hero-note fade-late" id="fn-note"></p>
+        </div>
+        <div class="assume fade-late" id="assume">
+          <div class="as-t">What I assumed to get this number</div>
+          <ul class="as-list" id="as-list"></ul>
+          <details class="as-more">
+            <summary>How this number works
+              <svg class="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </summary>
+            <ul class="as-list" id="as-more"></ul>
+          </details>
+          <p class="as-foot">If your life's different, you can change any of these in the <button type="button" class="btn-text as-go" id="as-go">settings below</button> (kids are in Edit answers). Not financial advice.</p>
+        </div>
+        <div class="plan-line wbox fade-late" id="plan-line"></div>
+      </div>
+      <div class="glass card wbox fade-late" id="guess-card" hidden>
+        <div style="font-weight:700;font-size:17px">Your guess vs reality</div>
+        <div class="guess-rows">
+          <div><span class="k">You guessed</span><span class="v" id="g-guess"></span></div>
+          <div><span class="k">The real number</span><span class="v t" id="g-real"></span></div>
+        </div>
+        <p class="card-line" id="g-verdict"></p>
+      </div>
+    </div>
+
+    <!-- Where you are -->
+    <section class="sec">
+      <h2 class="sec-h">Where you are</h2>
+      <div class="grid g-2" style="margin-top:22px">
+        <div class="glass card wbox">
+          <div class="card-k">How close you are</div>
+          <div class="card-big" id="p-pct">0%</div>
+          <div class="prog">
+            <div class="bar" id="p-bar"><div class="fill" id="p-fill"></div></div>
+            <div class="bar-ends"><span><b id="p-have">$0</b> invested</span><span><b id="p-goal">$0</b></span></div>
+          </div>
+          <div class="stages" id="stages"></div>
+        </div>
+        <div class="glass card wbox">
+          <div class="card-k">Your freedom, in hours</div>
+          <div class="hours-big"><div class="card-big" id="h-num">0 hours</div><div class="of">of 2,080</div></div>
+          <p class="card-line" id="h-line"></p>
+          <div class="hgrid" id="hgrid" aria-hidden="true"></div>
+          <div class="hgrid-cap"><span>A full-time work year, week by week</span><span>52 weeks</span></div>
+          <p class="card-line muted" id="h-per" style="font-size:15px"></p>
+          <div class="hmarks" id="hmarks"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- When you're free -->
+    <section class="sec">
+      <h2 class="sec-h">When you're free</h2>
+      <p class="verdict" id="verdict"></p>
+      <div class="stats">
+        <div class="glass stat wbox"><div class="k">At your pace, free at</div><div class="v" id="s-free">-</div><div class="f" id="s-free-f"></div></div>
+        <div class="glass stat wbox"><div class="k">Your goal</div><div class="v" id="s-goal">-</div><div class="f" id="s-goal-f"></div></div>
+        <div class="glass stat wbox"><div class="k">Needed to hit your goal</div><div class="v" id="s-need">-</div><div class="f" id="s-need-f"></div></div>
+        <div class="glass stat wbox"><div class="k">You invest now</div><div class="v" id="s-now">-</div><div class="f" id="s-now-f"></div></div>
+      </div>
+
+      <div class="glass scen wbox" id="scen">
+        <div class="scen-head">
+          <div><div style="font-weight:700;font-size:17px">What if the market does better or worse?</div>
+          <div class="muted" style="font-size:14px;margin-top:2px">These are yearly returns before inflation. Nobody knows which one we'll get, so here's the range.</div></div>
+        </div>
+        <div class="scen-grid" id="scen-grid"></div>
+      </div>
+
+      <div class="grid g-chart" style="margin-top:16px">
+        <div class="glass chart-card wbox">
+          <div class="chart-head"><span class="ct">Your money, year by year</span><span class="cs">In today's dollars</span></div>
+          <div class="chart-wrap" id="chart-wrap">
+            <svg id="chart" role="img" aria-label="Projection of your invested money by age"></svg>
+            <div class="tip" id="tip"></div>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+
+        <div class="glass card wbox" id="whatif">
+          <div style="font-weight:700;font-size:19px">What if</div>
+          <p class="muted" style="font-size:14px;margin-top:2px">Move these and watch the chart change.</p>
+          <div style="margin-top:12px">
+            <div class="lever">
+              <div class="lever-top"><span class="l">Spend less each month</span><span class="v" id="lv-less-v">$0</span></div>
+              <input type="range" class="green" id="lv-less" min="0" max="2000" step="50" value="0" aria-label="Spend less each month">
+            </div>
+            <div class="lever">
+              <div class="lever-top"><span class="l">Invest more each month</span><span class="v" id="lv-more-v">$0</span></div>
+              <input type="range" class="green" id="lv-more" min="0" max="5000" step="50" value="0" aria-label="Invest more each month">
+            </div>
+            <div class="lever" style="border-bottom:0">
+              <div class="lever-top"><span class="l">Free by age</span><span class="v" id="lv-goal-v">45</span></div>
+              <input type="range" id="lv-goal" min="20" max="85" step="1" value="45" aria-label="Free by age">
+            </div>
+          </div>
+          <div class="out" aria-live="polite">
+            <div class="out-row"><span class="k">Your number</span><span class="v" id="o-fn"></span></div>
+            <div class="out-row"><span class="k">Free at</span><span class="v" id="o-free"></span></div>
+            <div class="out-row"><span class="k">Needed by <span id="o-goal-age"></span></span><span class="v" id="o-need"></span></div>
+            <div class="out-big" id="o-big"></div>
+            <div class="out-note" id="o-note"></div>
+            <button class="btn-text lev-reset off" id="lv-reset" type="button">Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Your plan -->
+    <section class="sec">
+      <h2 class="sec-h">Your plan</h2>
+      <p class="sec-sub">What it takes each month, and the one change that helps you the most.</p>
+      <div class="grid g-2" style="margin-top:22px">
+        <div class="glass card wbox">
+          <div class="card-k">What it costs to be free by...</div>
+          <div class="ptable" id="ptable"></div>
+          <p class="card-line muted" id="ptable-note" style="font-size:14px"></p>
+        </div>
+        <div class="glass card wbox" id="lever-card">
+          <div class="card-k">Your biggest lever</div>
+          <div class="lv-head" id="lv-head"></div>
+          <div class="lbars" id="lbars"></div>
+          <p class="card-line" id="lv-expl" style="font-size:15px"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why people start businesses -->
+    <section class="sec wband" id="biz">
+      <h2 class="sec-h">Why people start businesses</h2>
+      <p class="sec-sub" id="biz-intro"></p>
+      <div class="grid g-2" style="margin-top:22px">
+        <div class="glass card wbox">
+          <div class="card-k" id="biz-k"></div>
+          <div class="biz-routes" id="biz-routes"></div>
+        </div>
+        <div class="glass card wbox" id="biz-calc">
+          <div class="card-k">Money = value x scale</div>
+          <p class="card-line" style="margin-top:6px">In a business that basically means profit per sale x how many people buy. There's a million ways to get to the same number. Sell a $1 thing to 100,000 people, or a $5,000 thing to 20.</p>
+          <div class="calc-in">
+            <div><label for="biz-p">Profit per sale</label><div class="small-field"><span>$</span><input id="biz-p" inputmode="numeric" autocomplete="off" value="100"></div></div>
+            <div><label for="biz-n">Sales a month</label><div class="small-field"><input id="biz-n" inputmode="numeric" autocomplete="off" value="30"></div></div>
+          </div>
+          <div class="chips calc-chips" id="biz-chips"></div>
+          <div class="calc-out" id="biz-out" aria-live="polite"></div>
+        </div>
+      </div>
+      <p class="biz-note" id="biz-note"></p>
+      <p class="biz-fine">Educational, not advice. Profit here means what's left after costs, before taxes.</p>
+    </section>
+
+    <!-- Next moves -->
+    <section class="sec">
+      <h2 class="sec-h">Your next 3 moves</h2>
+      <p class="sec-sub">Answer these three and the order changes to fit you. This is general stuff, not advice for your exact situation.</p>
+      <div class="grid g-moves" style="margin-top:22px">
+        <div class="glass card wbox qcheck" id="qcheck">
+          <div class="qrow" data-q="debt"><div class="qt">Carrying credit card or other high-interest debt?</div><div class="yn"><button type="button" class="chip" data-a="1" aria-pressed="false">Yes</button><button type="button" class="chip" data-a="0" aria-pressed="false">No</button></div></div>
+          <div class="qrow" data-q="cash"><div class="qt">Have 3 months of expenses saved in cash?</div><div class="yn"><button type="button" class="chip" data-a="1" aria-pressed="false">Yes</button><button type="button" class="chip" data-a="0" aria-pressed="false">No</button></div></div>
+          <div class="qrow" data-q="match"><div class="qt">Does your job match what you put into retirement?</div><div class="yn"><button type="button" class="chip" data-a="1" aria-pressed="false">Yes</button><button type="button" class="chip" data-a="0" aria-pressed="false">No</button></div></div>
+        </div>
+        <ol class="moves" id="moves" aria-live="polite"></ol>
+      </div>
+    </section>
+
+    <!-- How this works -->
+    <section class="sec">
+      <div class="grid g-how">
+        <div>
+          <h2 class="sec-h">How this works</h2>
+          <p class="how-lede" style="margin-top:14px" id="how-lede"></p>
+          <div class="math" id="math"></div>
+          <div class="notes" id="notes"></div>
+        </div>
+        <div class="glass asm wbox" id="asm">
+          <div style="font-weight:700;font-size:19px">Assumptions</div>
+          <p class="muted" style="font-size:14px;margin-top:2px">Change any of these and everything on the page updates.</p>
+          <div style="margin-top:8px">
+            <div class="asm-row">
+              <div class="lever-top"><span class="l">Withdrawal rate</span><span class="v" id="a-swr-v"></span></div>
+              <input type="range" id="a-swr" min="3" max="5" step="0.1" aria-label="Withdrawal rate">
+              <div class="h" id="a-swr-h"></div>
+            </div>
+            <div class="asm-row">
+              <div class="lever-top"><span class="l">Expected return</span><span class="v" id="a-ret-v"></span></div>
+              <input type="range" id="a-ret" min="3" max="10" step="0.5" aria-label="Expected return">
+              <div class="h">Per year, before inflation. Higher returns historically come with higher risk and bigger swings. You can't just crank this up. Most long-term plans use 7%.</div>
+            </div>
+            <div class="asm-row">
+              <div class="lever-top"><span class="l">Inflation</span><span class="v" id="a-infl-v"></span></div>
+              <input type="range" id="a-infl" min="1" max="6" step="0.5" aria-label="Inflation">
+              <div class="h">The long-run US average is about 3%.</div>
+            </div>
+            <div class="asm-row">
+              <div class="lever-top"><span class="l">Tax on withdrawals</span><span class="v" id="a-tax-v"></span></div>
+              <input type="range" id="a-tax" min="0" max="30" step="1" aria-label="Tax on withdrawals">
+              <div class="h">0% keeps it simple. If most of your money is in a 401(k) or IRA, it gets taxed when you take it out, so try 10 to 15%.</div>
+            </div>
+          </div>
+          <div class="asm-real" id="a-real"></div>
+          <div class="asm-foot"><span></span><button class="btn-text" id="a-reset" type="button">Reset to defaults</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary card -->
+    <section class="sec">
+      <div class="grid g-share">
+        <div class="sum wbox" id="sum">
+          <div class="sk">My freedom number</div>
+          <div class="sv" id="sum-fn">$0</div>
+          <div class="bar sbar"><div class="fill" id="sum-fill"></div></div>
+          <div class="srow"><span>Ideal life costs</span><span id="sum-spend"></span></div>
+          <div class="srow"><span>Invested today</span><span id="sum-have"></span></div>
+          <div class="srow"><span>Of the way there</span><span id="sum-pct"></span></div>
+          <div class="srow"><span>Free at my pace</span><span id="sum-free"></span></div>
+          <div class="srow"><span>My monthly plan</span><span id="sum-plan"></span></div>
+          <div class="sfoot"><span><b>Your Freedom Number</b></span><span>Malik Peace</span></div>
+        </div>
+        <div class="share-head">
+          <h2 class="sec-h">Save your number</h2>
+          <p class="sec-sub">Save the card, copy a link to this result, or get a reminder in 3 months. The link has your numbers in it, so only share it with people you trust.</p>
+        </div>
+        <div class="share-acts">
+          <div class="share-actions">
+            <button class="btn btn-primary btn-sm" id="btn-copy" type="button">Copy link</button>
+            <button class="btn btn-glass btn-sm" id="btn-png" type="button">Save as image</button>
+            <button class="btn btn-glass btn-sm" id="btn-ics" type="button">Remind me in 3 months</button>
+          </div>
+          <div class="share-minor"><button class="btn-text" id="btn-edit-2" type="button">Edit answers</button><button class="btn-text" id="btn-restart" type="button">Start over</button></div>
+          <form class="email" id="email-form" novalidate>
+            <label for="email-in">I hope you found this useful!</label>
+            <div class="hint">If you did, you can join the email list to get direct updates for more projects to come.</div>
+            <div class="bh-plate"><div class="bh" data-bh="00d2e169-0ad8-422d-bf41-f7ccbf944ca5"></div></div>
+            <p class="email-msg" id="email-msg" hidden>(preview) nothing was saved.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Next -->
+    <section class="sec sec-more">
+      <h2 class="sec-h">Want more?</h2>
+      <p class="sec-sub">A few other things I made, if you're interested.</p>
+      <div class="links">
+        <a class="link" data-link="youtube" href="#" target="_blank" rel="noopener">
+          <div><div class="lt">The videos</div><div class="ld">I make long videos about attention, comfort, and getting the most out of the one life you have.</div></div>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+        </a>
+        <a class="link" data-link="audit" href="#" target="_blank" rel="noopener">
+          <div><div class="lt">The Life Audit</div><div class="ld">See how much time you have left and how much of it goes to waste. Warning: might get a bit existential lol</div></div>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+        </a>
+        <a class="link link-discord" data-link="discord" href="#" target="_blank" rel="noopener">
+          <div><div class="lt">Discord</div><div class="ld">Come hang out and watch Memento get built.</div><span class="btn btn-discord"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.1 14.1 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>Join Discord</span></div>
+        </a>
+        <a class="link" data-link="memento" href="#" target="_blank" rel="noopener">
+          <div><div class="lt">Memento</div><div class="ld">The personal system for those who actually want to lock in.</div></div>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+        </a>
+      </div>
+      <div class="lessons">
+        <div class="ls-k">Two lessons from my 25+5 Lessons I've Learned at 25</div>
+        <div class="links links-2">
+          <a class="link" data-link="lesson30" href="#" target="_blank" rel="noopener">
+            <div><div class="lt">Learn about Money</div><div class="ld">Lesson 30. Money dictates your freedom and controls your entire life.</div></div>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+          </a>
+          <a class="link" data-link="lesson20" href="#" target="_blank" rel="noopener">
+            <div><div class="lt">Freedom and Meaning</div><div class="ld">Lesson 20. I’ve realized that people mainly want two things: Freedom and Meaning.</div></div>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <nav class="more-tools" aria-label="More free tools">
+      <p class="mft-k">More free tools</p>
+      <div class="mft-row">
+        <a class="mft" data-tool="focus" href="/focus/"><div><b>Focus Room</b><span>A timer that fills the screen.</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a class="mft" data-tool="audit" href="/audit/"><div><b>The Life Audit</b><span>See where your time goes.</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <a class="mft" data-tool="25" href="/25/"><div><b>25+5 Lessons</b><span>What I learned by 25. $25.</span></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+      </div>
+    </nav>
+
+    <footer class="foot">
+      <span>Educational, not financial advice. The math is simplified on purpose.</span>
+      <span>Nothing you enter leaves this page.</span>
+    </footer>
+  </div>
+</section>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+// Every outside link on the page, in one place. On malikpeace.com the tools link by path; anywhere else (the preview
+// mockups) they open the preview of that tool instead.
+var MOCK = !/(^|\.)malikpeace\.com$/.test(location.hostname), ART = 'https://claude.ai/artifact/';
+var TOOLS = { focus: 'DDR3TBcMUh6wieQ4qbF3zp', audit: 'UkGU5Nz97VMmvfB6Xo1eGb', freedom: '4UaJZ8jCyXkzyDijseL9Wx', '25': 'UZsMJUYnqtwsjdVKqHyQNr' };
+function toolUrl(k){ return MOCK ? ART + TOOLS[k] : '/' + k + '/'; }
+var LINKS = {
+  site: MOCK ? 'https://malikpeace.com/' : '/',
+  youtube: 'https://www.youtube.com/@malikpeace_',
+  audit: toolUrl('audit'),
+  discord: 'https://discord.gg/UNbPAUc3y4',
+  memento: 'https://mementoapp.co',
+  lesson30: toolUrl('25') + '#lesson-30',
+  lesson20: toolUrl('25') + '#lesson-20'
+};
+function outside(u){ return MOCK || (/^https?:/.test(u) && !/^https?:\/\/(www\.)?malikpeace\.com/.test(u)); }
+document.querySelectorAll('[data-link]').forEach(function(a){
+  var u = LINKS[a.getAttribute('data-link')];
+  if (u){ a.href = u; if (outside(u)){ a.target = '_blank'; a.rel = 'noopener'; } else { a.removeAttribute('target'); } }
+});
+document.querySelectorAll('[data-tool]').forEach(function(a){
+  a.href = toolUrl(a.getAttribute('data-tool'));
+  if (MOCK){ a.target = '_blank'; a.rel = 'noopener'; }
+});
+
+/* ENGINE START */
+// Everything is modeled in today's dollars: returns are converted to a real
+// (after inflation) rate, and monthly investing is assumed to rise with inflation.
+var WORK_HOURS = 2080;   // 40 hours x 52 weeks
+var MAX_AGE = 100;
+
+function realRate(ret, infl){ return (1 + ret) / (1 + infl) - 1; }
+function monthlyRate(annual){ return Math.pow(1 + annual, 1 / 12) - 1; }
+
+// Balance after m months: start S, add P at the end of every month, grow at i per month.
+function balanceAt(S, P, i, m){
+  if (Math.abs(i) < 1e-12) return S + P * m;
+  var g = Math.pow(1 + i, m);
+  return S * g + P * (g - 1) / i;
+}
+
+// Months until the balance reaches T (fractional), or Infinity if not within maxM.
+function monthsToReach(T, S, P, i, maxM){
+  if (S >= T) return 0;
+  var m;
+  if (i > 1e-12){
+    var den = S * i + P;
+    if (den <= 0) return Infinity;
+    m = Math.log((T * i + P) / den) / Math.log(1 + i);
+    return m <= maxM ? m : Infinity;
+  }
+  if (P <= 0) return Infinity;
+  if (Math.abs(i) < 1e-12){ m = (T - S) / P; return m <= maxM ? m : Infinity; }
+  var b = S;
+  for (m = 1; m <= maxM; m++){ b = b * (1 + i) + P; if (b >= T) return m; }
+  return Infinity;
+}
+
+// Monthly amount needed to go from S to T in m months.
+function requiredMonthly(T, S, i, m){
+  if (m <= 0) return Math.max(0, T - S);
+  var flat = Math.abs(i) < 1e-12;
+  var g = flat ? 1 : Math.pow(1 + i, m);
+  var gap = T - S * g;
+  if (gap <= 0) return 0;
+  return flat ? gap / m : gap * i / (g - 1);
+}
+
+// The freedom number: yearly spending, grossed up for tax, divided by the withdrawal rate.
+function freedomNumber(monthlySpend, a){
+  var annual = monthlySpend * 12;
+  var gross = annual / (1 - a.tax);
+  return { annual: annual, gross: gross, fn: gross / a.swr };
+}
+
+function compute(inp, a){
+  var f = freedomNumber(inp.spend, a);
+  var rr = realRate(a.ret, a.infl);
+  var i = monthlyRate(rr);
+  var maxM = Math.max(0, (MAX_AGE - inp.age) * 12);
+  var mFree = monthsToReach(f.fn, inp.savings, inp.invest, i, maxM);
+  var freeAge = isFinite(mFree) ? inp.age + mFree / 12 : null;
+  var goalM = Math.max(0, (inp.goal - inp.age) * 12);
+  var need = requiredMonthly(f.fn, inp.savings, i, goalM);
+  var progress = f.fn > 0 ? inp.savings / f.fn : 0;
+  var coastAge = Math.max(65, inp.goal);
+
+  function stage(id, T){
+    var now = T(inp.age), reachedAge = null;
+    if (inp.savings >= now) reachedAge = inp.age;
+    else if (id === 'free') reachedAge = freeAge;
+    else {
+      for (var m = 1; m <= maxM; m++){
+        var age = inp.age + m / 12;
+        if (balanceAt(inp.savings, inp.invest, i, m) >= T(age)){ reachedAge = age; break; }
+      }
+      // coasting only means something if it happens before the coast age
+      if (id === 'coast' && reachedAge != null && reachedAge >= coastAge) reachedAge = null;
+    }
+    return { id: id, amount: now, reached: inp.savings >= now, reachedAge: reachedAge };
+  }
+  var stages = [
+    stage('year', function(){ return f.annual; }),
+    stage('coast', function(age){ return age >= coastAge ? f.fn : f.fn / Math.pow(1 + rr, coastAge - age); }),
+    stage('half', function(){ return f.fn / 2; }),
+    stage('free', function(){ return f.fn; })
+  ].sort(function(x, y){ return x.amount - y.amount; });
+
+  return {
+    annual: f.annual, gross: f.gross, fn: f.fn,
+    rr: rr, i: i, mFree: mFree, freeAge: freeAge,
+    goalM: goalM, need: need, progress: progress,
+    hours: Math.min(1, Math.max(0, progress)) * WORK_HOURS,
+    perHour: f.fn / WORK_HOURS,
+    fnAtGoal: f.fn * Math.pow(1 + a.infl, Math.max(0, inp.goal - inp.age)),
+    payout: f.fn * a.swr * (1 - a.tax) / 12,
+    coastAge: coastAge, stages: stages
+  };
+}
+
+// Points for the chart, one per stepM months.
+function series(S, P, i, age, toAge, stepM){
+  var pts = [], total = Math.round((toAge - age) * 12);
+  for (var m = 0; m <= total; m += stepM) pts.push({ age: age + m / 12, v: balanceAt(S, P, i, m) });
+  if (pts[pts.length - 1].age < toAge) pts.push({ age: toAge, v: balanceAt(S, P, i, total) });
+  return pts;
+}
+function withInputs(inp, patch){ var o = {}, k; for (k in inp) o[k] = inp[k]; for (k in patch) o[k] = patch[k]; return o; }
+
+// The size of change we compare levers with: about 10% of take-home (or of spending), in $50 steps.
+function leverAmount(takehome, spend){
+  var base = takehome > 0 ? takehome : spend;
+  return Math.max(100, Math.min(2000, Math.round(base * 0.1 / 50) * 50));
+}
+
+// Which single change helps most, measured on this person's own numbers.
+// Behind the goal: how much of the monthly gap each change closes.
+// On track: how many years sooner each change makes you free.
+function leverAnalysis(inp, a, D){
+  var base = compute(inp, a);
+  if (base.progress >= 1) return { mode: 'free', base: base, D: D };
+  var cut = compute(withInputs(inp, { spend: Math.max(1, inp.spend - D) }), a);
+  var more = compute(withInputs(inp, { invest: inp.invest + D }), a);
+  var both = compute(withInputs(inp, { spend: Math.max(1, inp.spend - D), invest: inp.invest + D }), a);
+  var laterGoal = Math.min(MAX_AGE, inp.goal + 5);
+  var later = compute(withInputs(inp, { goal: laterGoal }), a);
+  var out = { base: base, D: D, laterGoal: laterGoal };
+  if (base.need > inp.invest){
+    out.mode = 'gap';
+    out.gap = base.need - inp.invest;
+    out.opts = [
+      { id: 'cut', value: base.need - cut.need },
+      { id: 'more', value: D },
+      { id: 'time', value: base.need - later.need }
+    ];
+    out.both = (base.need - both.need) + D;
+    // value of $1 cut from spending, in dollars of extra monthly investing, for this timeline
+    out.cutPerDollar = (base.need - cut.need) / D;
+  } else {
+    out.mode = 'ahead';
+    var yrs = function(r){ return r.freeAge == null ? null : r.freeAge; };
+    out.opts = [
+      { id: 'cut', value: yrs(base) - yrs(cut) },
+      { id: 'more', value: yrs(base) - yrs(more) }
+    ];
+    out.both = yrs(base) - yrs(both);
+  }
+  out.best = out.opts.slice().sort(function(x, y){ return y.value - x.value; })[0];
+  return out;
+}
+
+// Monthly investing needed for a set of target ages.
+function planRows(inp, a, ages){
+  return ages.map(function(g){ return { age: g, need: compute(withInputs(inp, { goal: g }), a).need }; });
+}
+
+// The same plan under cautious, moderate and aggressive returns.
+function scenarios(inp, a){
+  return [['Cautious', 0.05], ['Moderate', 0.07], ['Aggressive', 0.09]].map(function(sc){
+    var r = compute(inp, { swr: a.swr, ret: sc[1], infl: a.infl, tax: a.tax });
+    return { name: sc[0], ret: sc[1], freeAge: r.progress >= 1 ? inp.age : r.freeAge, need: r.need, rr: r.rr };
+  });
+}
+// What the job routes would take to be free by a target age (monthly, after-tax, today's dollars).
+function jobRoutes(inp, a, takehome, targetAge){
+  var r = compute(withInputs(inp, { goal: targetAge }), a);
+  var extra = Math.max(0, r.need - inp.invest);           // more to invest every month
+  var out = { targetAge: targetAge, extra: extra, raisePct: null, hourly: null, weekHours: null, workUntil: compute(inp, a).freeAge };
+  if (takehome > 0){
+    out.raisePct = extra / takehome;
+    out.hourly = takehome * 12 / WORK_HOURS;               // take-home per hour at 40 hours a week
+    out.weekHours = 40 + (extra / out.hourly) * 12 / 52;   // hours a week to earn the extra at that rate
+  }
+  return out;
+}
+
+// A simple business: profit per sale x sales a month, all of it invested.
+function bizCalc(inp, a, profitPerSale, salesPerMonth){
+  var monthly = Math.max(0, profitPerSale) * Math.max(0, salesPerMonth);
+  var base = compute(inp, a), withBiz = compute(withInputs(inp, { invest: inp.invest + monthly }), a);
+  return {
+    monthly: monthly,
+    baseFree: base.progress >= 1 ? inp.age : base.freeAge,
+    bizFree: withBiz.progress >= 1 ? inp.age : withBiz.freeAge,
+    salesToCover: profitPerSale > 0 ? Math.ceil(inp.spend / profitPerSale) : null
+  };
+}
+/* ENGINE END */
+
+/* ---------- Helpers ---------- */
+var $ = function(id){ return document.getElementById(id); };
+var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (/HeadlessChrome/.test(navigator.userAgent)){ reduceMotion = true; document.documentElement.classList.add('no-motion'); }
+function money(n){ n = Math.round(n); return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-US'); }
+function moneyShort(n){
+  var a = Math.abs(n), s = n < 0 ? '-$' : '$';
+  if (a >= 1e6) return s + trim((a / 1e6).toFixed(2)) + 'M';
+  if (a >= 1e3) return s + trim((a / 1e3).toFixed(a >= 1e5 ? 0 : 1)) + 'k';
+  return s + Math.round(a);
+}
+function trim(x){ return x.indexOf('.') >= 0 ? x.replace(/0+$/, '').replace(/\.$/, '') : x; }
+function pctText(p){
+  var v = p * 100;
+  if (v <= 0) return '0%';
+  if (v < 0.1) return 'under 0.1%';
+  if (v < 10) return trim(v.toFixed(1)) + '%';
+  return Math.floor(v) + '%';
+}
+function parseMoney(s){ var d = String(s == null ? '' : s).replace(/[^0-9]/g, ''); return d ? parseInt(d, 10) : null; }
+function yearsText(y){
+  if (y < 1){ var mo = Math.max(1, Math.round(y * 12)); return mo + (mo === 1 ? ' month' : ' months'); }
+  var r = Math.round(y); return r + (r === 1 ? ' year' : ' years');
+}
+function ageText(a){ return String(Math.round(a)); }
+function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
+var THIS_YEAR = new Date().getFullYear();
+
+/* ---------- State ---------- */
+var DEFAULT_ASM = { swr: 0.04, ret: 0.07, infl: 0.03, tax: 0 };
+var S = freshState();
+function freshState(){
+  return {
+    age: null, guess: null, spend: null, bd: null, savings: null, invest: null, takehome: null, goal: null,
+    asm: { swr: DEFAULT_ASM.swr, ret: DEFAULT_ASM.ret, infl: DEFAULT_ASM.infl, tax: DEFAULT_ASM.tax },
+    lev: { less: 0, more: 0 }, qc: { debt: null, cash: null, match: null }, step: 0, done: false
+  };
+}
+var persist = true;
+function save(){
+  if (!persist) return;
+  try { localStorage.setItem('fn2', JSON.stringify(S)); } catch (e) {}
+}
+function load(){
+  try { var j = JSON.parse(localStorage.getItem('fn2') || 'null'); if (j && typeof j === 'object') return j; } catch (e) {}
+  return null;
+}
+
+/* Share links: the numbers live in the hash, nothing is sent anywhere. */
+var KEYS = { age: 'a', guess: 'g', spend: 's', savings: 'v', invest: 'i', takehome: 't', goal: 'o' };
+function encodeShare(){
+  var o = {};
+  for (var k in KEYS) if (S[k] != null) o[KEYS[k]] = S[k];
+  o.w = S.asm.swr; o.r = S.asm.ret; o.f = S.asm.infl; o.x = S.asm.tax;
+  if (S.qc){ ['debt', 'cash', 'match'].forEach(function(k, n){ if (S.qc[k] != null) o['q' + n] = S.qc[k] ? 1 : 0; }); }
+  return 'fn=' + btoa(JSON.stringify(o)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+function decodeShare(h){
+  var m = /fn=([A-Za-z0-9_-]+)/.exec(h || '');
+  if (!m) return null;
+  try {
+    var b = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    b += '==='.slice(0, (4 - b.length % 4) % 4);
+    var o = JSON.parse(atob(b)), st = freshState();
+    for (var k in KEYS) if (typeof o[KEYS[k]] === 'number') st[k] = o[KEYS[k]];
+    if (typeof o.w === 'number') st.asm.swr = clamp(o.w, 0.03, 0.05);
+    if (typeof o.r === 'number') st.asm.ret = clamp(o.r, 0.03, 0.10);
+    if (typeof o.f === 'number') st.asm.infl = clamp(o.f, 0.01, 0.06);
+    if (typeof o.x === 'number') st.asm.tax = clamp(o.x, 0, 0.30);
+    ['debt', 'cash', 'match'].forEach(function(k, n){ if (o['q' + n] === 0 || o['q' + n] === 1) st.qc[k] = o['q' + n] === 1; });
+    if (!(st.age > 0 && st.spend > 0 && st.goal > st.age)) return null;
+    st.savings = st.savings || 0; st.invest = st.invest || 0; st.done = true;
+    return st;
+  } catch (e) { return null; }
+}
+
+/* ---------- Views ---------- */
+function show(id){
+  ['v-landing', 'v-wizard', 'v-results'].forEach(function(v){
+    var el = $(v);
+    if (v === id){ el.hidden = false; el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
+    else el.hidden = true;
+  });
+  window.scrollTo(0, 0);
+  // Edit answers lives in the site bar, only while the results are up
+  $('btn-edit').hidden = id !== 'v-results';
+}
+
+/* ---------- Icons ---------- */
+var ICON_MINUS = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>';
+var ICON_PLUS = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+var ICON_DOWN = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+
+/* ---------- Wizard ---------- */
+// Tier values carried over from v1 (housing, cars, travel, kids, extras).
+var CATS = [
+  { id: 'housing', label: 'Housing', note: 'Rent or mortgage, plus utilities. Housing is usually the #1 cost.', def: 1800,
+    chips: [['Room', 1200], ['Apartment', 1800], ['Small house', 2400], ['Family home', 3800], ['Mansion', 9000]] },
+  { id: 'food', label: 'Food', note: 'Groceries and eating out', def: 600,
+    chips: [['Just me', 600], ['Two of us', 1050], ['Eat out a lot', 1500]] },
+  { id: 'transport', label: 'Getting around', note: 'Car payment, insurance, gas, all of it', def: 700,
+    chips: [['No car', 120], ['Paid-off car', 350], ['Reliable car', 700], ['Nicer car', 1100], ['Dream car', 2200]] },
+  { id: 'travel', label: 'Travel', note: 'Spread out per month', def: 417,
+    chips: [['None', 0], ['Road trips', 100], ['A few trips', 417], ['International', 1167], ['Always moving', 2917]] },
+  { id: 'kids', label: 'Kids', note: 'Kids cost over $300,000 btw. That\'s about $1,400 a month each (this runs a little high).', def: 0,
+    chips: [['None', 0], ['One', 1390], ['Two', 2780], ['Three', 4170]] },
+  { id: 'fun', label: 'Fun and extras', note: 'Hobbies, gym, going out, subscriptions', def: 500,
+    chips: [['Lean', 200], ['Normal', 500], ['Generous', 1200], ['Big life', 3000]] },
+  { id: 'other', label: 'Everything else', note: 'Health insurance, phone, random stuff', def: 600,
+    chips: [['Lean', 400], ['Normal', 600], ['Plenty', 1000]] }
+];
+
+var STEPS = [
+  { id: 'age', kind: 'int', title: 'How old are you, right now?', help: 'We use this as the foundation when figuring out your freedom number.', min: 14, max: 90, def: 25, suffix: 'years old' },
+  { id: 'guess', kind: 'money', title: 'Take a guess.', help: "How much do you think you need invested to never have to work again? Just take a wild guess. We'll compare it to the real number at the end.",
+    placeholder: '1,000,000', chips: [500000, 1000000, 2000000, 5000000], optional: true },
+  { id: 'spend', kind: 'spend', title: 'What would your ideal life cost each month?', help: 'Picture the life you actually want. Rent, food, travel, fun, all of it. The more honest you are, the more accurate your freedom number gets.', placeholder: '4,000' },
+  { id: 'savings', kind: 'money', title: 'How much do you have invested right now?', help: 'Retirement accounts, index funds, brokerage, stuff like that. Your house and car don\'t count.',
+    placeholder: '0', chips: [0, 10000, 50000, 100000], zeroOk: true },
+  { id: 'invest', kind: 'invest', title: 'How much do you invest each month?', help: 'Be honest. $0 is a common answer.',
+    placeholder: '0', chips: [0, 250, 500, 1000], zeroOk: true, suffix: '/mo' },
+  { id: 'goal', kind: 'int', title: 'When do you want to be free?', help: 'The age you want to "retire". For most the goal is 65.', min: 15, max: 90, def: 45, suffix: 'years old', chips: [40, 45, 50, 55, 65] }
+];
+
+function renderSegs(){
+  var h = '';
+  for (var k = 0; k < STEPS.length; k++) h += '<i class="' + (k <= S.step ? 'on' : '') + '"></i>';
+  $('segs').innerHTML = h;
+  $('wz-count').textContent = (S.step + 1) + ' of ' + STEPS.length;
+}
+
+function chipHtml(val, label, extraAmt){
+  return '<button type="button" class="chip" data-v="' + val + '" aria-pressed="false">' + label + (extraAmt ? '<span class="c-amt">' + extraAmt + '</span>' : '') + '</button>';
+}
+
+function goStep(n, dir){
+  S.step = n; save();
+  var q = STEPS[n], el = $('step');
+  renderSegs();
+  var html = '<h1 class="q-title">' + q.title + '</h1><p class="q-help">' + q.help + '</p><div class="q-ctl">';
+  if (q.kind === 'int'){
+    var v = S[q.id] != null ? S[q.id] : (q.id === 'goal' ? Math.max(q.def, (S.age || 25) + 1) : q.def);
+    html += '<div class="stepper">' +
+      '<button type="button" class="icon-btn" data-d="-1" aria-label="Minus one">' + ICON_MINUS + '</button>' +
+      '<label class="big-field"><span class="sr-only">' + q.title + '</span><input class="big-input" id="q-in" inputmode="numeric" autocomplete="off" maxlength="3" value="' + v + '"><span class="big-suf">' + q.suffix + '</span></label>' +
+      '<button type="button" class="icon-btn" data-d="1" aria-label="Plus one">' + ICON_PLUS + '</button></div>';
+    if (q.chips){
+      var ch = q.chips.filter(function(c){ return c > (S.age || 0); });
+      if (ch.length) html += '<div class="chips q-chips">' + ch.map(function(c){ return chipHtml(c, String(c)); }).join('') + '</div>';
+    }
+  } else {
+    var cur = S[q.id];
+    var sfx = q.kind === 'spend' ? '/mo' : (q.suffix || '');
+    html += '<label class="big-field"><span class="big-pre">$</span><span class="sr-only">' + q.title + '</span>' +
+      '<input class="big-input" id="q-in" inputmode="numeric" autocomplete="off" placeholder="' + q.placeholder + '" value="' + (cur != null && !(q.kind === 'money' && q.optional && cur === 0) ? cur.toLocaleString('en-US') : '') + '">' +
+      (sfx ? '<span class="big-suf">' + sfx + '</span>' : '') + '</label>';
+    if (q.chips) html += '<div class="chips q-chips">' + q.chips.map(function(c){ return chipHtml(c, c === 0 ? '$0' : moneyShort(c)); }).join('') + '</div>';
+    if (q.kind === 'spend'){
+      html += '<p class="q-note">For reference, the average US household spends about $78,500 a year. That\'s about $6,500 a month (BLS, 2024).</p>';
+      html += '<button type="button" class="build-toggle" id="bd-toggle" aria-expanded="false" aria-controls="bd">Not sure? Build it piece by piece ' + ICON_DOWN + '</button>';
+      html += '<div class="bd" id="bd" hidden></div>';
+    }
+    if (q.kind === 'invest'){
+      html += '<div class="sub-field"><label for="q-take">Monthly take-home pay</label><div class="hint">Optional. After taxes. This shows what your plan costs out of each paycheck.</div>' +
+        '<div class="small-field"><span>$</span><input id="q-take" inputmode="numeric" autocomplete="off" placeholder="4,000" value="' + (S.takehome ? S.takehome.toLocaleString('en-US') : '') + '"><span class="suf">/mo</span></div></div>';
+    }
+  }
+  html += '</div><div class="q-cta"><button type="button" class="btn btn-primary" id="q-next">' + (n === STEPS.length - 1 ? 'Show my number' : 'Continue') + '</button>' +
+    (q.optional ? '<button type="button" class="btn-text" id="q-skip">No idea, skip</button>' : '') + '</div>';
+  el.innerHTML = html;
+  el.classList.remove('enter', 'back'); void el.offsetWidth;
+  el.classList.add('enter'); if (dir < 0) el.classList.add('back');
+  wireStep(q);
+  if (q.kind === 'spend' && S.bd) openBreakdown(true);
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+    var inp = $('q-in'); if (inp){ inp.focus(); var L = inp.value.length; try { inp.setSelectionRange(L, L); } catch (e) {} }
+  }
+  window.scrollTo(0, 0);
+}
+
+function readStep(q){
+  var raw = $('q-in').value;
+  if (q.kind === 'int'){ var n = parseMoney(raw); return n; }
+  var v = parseMoney(raw);
+  if (v == null && q.zeroOk) v = 0;
+  return v;
+}
+function stepValid(q){
+  var v = readStep(q);
+  if (q.kind === 'int'){
+    if (v == null) return false;
+    if (q.id === 'age') return v >= q.min && v <= q.max;
+    if (q.id === 'goal') return v > (S.age || 0) && v <= q.max;
+  }
+  if (q.kind === 'spend') return v != null && v > 0;
+  if (q.optional) return v != null && v > 0;
+  return v != null && v >= 0;
+}
+function syncStepUI(q){
+  var v = readStep(q), btn = $('q-next');
+  btn.disabled = !stepValid(q);
+  document.querySelectorAll('#step .q-chips .chip').forEach(function(c){
+    c.setAttribute('aria-pressed', String(v != null && Number(c.dataset.v) === v && $('q-in').value !== ''));
+  });
+}
+function formatMoneyInput(inp){
+  var v = parseMoney(inp.value);
+  inp.value = v == null ? '' : v.toLocaleString('en-US');
+}
+
+function wireStep(q){
+  var inp = $('q-in');
+  inp.addEventListener('input', function(){
+    if (q.kind !== 'int') formatMoneyInput(inp);
+    else inp.value = inp.value.replace(/[^0-9]/g, '');
+    if (q.kind === 'spend' && S.bd && !inp.dataset.fromBd) closeBreakdown();
+    syncStepUI(q);
+  });
+  inp.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); next(); } });
+  document.querySelectorAll('#step [data-d]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var cur = parseMoney(inp.value); if (cur == null) cur = q.def;
+      var lo = q.id === 'goal' ? (S.age || 0) + 1 : q.min;
+      inp.value = clamp(cur + Number(b.dataset.d), lo, q.max);
+      syncStepUI(q);
+    });
+  });
+  document.querySelectorAll('#step .q-chips .chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      var v = Number(c.dataset.v);
+      inp.value = q.kind === 'int' ? String(v) : v.toLocaleString('en-US');
+      if (q.kind === 'spend') closeBreakdown();
+      syncStepUI(q);
+    });
+  });
+  var take = $('q-take');
+  if (take){
+    take.addEventListener('input', function(){ formatMoneyInput(take); });
+    take.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); next(); } });
+  }
+  if (q.kind === 'spend'){
+    $('bd-toggle').addEventListener('click', function(){
+      if ($('bd').hidden) openBreakdown(false); else closeBreakdown();
+    });
+  }
+  $('q-next').addEventListener('click', next);
+  var skip = $('q-skip');
+  if (skip) skip.addEventListener('click', function(){ S[q.id] = null; advance(); });
+  syncStepUI(q);
+}
+
+/* Spending breakdown */
+function bdTotal(){ var t = 0; CATS.forEach(function(c){ t += S.bd[c.id] || 0; }); return t; }
+function openBreakdown(restoring){
+  if (!S.bd){ S.bd = {}; CATS.forEach(function(c){ S.bd[c.id] = c.def; }); }
+  var box = $('bd');
+  var h = '';
+  CATS.forEach(function(c){
+    h += '<div class="bd-row" data-cat="' + c.id + '"><div class="bd-head"><div><div class="bd-label">' + c.label + '</div><div class="bd-note">' + c.note + '</div></div>' +
+      '<label class="bd-amt"><span>$</span><span class="sr-only">' + c.label + ' per month</span><input inputmode="numeric" autocomplete="off" value="' + (S.bd[c.id] || 0).toLocaleString('en-US') + '"></label></div>' +
+      '<div class="chips">' + c.chips.map(function(x){ return chipHtml(x[1], x[0], x[1] ? moneyShort(x[1]) : '$0'); }).join('') + '</div></div>';
+  });
+  h += '<div class="bd-total"><span>Total per month</span><span id="bd-total"></span></div>';
+  box.innerHTML = h; box.hidden = false;
+  $('bd-toggle').setAttribute('aria-expanded', 'true');
+  box.querySelectorAll('.bd-row').forEach(function(row){
+    var id = row.dataset.cat, input = row.querySelector('input');
+    input.addEventListener('input', function(){ formatMoneyInput(input); S.bd[id] = parseMoney(input.value) || 0; bdSync(); });
+    row.querySelectorAll('.chip').forEach(function(c){
+      c.addEventListener('click', function(){ S.bd[id] = Number(c.dataset.v); input.value = S.bd[id].toLocaleString('en-US'); bdSync(); });
+    });
+  });
+  bdSync();
+}
+function bdSync(){
+  var q = STEPS[S.step], inp = $('q-in'), t = bdTotal();
+  inp.dataset.fromBd = '1'; inp.value = t.toLocaleString('en-US'); delete inp.dataset.fromBd;
+  $('bd-total').textContent = money(t);
+  document.querySelectorAll('#bd .bd-row').forEach(function(row){
+    var v = S.bd[row.dataset.cat] || 0;
+    row.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', String(Number(c.dataset.v) === v)); });
+  });
+  syncStepUI(q); save();
+}
+function closeBreakdown(){
+  S.bd = null;
+  var box = $('bd'); if (!box) return;
+  box.hidden = true; box.innerHTML = '';
+  $('bd-toggle').setAttribute('aria-expanded', 'false');
+}
+
+function next(){
+  var q = STEPS[S.step];
+  if (!stepValid(q)) return;
+  S[q.id] = readStep(q);
+  if (q.kind === 'invest'){ var t = $('q-take'); S.takehome = t ? parseMoney(t.value) : null; }
+  if (q.id === 'age' && S.goal != null && S.goal <= S.age) S.goal = null;
+  advance();
+}
+function advance(){
+  if (S.step < STEPS.length - 1) goStep(S.step + 1, 1);
+  else finish();
+}
+function back(){
+  if (S.step > 0) goStep(S.step - 1, -1);
+  else show('v-landing');
+}
+function finish(){
+  if (S.savings == null) S.savings = 0;
+  if (S.invest == null) S.invest = 0;
+  S.done = true; S.lev = { less: 0, more: 0 };
+  save();
+  openResults(true);
+}
+
+/* ---------- Results ---------- */
+var R = null;
+function inputs(withLev){
+  var less = withLev ? S.lev.less : 0, more = withLev ? S.lev.more : 0;
+  return { age: S.age, spend: Math.max(1, S.spend - less), savings: S.savings || 0, invest: (S.invest || 0) + more, goal: S.goal };
+}
+function recompute(){
+  var base = compute(inputs(false), S.asm);
+  var levOn = S.lev.less > 0 || S.lev.more > 0;
+  var alt = levOn ? compute(inputs(true), S.asm) : null;
+  R = { base: base, alt: alt };
+}
+
+var revealed = false;
+function openResults(animate){
+  show('v-results');
+  setupControls();
+  recompute();
+  renderAll(animate && !reduceMotion);
+}
+
+function renderAll(animateHero){
+  renderHero(animateHero);
+  renderWhere();
+  renderWhen();
+  renderLevers();
+  renderPlan();
+  renderBiz();
+  renderMoves();
+  renderHow();
+  renderAssumptions();
+  renderSummary();
+  drawChart();
+}
+
+function countUp(el, to, ms, done){
+  var root = $('v-results');
+  root.classList.add('pre-reveal');
+  var t0 = null;
+  function frame(t){
+    if (finished) return;
+    if (t0 == null) t0 = t;
+    var p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = money(to * e);
+    if (p < 1 && !finished) requestAnimationFrame(frame);
+    else finish();
+  }
+  var finished = false;
+  function finish(){
+    if (finished) return; finished = true;
+    el.textContent = money(to); root.classList.remove('pre-reveal'); if (done) done();
+  }
+  el.textContent = '$0';
+  setTimeout(function(){ requestAnimationFrame(frame); }, 250);
+  setTimeout(finish, 250 + ms + 400); // in case frames are throttled
+}
+
+// Shrinks the headline only when a very large number would overflow its column.
+function fitHero(el, text){
+  el.style.fontSize = '';
+  el.textContent = text;
+  var size = parseFloat(getComputedStyle(el).fontSize), guard = 0;
+  while (el.scrollWidth > el.clientWidth + 1 && size > 28 && guard++ < 60){ size -= 2; el.style.fontSize = size + 'px'; }
+}
+function renderHero(animate){
+  var b = R.base;
+  fitHero($('fn-num'), money(b.fn));
+  if (animate) countUp($('fn-num'), b.fn, 1100);
+  var mult = trim((b.fn / b.annual).toFixed(1));
+  var sub = "That's " + mult + ' times the <b>' + money(b.annual) + '</b> a year your ideal life costs' + (S.asm.tax > 0 ? ', plus room for taxes' : '') + '. Invested, it can pay you about <b>' + money(b.payout) + ' a month</b>' +
+    (S.asm.tax > 0 ? ' after taxes' : '') + ' for the rest of your life.';
+  $('fn-sub').innerHTML = sub;
+  var yrs = S.goal - S.age;
+  $('fn-note').textContent = "That's in today's dollars. With " + Math.round(S.asm.infl * 1000) / 10 + '% inflation, by ' + S.goal + ' (' + (THIS_YEAR + yrs) + ') it\'ll look more like ' +
+    money(Math.round(b.fnAtGoal / 1000) * 1000) + '.';
+  renderPlanLine();
+  renderAssume();
+
+  var gc = $('guess-card');
+  if (S.guess && S.guess > 0){
+    gc.hidden = false;
+    $('g-guess').textContent = money(S.guess);
+    $('g-real').textContent = money(b.fn);
+    var ratio = b.fn / S.guess, diff = b.fn - S.guess, v;
+    if (Math.abs(ratio - 1) <= 0.1) v = 'Your guess was pretty close. Nice.';
+    else if (diff > 0) v = 'Your guess was off by ' + trim(ratio.toFixed(1)) + 'x. You need ' + money(diff) + ' more than you thought.';
+    else v = 'Your guess was high. Good news, you need ' + money(-diff) + ' less than you thought.';
+    $('g-verdict').textContent = v;
+  } else gc.hidden = true;
+}
+
+var STAGE_TEXT = {
+  year:  ['A year of runway', 'Enough to cover one full year of your ideal life.'],
+  coast: ['Coast', function(b){ return 'Stop adding money here and it grows to your number by ' + b.coastAge + ' on its own.'; }],
+  half:  ['Half free', 'Your investments cover half your costs, so part-time work could cover the rest.'],
+  free:  ['Free', 'True freedom. You don\'t have to worry about another penny ever again.']
+};
+
+function renderWhere(){
+  var b = R.base;
+  $('p-pct').textContent = b.progress >= 1 ? '100%' : pctText(b.progress);
+  $('p-pct').className = 'card-big' + (b.progress >= 1 ? ' g' : '');
+  $('p-fill').style.width = (clamp(b.progress, 0, 1) * 100) + '%';
+  $('p-have').textContent = money(S.savings || 0);
+  $('p-goal').textContent = money(b.fn);
+  // ticks on the bar for each stage below the goal
+  var bar = $('p-bar');
+  bar.querySelectorAll('.tick').forEach(function(t){ t.remove(); });
+  b.stages.forEach(function(st){
+    if (st.id === 'free') return;
+    var x = st.amount / b.fn; if (x <= 0 || x >= 1) return;
+    var t = document.createElement('span'); t.className = 'tick'; t.style.left = (x * 100) + '%'; bar.appendChild(t);
+  });
+  var h = '';
+  b.stages.forEach(function(st){
+    var tx = STAGE_TEXT[st.id], d = typeof tx[1] === 'function' ? tx[1](b) : tx[1], when;
+    if (st.reached) when = 'Done';
+    else if (st.reachedAge != null) when = 'At ' + ageText(st.reachedAge) + ' at your pace';
+    else if (st.id === 'coast') when = 'Not before ' + b.coastAge + ' at this pace';
+    else when = 'Not at this pace';
+    h += '<div class="stage' + (st.reached ? ' done' : '') + '"><span class="dot"></span><div><div class="s-t">' + tx[0] + '</div><div class="s-d">' + d + '</div></div>' +
+      '<div class="s-r">' + money(st.amount) + '<small' + (/^Not/.test(when) ? ' class="no"' : '') + '>' + when + '</small></div></div>';
+  });
+  $('stages').innerHTML = h;
+
+  // hours
+  var hrs = b.hours, hr = Math.floor(hrs);
+  $('h-num').textContent = (b.progress >= 1 ? '2,080' : hr.toLocaleString('en-US')) + (hr === 1 ? ' hour' : ' hours');
+  var line;
+  if (b.progress >= 1) line = 'Every hour of your work year is already bought back.';
+  else if (hr >= 1) line = 'Your investments already buy back <b>' + hr.toLocaleString('en-US') + (hr === 1 ? ' hour' : ' hours') + '</b> of every work year. That\'s about ' + trim((hrs / 40).toFixed(1)) + (Math.abs(hrs / 40 - 1) < 0.05 ? ' week' : ' weeks') + ' off, every year, for the rest of your life.';
+  else line = 'Right now your investments buy back less than an hour of your work year.';
+  $('h-line').innerHTML = line;
+  var weeks = hrs / 40, g = '';
+  for (var k = 0; k < 52; k++){
+    if (k + 1 <= weeks) g += '<i class="on"></i>';
+    else if (k < weeks) g += '<i class="part" style="--h:' + Math.round((weeks - k) * 100) + '%"></i>';
+    else g += '<i></i>';
+  }
+  $('hgrid').innerHTML = g;
+  $('h-per').innerHTML = b.progress >= 1 ? '' : 'A full-time job is about 2,080 hours a year. Your freedom number buys back all of them. So every <b style="color:var(--ink)">' + money(b.perHour) + '</b> you invest buys back one more hour, every year.';
+  var marks = [
+    [40, 'One week off, every year', '40 hours'],
+    [WORK_HOURS / 12, 'One month off, every year', '173 hours'],
+    [416, 'Every Friday off', '416 hours, one day a week']
+  ], inB = inputs(false), maxM = (MAX_AGE - S.age) * 12, mh = '';
+  marks.forEach(function(mk){
+    var amt = b.fn * mk[0] / WORK_HOURS, done = (S.savings || 0) >= amt, when;
+    if (done) when = 'Done';
+    else {
+      var m = monthsToReach(amt, inB.savings, inB.invest, b.i, maxM);
+      when = isFinite(m) ? 'At ' + ageText(S.age + m / 12) + ' at your pace' : 'Not at this pace';
+    }
+    mh += '<div class="hmark' + (done ? ' done' : '') + '"><div><div class="t1">' + mk[1] + '</div><div class="t2">' + mk[2] + '</div></div><div class="r">' + money(amt) + '<small' + (/^Not/.test(when) ? ' class="no"' : '') + '>' + when + '</small></div></div>';
+  });
+  $('hmarks').innerHTML = mh;
+}
+
+function renderWhen(){
+  var b = R.base, now = S.invest || 0, yrsGoal = S.goal - S.age;
+  // free at
+  if (b.progress >= 1){ $('s-free').textContent = 'Now'; $('s-free-f').textContent = 'You already have your number'; }
+  else if (b.freeAge != null){
+    $('s-free').textContent = ageText(b.freeAge);
+    $('s-free-f').textContent = 'In ' + yearsText(b.mFree / 12) + ', around ' + (THIS_YEAR + Math.round(b.mFree / 12));
+  } else { $('s-free').textContent = 'Not yet'; $('s-free-f').textContent = 'Not by ' + MAX_AGE + ' at this pace'; }
+  $('s-free').classList.toggle('no', b.progress < 1 && b.freeAge == null);
+  $('s-goal').textContent = String(S.goal);
+  $('s-goal-f').textContent = 'In ' + yearsText(yrsGoal) + ', ' + (THIS_YEAR + yrsGoal);
+  $('s-need').textContent = b.need <= 0 ? '$0' : money(b.need);
+  var nf = b.need <= 0 ? 'What you have already grows into it' : 'A month, starting now';
+  if (b.need > 0 && S.takehome > 0) nf = Math.round(b.need / S.takehome * 100) + '% of your take-home pay';
+  $('s-need-f').textContent = nf;
+  $('s-now').textContent = money(now);
+  $('s-now-f').textContent = now === 0 ? 'Nothing yet' : (S.takehome > 0 ? Math.round(now / S.takehome * 100) + '% of your take-home pay' : 'A month, rising with inflation');
+
+  // the honest line
+  // his original honest lines, with the numbers filled in
+  var v, pace = 'At your real pace (' + money(now) + '/mo invested)';
+  if (b.progress >= 1) v = '<b class="g">You\'re already there.</b> Your investments can cover your ideal life right now.';
+  else if (b.freeAge == null && now === 0) v = 'You said you invest <b>$0/mo</b>. At that rate, the number never gets hit. Compounding only works on money that\'s actually invested.';
+  else if (b.freeAge == null) v = pace + ', this number doesn\'t get hit. You either need to make a lot more, spend a lot less, or stretch the timeline.';
+  else if (b.freeAge <= S.goal + 0.5 && b.freeAge >= S.goal - 0.5) v = '<b class="g">You\'re on track.</b> ' + pace + ', you cross the line right around your goal. Keep it tight, raise income where you can, and protect the savings rate.';
+  else if (b.freeAge < S.goal) v = '<b class="g">You\'re ahead.</b> ' + pace + ', you cross the line at age ' + ageText(b.freeAge) + ', before your goal. The math is on your side. Don\'t let lifestyle creep eat the lead.';
+  else v = pace + ', you cross the line at age <b>' + ageText(b.freeAge) + '</b>, ' + yearsText(b.freeAge - S.goal) + ' after your goal. Saving more each month gets you there sooner. Or pick a later target age.';
+  if (b.progress < 1 && b.need > 0 && S.takehome > 0 && b.need > S.takehome) v += ' To hit this by ' + S.goal + ', you\'d have to save more than you earn.';
+  $('verdict').innerHTML = v;
+  renderScenarios();
+}
+
+function setupControls(){
+  if (setupControls.done) return; setupControls.done = true;
+  wireBiz();
+  ['lv-less', 'lv-more', 'lv-goal'].forEach(function(id){
+    $(id).addEventListener('input', function(){
+      var el = $(id), v = Number(el.value);
+      if (id === 'lv-less') S.lev.less = v;
+      if (id === 'lv-more') S.lev.more = v;
+      if (id === 'lv-goal') S.goal = v;
+      recompute();
+      if (id === 'lv-goal'){ renderHero(false); renderWhere(); renderWhen(); renderPlan(); renderBiz(); renderMoves(); renderSummary(); }
+      renderLevers(); drawChart(); save(); syncHashIfShared();
+    });
+  });
+  $('lv-reset').addEventListener('click', function(){ S.lev.less = 0; S.lev.more = 0; recompute(); renderLevers(); drawChart(); save(); });
+  var map = { 'a-swr': ['swr', 100], 'a-ret': ['ret', 100], 'a-infl': ['infl', 100], 'a-tax': ['tax', 100] };
+  Object.keys(map).forEach(function(id){
+    $(id).addEventListener('input', function(){
+      S.asm[map[id][0]] = Number($(id).value) / map[id][1];
+      recompute(); renderAll(false); save(); syncHashIfShared();
+    });
+  });
+  $('a-reset').addEventListener('click', function(){
+    S.asm = { swr: DEFAULT_ASM.swr, ret: DEFAULT_ASM.ret, infl: DEFAULT_ASM.infl, tax: DEFAULT_ASM.tax };
+    recompute(); renderAll(false); save(); syncHashIfShared();
+  });
+  var resizeT;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function(){ if (!$('v-results').hidden){ fitHero($('fn-num'), money(R.base.fn)); drawChart(); } }, 120);
+  });
+}
+function syncHashIfShared(){
+  if (/fn=/.test(location.hash)){ try { history.replaceState(null, '', '#' + encodeShare()); } catch (e) {} }
+}
+
+function setRange(id, v){ var el = $(id); el.value = v; paintRange(el); }
+function paintRange(el){
+  var lo = Number(el.min), hi = Number(el.max), v = Number(el.value);
+  el.style.setProperty('--p', ((v - lo) / (hi - lo || 1) * 100) + '%');
+}
+document.addEventListener('input', function(e){ if (e.target && e.target.type === 'range') paintRange(e.target); });
+
+function renderLevers(){
+  var b = R.base, a = R.alt || R.base;
+  var maxLess = Math.max(0, Math.min(3000, Math.floor((S.spend - 100) / 50) * 50));
+  $('lv-less').max = maxLess;
+  if (S.lev.less > maxLess) S.lev.less = maxLess;
+  setRange('lv-less', S.lev.less);
+  setRange('lv-more', S.lev.more);
+  var g = $('lv-goal'); g.min = S.age + 1; g.max = Math.max(S.age + 5, 85); setRange('lv-goal', S.goal);
+  $('lv-less-v').textContent = S.lev.less ? '-' + money(S.lev.less) : '$0';
+  $('lv-more-v').textContent = S.lev.more ? '+' + money(S.lev.more) : '$0';
+  $('lv-goal-v').textContent = S.goal;
+  $('o-goal-age').textContent = S.goal;
+
+  function pair(x, y, fmtFn){ return x === y ? fmtFn(y) : '<s>' + fmtFn(x) + ' \u2192</s>' + fmtFn(y); }
+  var fa = function(r){ return r.progress >= 1 ? 'now' : (r.freeAge == null ? 'not by ' + MAX_AGE : ageText(r.freeAge)); };
+  $('o-fn').innerHTML = pair(money(b.fn), money(a.fn), function(x){ return x; });
+  $('o-free').innerHTML = pair(fa(b), fa(a), function(x){ return x; });
+  $('o-need').innerHTML = pair(money(b.need) + '/mo', money(a.need) + '/mo', function(x){ return x; });
+
+  var big = '', note = '';
+  if (!R.alt){ big = '<span class="muted" style="font-size:18px;font-weight:400">Move a slider to see what changes.</span>'; }
+  else {
+    var bf = b.progress >= 1 ? S.age : b.freeAge, af = a.progress >= 1 ? S.age : a.freeAge;
+    if (bf == null && af != null) big = '<span class="g">Free at ' + ageText(af) + ' instead of never.</span>';
+    else if (bf != null && af != null && bf - af >= 0.5) big = '<span class="g">' + yearsText(bf - af) + ' sooner.</span>';
+    else if (bf == null && af == null) big = 'Closer, but still not by ' + MAX_AGE + '. Keep going.';
+    else big = 'Less than half a year sooner.';
+  }
+  if (S.lev.less > 0){
+    // his line, with the multiple worked out for the current withdrawal rate
+    note = 'Every dollar you don\'t spend is ' + trim((1 / S.asm.swr / (1 - S.asm.tax)).toFixed(1)) + ' dollars you don\'t have to save.';
+  } else if (S.lev.more > 0 && R.alt){
+    note = 'More monthly into investments shortens the timeline.';
+  }
+  $('o-big').innerHTML = big;
+  $('o-note').textContent = note;
+  $('lv-reset').classList.toggle('off', !R.alt);
+}
+
+function renderHow(){
+  var b = R.base, a = S.asm, swrP = trim((a.swr * 100).toFixed(1)) + '%';
+  $('how-lede').innerHTML = 'It\'s based on the 4% rule. Looking back at US market history, you could take out about 4% of your investments in the first year, adjust for inflation after that, and the money lasted 30+ years. So flip it around and you need about <b>25 times what you spend in a year</b>. That\'s your freedom number.';
+  var rows = [
+    ['Ideal life per month', money(S.spend)],
+    ['Per year (x 12)', money(b.annual)]
+  ];
+  if (a.tax > 0) rows.push(['Before ' + Math.round(a.tax * 100) + '% tax on withdrawals', money(b.gross)]);
+  rows.push(['Divided by a ' + swrP + ' withdrawal rate', money(b.fn)]);
+  var h = rows.map(function(r, k){
+    return '<div class="math-row' + (k === rows.length - 1 ? ' total' : '') + '"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>';
+  }).join('');
+  $('math').innerHTML = h;
+  var n = [
+    '<b>Everything is in today\'s dollars</b>, so you can compare it to your life right now. Your monthly investing goes up with inflation too.',
+    '<b>Retiring young?</b> Your money might need to last 50 years instead of 30. A 3.5% withdrawal rate gives you more room.',
+   
+   
+    'These are estimates. Real life is messier, costs shift, and your plans will change. The goal here is to give you a real sense of what financial freedom actually costs based on the life you said you want, so the number stops feeling abstract.'
+  ];
+  $('notes').innerHTML = n.map(function(x){ return '<p>' + x + '</p>'; }).join('');
+}
+
+function renderAssumptions(){
+  var a = S.asm;
+  setRange('a-swr', Math.round(a.swr * 1000) / 10);
+  setRange('a-ret', Math.round(a.ret * 1000) / 10);
+  setRange('a-infl', Math.round(a.infl * 1000) / 10);
+  setRange('a-tax', Math.round(a.tax * 100));
+  $('a-swr-v').textContent = trim((a.swr * 100).toFixed(1)) + '%';
+  $('a-ret-v').textContent = trim((a.ret * 100).toFixed(1)) + '%';
+  $('a-infl-v').textContent = trim((a.infl * 100).toFixed(1)) + '%';
+  $('a-tax-v').textContent = Math.round(a.tax * 100) + '%';
+  var mult = trim((1 / a.swr).toFixed(1));
+  $('a-swr-h').textContent = 'How much you take out the first year. At ' + trim((a.swr * 100).toFixed(1)) + '%, your number is ' + mult + 'x what you spend in a year. 4% is the classic rule. Lower is safer.';
+  var rr = R.base.rr * 100;
+  $('a-real').innerHTML = 'After inflation, your money grows about <b>' + trim(rr.toFixed(1)) + '% a year</b>. Every projection on this page uses that number.';
+}
+
+function renderSummary(){
+  var b = R.base;
+  $('sum-fn').textContent = money(b.fn);
+  $('sum-fill').style.width = (clamp(b.progress, 0, 1) * 100) + '%';
+  $('sum-spend').textContent = money(S.spend) + ' a month';
+  $('sum-have').textContent = money(S.savings || 0);
+  $('sum-pct').textContent = b.progress >= 1 ? '100%' : pctText(b.progress);
+  var sf = summaryFacts();
+  $('sum-free').textContent = sf.free;
+  $('sum-plan').textContent = sf.plan;
+}
+
+/* ---------- What the number assumes (his words, live values) ---------- */
+function renderAssume(){
+  var a = S.asm, b = R.base;
+  var pct = function(x){ return trim((x * 100).toFixed(1)) + '%'; };
+  var main = [
+    'Your investments grow <b>' + pct(a.ret) + ' a year</b> and inflation is <b>' + pct(a.infl) + '</b>, so your money really grows about <b>' + pct(b.rr) + ' a year</b>.',
+    'You take out <b>' + pct(a.swr) + ' a year</b> to live on. That\'s why your number is <b>' + trim((1 / a.swr).toFixed(1)) + 'x</b> what you spend in a year' + (a.tax > 0 ? ' (before taxes)' : '') + '.',
+    a.tax > 0
+      ? 'You pay <b>' + Math.round(a.tax * 100) + '% in taxes</b> on the money you take out, so the number is bigger to cover that.'
+      : '<b>No taxes</b> on the money you take out. If most of yours is in a 401(k) or IRA, it\'ll get taxed, so bump up the tax setting.',
+    'If you added kids, each one is about <b>$1,400 a month</b>, and I count that forever. So that part runs a little high.',
+    'Markets go up in a nice smooth line here. Real ones don\'t lol.'
+  ];
+  var more = [
+    '<b>The growth rate is an average.</b> Over long stretches a stock-heavy mix has usually done a bit better than 7% a year before inflation, so 7% is on the careful side. Fees aren\'t counted, so if yours are high, lower it a little. The chart, the free-at ages and every plan on this page use the smooth average.',
+    '<b>Everything\'s in today\'s dollars.</b> Your monthly investing goes up with inflation every year, and it compounds monthly.',
+    '<b>Only invested money counts.</b> Your house, your car, Social Security, pensions and any inheritance aren\'t in the math. If you\'ll get any of those, you need less.',
+    '<b>Debt isn\'t in the math.</b> If you\'ve got credit card debt, paying that off comes first. It\'s move #1 in your next 3 moves if you say yes to that question.',
+    '<b>Taxes.</b> Your take-home is already after taxes. The money you take out gets taxed at whatever the tax setting says (' + Math.round(a.tax * 100) + '% right now). The business profit is before taxes.',
+    '<b>Health insurance</b> is part of your monthly number. Before 65 in the US that can be a lot, so make sure it\'s in there.',
+    '<b>The job math.</b> Your hourly pay is your take-home divided by 2,080 hours (40 hours x 52 weeks). Extra hours get paid that same rate, with no overtime and no higher tax bracket.',
+    '<b>Small stuff.</b> "Free at" stops at ' + MAX_AGE + '. Coast uses 65, or your goal if that\'s later. Your guess gets compared in today\'s dollars.'
+  ];
+  var li = function(x){ return '<li>' + x + '</li>'; };
+  $('as-list').innerHTML = main.map(li).join('');
+  $('as-more').innerHTML = more.map(li).join('');
+}
+
+/* ---------- Plan, lever, moves ---------- */
+function shareOfPay(x){ return S.takehome > 0 ? Math.round(x / S.takehome * 100) + '% of your take-home' : ''; }
+
+function renderPlanLine(){
+  var b = R.base, now = S.invest || 0, h;
+  if (b.progress >= 1) h = 'You already have your number. Working is optional now.';
+  else if (b.need <= now){
+    h = 'Keep investing <b>' + money(now) + ' a month</b> and you\'re free at ' + ageText(b.freeAge) + (b.freeAge < S.goal - 0.5 ? '. That\'s before your goal.' : '. That\'s right on your goal.');
+  } else {
+    h = 'Invest <b>' + money(b.need) + ' a month</b> to be free by ' + S.goal + '.';
+    if (S.takehome > 0){
+      h += ' That\'s ' + shareOfPay(b.need) + ' pay.';
+      if (b.need > S.takehome) h += ' You\'d have to save more than you earn, so check your biggest lever below.';
+    } else if (b.need > S.spend) h += ' That\'s more than your whole ideal monthly budget, so check your biggest lever below.';
+    if (now > 0) h += ' Right now you invest ' + money(now) + '.';
+  }
+  $('plan-line').innerHTML = '<span class="pl-k">Your monthly plan</span><span class="pl-v">' + h + '</span>';
+}
+
+function renderScenarios(){
+  var sc = scenarios(inputs(false), S.asm), cur = Math.round(S.asm.ret * 1000);
+  $('scen-grid').innerHTML = sc.map(function(x){
+    var isCur = Math.round(x.ret * 1000) === cur;
+    var fa = R.base.progress >= 1 ? 'Free now' : (x.freeAge == null ? 'Not by ' + MAX_AGE : 'Free at ' + ageText(x.freeAge));
+    var nd = R.base.progress >= 1 ? 'Nothing more needed' : (x.need <= 0 ? 'On track for ' + S.goal : money(x.need) + '/mo to be free by ' + S.goal);
+    return '<div class="sc' + (isCur ? ' cur' : '') + '"><div class="n">' + x.name + (isCur ? '<span class="tag">Your setting</span>' : '') +
+      '<small>' + Math.round(x.ret * 100) + '% a year, about ' + trim((x.rr * 100).toFixed(1)) + '% after inflation</small></div>' +
+      '<div class="fa">' + fa + '<small>' + nd + '</small></div></div>';
+  }).join('');
+}
+
+function renderPlan(){
+  var b = R.base, inB = inputs(false), now = S.invest || 0;
+  // goal ages to show: a bit sooner, the goal, and two later options
+  var ages = [S.goal - 5, S.goal, S.goal + 5, S.goal + 10].filter(function(g){ return g > S.age && g <= MAX_AGE; });
+  if (ages.length < 3 && S.goal + 15 <= MAX_AGE) ages.push(S.goal + 15);
+  var rows = planRows(inB, S.asm, ages);
+  $('ptable').innerHTML = rows.map(function(r){
+    var ok = r.need <= now || b.progress >= 1;
+    var sub = r.age === S.goal ? 'Your goal, ' + (THIS_YEAR + r.age - S.age) : 'In ' + yearsText(r.age - S.age);
+    var right = b.progress >= 1 ? 'Done' : (r.need <= 0 ? '$0' : money(r.need));
+    var rs = ok ? (b.progress >= 1 ? 'Already covered' : 'You already invest enough') : shareOfPay(r.need);
+    return '<div class="pr' + (r.age === S.goal ? ' goal' : '') + (ok ? ' ok' : '') + '"><div class="a">Free by ' + r.age + '<small>' + sub + '</small></div>' +
+      '<div class="m">' + right + (right !== 'Done' ? '<span style="font-weight:400;color:var(--mid);font-size:14px">/mo</span>' : '') + (rs ? '<small>' + rs + '</small>' : '') + '</div></div>';
+  }).join('');
+  var note = 'These are in today\'s dollars and go up with inflation each year.';
+  if (b.progress < 1) note = 'At ' + money(now) + ' a month you\'re free ' + (b.freeAge == null ? 'only after ' + MAX_AGE : 'at ' + ageText(b.freeAge)) + '. ' + note;
+  $('ptable-note').textContent = note;
+
+  // biggest lever
+  var D = leverAmount(S.takehome, S.spend), L = leverAnalysis(inB, S.asm, D);
+  if (L.mode === 'free'){
+    $('lv-head').textContent = 'Nothing to pull. You\'re already there.';
+    $('lbars').innerHTML = '';
+    $('lv-expl').textContent = 'Try a 3.5% withdrawal rate in the assumptions below. If you\'re still covered, you\'ve got a real cushion.';
+    return;
+  }
+  var names = {
+    cut: 'Spend ' + money(D) + ' less a month',
+    more: 'Invest ' + money(D) + ' more a month',
+    time: 'Give it 5 more years (free by ' + L.laterGoal + ')'
+  };
+  var heads = {
+    cut: 'For you, it\'s spending less.',
+    more: 'For you, it\'s investing more.',
+    time: 'For you, it\'s giving it more time.'
+  };
+  var max = Math.max.apply(null, L.opts.map(function(o){ return Math.max(0, o.value); })) || 1;
+  $('lbars').innerHTML = L.opts.map(function(o){
+    var val = L.mode === 'gap' ? 'closes ' + money(Math.max(0, o.value)) + '/mo' : (o.value >= 0.05 ? trim(o.value.toFixed(1)) + ' yrs sooner' : 'no real change');
+    return '<div class="lbar' + (o.id === L.best.id ? ' best' : '') + '"><div class="lt2"><span>' + names[o.id] + '</span><b>' + val + '</b></div><div class="track"><i style="width:' + (Math.max(0, o.value) / max * 100).toFixed(1) + '%"></i></div></div>';
+  }).join('');
+  var e;
+  if (L.mode === 'gap'){
+    $('lv-head').textContent = heads[L.best.id];
+    e = 'You\'re ' + money(L.gap) + ' a month short of being free by ' + S.goal + '. We tested a ' + money(D) + ' change each way. ';
+    if (L.cutPerDollar >= 1.02) e += 'Your goal is pretty close, so making the number smaller does more than adding to the pile. Every $1 you cut is worth $' + L.cutPerDollar.toFixed(2) + ' of extra investing.';
+    else if (L.cutPerDollar <= 0.98) e += 'Your goal is far enough away that a dollar invested does a little more than a dollar cut. Compounding has time to work.';
+    else e += 'For you, a dollar cut and a dollar invested do about the same.';
+    if (L.best.id === 'time') e += ' Compounding does most of the heavy lifting in those extra years.';
+    e += ' If you cut ' + money(D) + ' and invest it, it counts twice. That closes ' + money(L.both) + ' a month.';
+  } else {
+    $('lv-head').textContent = 'You\'re on track. To get there even sooner, ' + (L.best.id === 'cut' ? 'spend less.' : 'invest more.');
+    e = 'We tested a ' + money(D) + ' change each way. If you cut ' + money(D) + ' and invest it, you\'re free about ' + trim(Math.max(0, L.both).toFixed(1)) + ' years sooner.';
+  }
+  $('lv-expl').textContent = e;
+}
+
+/* Why people start businesses: the job routes on their numbers, then value x scale */
+var BIZ = { p: 100, n: 30 };
+function salesPace(n){
+  if (n / 30 >= 1) return 'About ' + trim((n / 30).toFixed(1)) + ' a day';
+  if (n / 4.33 >= 1) return 'About ' + Math.round(n / 4.33) + ' a week';
+  return '';
+}
+var BIZ_PRESETS = [[20, 250], [100, 50], [1000, 5], [5000, 1]];
+function renderBiz(){
+  var b = R.base, inB = inputs(false), now = S.invest || 0;
+  var free = b.progress >= 1, onTrack = !free && b.need <= now;
+  var T = S.goal;
+  if (onTrack) T = Math.max(S.age + 2, Math.round(b.freeAge) - 10);
+  $('biz-intro').textContent = 'If you do the math on your number, you\'re probably going to realize two things. You\'re going to need a lot more money than you think, or you\'re going to be working for the rest of your life.';
+  var routes = $('biz-routes');
+  if (free){
+    $('biz-k').textContent = 'You already have your number';
+    routes.innerHTML = '<div class="br"><div class="a">None of this applies to you<small>You\'re already free. The math on the right is still fun to play with.</small></div><div class="v"></div></div>';
+  } else {
+    $('biz-k').textContent = onTrack ? 'You\'re on pace already. Here\'s what it takes to be free 10 years sooner, by ' + T : 'Here\'s what the usual ways look like for you, to be free by ' + T;
+    var J = jobRoutes(inB, S.asm, S.takehome, T), rows = [];
+    rows.push(['Make a lot more at your job', '+' + money(J.extra) + '/mo',
+      'After taxes, and you invest every dollar of it.' + (J.raisePct != null ? ' That\'s a ' + Math.round(J.raisePct * 100) + '% raise.' : '')]);
+    if (J.weekHours == null) rows.push(['Work a lot more hours', '?', 'Add your take-home pay to see this one.']);
+    else if (J.weekHours > 112) rows.push(['Work a lot more hours', 'Not possible', 'You\'d need ' + Math.round(J.weekHours) + '-hour weeks. That\'s more than 16 hours a day, every day.']);
+    else rows.push(['Work a lot more hours', Math.round(J.weekHours) + '-hour weeks', 'At your current pay, every week until ' + T + ', investing all the extra.']);
+    rows.push(['Just keep working', J.workUntil == null ? 'Past ' + MAX_AGE : 'Until ' + ageText(J.workUntil), 'At your current pace.', 'loss']);
+    rows.push(['Get really lucky', '?', 'Lottery, inheritance, a coin that goes 100x. You can\'t really plan on that.']);
+    rows.push(['Build something', 'See the math', 'The only one on this list where your income isn\'t tied to your hours.', 'build']);
+    routes.innerHTML = rows.map(function(r){
+      return '<div class="br' + (r[3] ? ' ' + r[3] : '') + '"><div class="a">' + r[0] + '<small>' + r[2] + '</small></div><div class="v">' + r[1] + '</div></div>';
+    }).join('');
+  }
+  $('biz-chips').innerHTML = BIZ_PRESETS.map(function(x){
+    return '<button type="button" class="chip" data-p="' + x[0] + '" data-n="' + x[1] + '" aria-pressed="' + (x[0] === BIZ.p && x[1] === BIZ.n) + '">' + moneyShort(x[0]) + ' x ' + x[1] + (x[1] === 1 ? ' sale' : ' sales') + '</button>';
+  }).join('');
+  document.querySelectorAll('#biz-chips .chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      BIZ.p = Number(c.dataset.p); BIZ.n = Number(c.dataset.n);
+      $('biz-p').value = BIZ.p.toLocaleString('en-US'); $('biz-n').value = BIZ.n.toLocaleString('en-US');
+      renderBiz();
+    });
+  });
+  var C = bizCalc(inB, S.asm, BIZ.p, BIZ.n), rowsOut = [];
+  rowsOut.push(['Profit a month', money(C.monthly), salesPace(BIZ.n)]);
+  if (free) rowsOut.push(['If you invested all of it', 'Still free', 'You were already there']);
+  else if (C.monthly <= 0) rowsOut.push(['If you invested all of it', 'No change', '']);
+  else if (C.bizFree == null) rowsOut.push(['If you invested all of it', 'Still not by ' + MAX_AGE, 'Closer, though']);
+  else {
+    var sooner = C.baseFree == null ? 'instead of never' : (C.baseFree - C.bizFree >= 0.5 ? yearsText(C.baseFree - C.bizFree) + ' sooner than ' + ageText(C.baseFree) : 'about the same');
+    rowsOut.push(['If you invested all of it', 'Free at ' + ageText(C.bizFree), sooner]);
+  }
+  if (C.salesToCover != null){
+    var enough = BIZ.n >= C.salesToCover;
+    rowsOut.push(['Sales a month to pay for your ideal life', C.salesToCover.toLocaleString('en-US'), enough ? 'You\'re there at ' + BIZ.n.toLocaleString('en-US') + ' a month' : (salesPace(C.salesToCover) || 'A month') + ' at ' + money(BIZ.p) + ' profit each']);
+  }
+  $('biz-out').innerHTML = rowsOut.map(function(r){
+    return '<div class="co"><div class="k">' + r[0] + '</div><div class="v">' + r[1] + (r[2] ? '<small>' + r[2] + '</small>' : '') + '</div></div>';
+  }).join('');
+  $('biz-note').textContent = 'Starting a business is hard. Arguably more difficult than a job because there\'s risk and sacrifice involved, and it usually takes years to work. I don\'t think it\'s for everyone, and that\'s fine. But when you do the math, you can see why so many people try.';
+}
+function wireBiz(){
+  if (wireBiz.done) return; wireBiz.done = true;
+  [['biz-p', 'p'], ['biz-n', 'n']].forEach(function(x){
+    var el = $(x[0]);
+    el.addEventListener('input', function(){ formatMoneyInput(el); BIZ[x[1]] = parseMoney(el.value) || 0; renderBiz(); });
+  });
+}
+
+function renderMoves(){
+  var b = R.base, qc = S.qc || {}, now = S.invest || 0;
+  var D = leverAmount(S.takehome, S.spend), L = leverAnalysis(inputs(false), S.asm, D);
+  var cash = Math.round(3 * (S.takehome > 0 ? S.takehome : S.spend) / 100) * 100;
+  var list = [];
+  if (qc.debt === true) list.push(['Pay off high-interest debt first', 'Credit cards usually charge 20% or more a year, so paying them off is a guaranteed 20% return.']);
+  if (qc.cash === false) list.push(['Build a cash cushion of about ' + money(cash), 'That\'s three months of ' + (S.takehome > 0 ? 'take-home pay' : 'spending') + '. It keeps a surprise bill from turning into new debt, or making you sell investments at a bad time.']);
+  if (qc.match === true) list.push(['Get the full employer match', 'A match is extra money you only get if you put money in. It\'s usually 50 cents to a dollar for every dollar you put in, so put in at least enough to get all of it.']);
+  if (b.progress >= 1){
+    list.push(['Stress-test your number', 'Set the withdrawal rate to 3.5% in the assumptions. If you\'re still covered, you\'ve got a real cushion.']);
+    list.push(['Keep a year of spending in cash', 'That way a bad market year never forces you to sell low just to pay rent.']);
+    list.push(['Figure out what the time is for', 'Now you get to pick what you actually work on, and what your days look like.']);
+  } else {
+    if (now === 0) list.push(['Start investing something every month', 'Even ' + money(D) + ' a month gets the ball rolling. At first the habit matters more than the amount.']);
+    else if (b.need <= now) list.push(['Keep your ' + money(now) + ' a month going, automatically', 'You\'re on pace for ' + S.goal + '. Set it to go out on payday so it doesn\'t depend on willpower.']);
+    else if (S.takehome > 0 ? b.need > S.takehome * 0.5 : b.need > S.spend) list.push(['Go up to ' + money(now + D) + ' a month, then raise it with every raise', 'Being free by ' + S.goal + ' would take ' + money(b.need) + ' a month' + (S.takehome > 0 ? ', which is ' + shareOfPay(b.need) + ' pay' : '') + '. Start with what you can actually keep up, and let raises close the rest.']);
+    else list.push(['Invest ' + money(b.need) + ' a month', 'That\'s what gets you free by ' + S.goal + '. Set it to go out on payday, before you can spend it.']);
+    if (L.mode === 'gap' || L.mode === 'ahead'){
+      var lv = { cut: 'Cut ' + money(D) + ' a month from your ideal-life budget', more: 'Invest ' + money(D) + ' more a month', time: 'Move your target to ' + L.laterGoal }[L.best.id];
+      list.push([lv, L.mode === 'gap' ? 'Out of everything we tested, this one closes the most of your monthly gap (' + money(Math.max(0, L.best.value)) + ').' : 'Out of everything we tested, this one gets you free the soonest.']);
+    }
+    list.push(['Use tax-advantaged accounts first', 'Accounts like a 401(k) or IRA let more of your money grow instead of going to taxes. The rules are different for everyone, so check what you qualify for.']);
+    list.push(['Invest half of every raise', 'You get there faster and still get to spend the other half.']);
+  }
+  var h = list.slice(0, 3).map(function(m, k){
+    return '<li class="mv"><span class="num">' + (k + 1) + '</span><div><div class="mt">' + m[0] + '</div><div class="md">' + m[1] + '</div></div></li>';
+  }).join('');
+  var unanswered = qc.debt == null || qc.cash == null || qc.match == null;
+  if (unanswered) h += '<li class="moves-foot">Carrying credit card debt, or no cash cushion yet? Answer the questions ' + (window.matchMedia('(min-width: 1024px)').matches ? 'on the left' : 'above') + ' and those come first.</li>';
+  $('moves').innerHTML = h;
+  document.querySelectorAll('#qcheck .qrow').forEach(function(row){
+    var v = qc[row.dataset.q];
+    row.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', String(v != null && (c.dataset.a === '1') === v)); });
+  });
+}
+
+/* ---------- Keep it: image + reminder ---------- */
+function summaryFacts(){
+  var b = R.base;
+  return {
+    fn: money(b.fn),
+    spend: money(S.spend) + ' a month',
+    have: money(S.savings || 0),
+    pct: b.progress >= 1 ? '100%' : pctText(b.progress),
+    free: b.progress >= 1 ? 'Now' : (b.freeAge == null ? 'Not at this pace yet' : ageText(b.freeAge) + ' (' + (THIS_YEAR + Math.round(b.mFree / 12)) + ')'),
+    plan: b.progress >= 1 ? 'Already covered' : (b.need <= (S.invest || 0) ? 'On track at ' + money(S.invest || 0) + '/mo' : money(b.need) + '/mo to be free by ' + S.goal),
+    progress: clamp(b.progress, 0, 1)
+  };
+}
+function saveImage(){
+  var f = summaryFacts(), W = 1080, H = 1350, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  var x = c.getContext('2d'), F = 'Arial, "Helvetica Neue", Helvetica, sans-serif';
+  x.fillStyle = '#ffffff'; x.fillRect(0, 0, W, H);   // the white card, same as on the page
+  var P = 96;
+  x.fillStyle = '#5c5c66'; x.font = '400 40px ' + F; x.fillText('My freedom number', P, 230);
+  x.fillStyle = '#0b0b0c'; var size = 150; x.font = '700 ' + size + 'px ' + F;
+  while (x.measureText(f.fn).width > W - 2 * P && size > 60){ size -= 6; x.font = '700 ' + size + 'px ' + F; }
+  x.fillText(f.fn, P - 4, 230 + size + 10);
+  var by = 480; x.fillStyle = '#e3e3e8'; roundRect(x, P, by, W - 2 * P, 16, 8); x.fill();
+  x.fillStyle = '#3fd94e'; roundRect(x, P, by, Math.max(16, (W - 2 * P) * f.progress), 16, 8); x.fill();
+  var rows = [['Ideal life costs', f.spend], ['Invested today', f.have], ['Of the way there', f.pct], ['Free at my pace', f.free], ['My monthly plan', f.plan]];
+  var y = 600;
+  rows.forEach(function(r, k){
+    if (k){ x.fillStyle = 'rgba(0,0,0,0.08)'; x.fillRect(P, y - 62, W - 2 * P, 2); }
+    x.font = '400 38px ' + F; x.fillStyle = '#5c5c66'; x.textAlign = 'left'; x.fillText(r[0], P, y);
+    x.font = '700 38px ' + F; x.fillStyle = '#0b0b0c'; x.textAlign = 'right'; x.fillText(r[1], W - P, y);
+    y += 118;
+  });
+  x.textAlign = 'left'; x.fillStyle = 'rgba(0,0,0,0.08)'; x.fillRect(P, H - 170, W - 2 * P, 2);
+  x.font = '700 34px ' + F; x.fillStyle = '#0b0b0c'; x.fillText('Your Freedom Number', P, H - 100);
+  x.font = '400 34px ' + F; x.fillStyle = '#5c5c66'; x.textAlign = 'right'; x.fillText('Malik Peace', W - P, H - 100);
+  c.toBlob(function(blob){
+    if (!blob){ toast('Could not make the image'); return; }
+    download(blob, 'my-freedom-number.png'); toast('Image saved');
+  }, 'image/png');
+}
+function roundRect(x, X0, Y0, w, h, r){
+  x.beginPath(); x.moveTo(X0 + r, Y0); x.arcTo(X0 + w, Y0, X0 + w, Y0 + h, r); x.arcTo(X0 + w, Y0 + h, X0, Y0 + h, r);
+  x.arcTo(X0, Y0 + h, X0, Y0, r); x.arcTo(X0, Y0, X0 + w, Y0, r); x.closePath();
+}
+function download(blob, name){
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function saveReminder(){
+  var f = summaryFacts(), url = location.href.split('#')[0] + '#' + encodeShare();
+  var d = new Date(); d.setDate(d.getDate() + 91);
+  var d2 = new Date(d); d2.setDate(d2.getDate() + 1);
+  function ymd(t){ return t.getFullYear() + String(t.getMonth() + 1).padStart(2, '0') + String(t.getDate()).padStart(2, '0'); }
+  function esc2(t){ return String(t).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+  function fold(line){ var out = [], k = 0; while (line.length - k > 73){ out.push(line.slice(k, k + 73)); k += 73; } out.push(line.slice(k)); return out.join('\r\n '); }
+  var now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  var desc = 'Last time I checked, my freedom number was ' + f.fn + '. I was ' + f.pct + ' of the way there, and free at ' + f.free + ' at my pace. The plan was ' + f.plan + '.\nOpen my result here ' + url;
+  var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Malik Peace//Your Freedom Number//EN', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
+    'UID:' + Date.now() + '@freedom-number', 'DTSTAMP:' + now, 'DTSTART;VALUE=DATE:' + ymd(d), 'DTEND;VALUE=DATE:' + ymd(d2),
+    'SUMMARY:' + esc2('Check my Freedom Number'), 'DESCRIPTION:' + esc2(desc), 'URL:' + url, 'END:VEVENT', 'END:VCALENDAR'];
+  download(new Blob([lines.map(fold).join('\r\n') + '\r\n'], { type: 'text/calendar' }), 'freedom-number-check-in.ics');
+  toast('Reminder saved. Open the file to add it to your calendar.');
+}
+
+/* ---------- Chart ---------- */
+function niceStep(range, count){
+  var raw = range / count, mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / mag;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * mag;
+}
+var CH = null;
+function esc(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+// Picks the spot for each label that collides least with lines, markers and other labels.
+function placeLabels(labels, obst, bounds){
+  var placed = obst.boxes.slice(), out = '';
+  function hit(a, b){ return a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0; }
+  labels.forEach(function(lb){
+    var w = lb.text.length * lb.size * 0.6, best = null, bestScore = Infinity;
+    lb.cands.forEach(function(c, idx){
+      var x0 = c[2] === 'start' ? c[0] : (c[2] === 'end' ? c[0] - w : c[0] - w / 2);
+      var box = { x0: x0 - 3, x1: x0 + w + 3, y0: c[1] - lb.size - 1, y1: c[1] + 4 };
+      var sc = idx * 0.5;
+      if (box.x0 < bounds.x0 || box.x1 > bounds.x1 || box.y0 < bounds.y0 || box.y1 > bounds.y1) sc += 1000; // never draw outside the chart
+      placed.forEach(function(p){ if (hit(box, p)) sc += 100; });
+      obst.points.forEach(function(pt){ if (pt[0] >= box.x0 && pt[0] <= box.x1 && pt[1] >= box.y0 && pt[1] <= box.y1) sc += 8; });
+      obst.hlines.forEach(function(y){ if (y >= box.y0 && y <= box.y1) sc += 25; });
+      if (sc < bestScore){ bestScore = sc; best = { c: c, box: box }; }
+    });
+    // optional labels are skipped when there's no clean spot for them (the legend still explains the line)
+    if (lb.dropAt != null && bestScore >= lb.dropAt) return;
+    placed.push(best.box);
+    out += '<text x="' + best.c[0].toFixed(1) + '" y="' + best.c[1].toFixed(1) + '" text-anchor="' + best.c[2] + '" fill="' + lb.color + '" font-size="' + lb.size + '" font-weight="700"' +
+      (obst.halo ? ' stroke="' + obst.halo + '" stroke-width="4" stroke-linejoin="round" paint-order="stroke"' : '') + '>' + esc(lb.text) + '</text>';
+  });
+  return out;
+}
+
+function drawChart(){
+  // colors come from the theme tokens so the chart reads in light and dark
+  var cs = getComputedStyle($('chart-wrap')), tk = function(n){ return cs.getPropertyValue(n).trim(); };
+  var C = { line: tk('--line'), mid: tk('--mid'), ink: tk('--ink'), accent: tk('--accent'), accentInk: tk('--accent-ink'), tick: tk('--tick'), bg: tk('--bg') };
+  var wrap = $('chart-wrap'), svg = $('chart');
+  var desk = window.matchMedia('(min-width: 1024px)').matches;
+  var W = Math.max(280, wrap.clientWidth);
+  var H = desk ? Math.max(320, wrap.clientHeight) : (W < 520 ? 300 : 320);
+  var b = R.base, a = R.alt, inB = inputs(false), inA = inputs(true);
+  var age0 = S.age;
+  var cands = [S.goal];
+  if (b.freeAge != null) cands.push(b.freeAge);
+  if (a && a.freeAge != null) cands.push(a.freeAge);
+  var end = Math.max.apply(null, cands) + 4;
+  if (b.freeAge == null) end = Math.max(end, S.goal + 12, age0 + 30);
+  end = Math.min(MAX_AGE, Math.ceil(Math.max(end, age0 + 8)));
+  var fnMax = Math.max(b.fn, a ? a.fn : 0);
+  var yTop = Math.max(fnMax * 1.3, (S.savings || 0) * 1.1);
+  var step = niceStep(yTop, H < 300 ? 4 : 5);
+  yTop = Math.ceil(yTop / step) * step;
+
+  var L = W < 520 ? 50 : 62, Rr = 16, T = 30, B = 34;
+  var pw = W - L - Rr, ph = H - T - B;
+  var X = function(ag){ return L + (ag - age0) / (end - age0) * pw; };
+  // not clamped: lines that run past the top are cut by the clip path, never flattened
+  var Y = function(v){ return T + ph - Math.max(0, v) / yTop * ph; };
+  var totalM = (end - age0) * 12, stepM = Math.max(1, Math.round(totalM / 160));
+
+  var pace = series(inB.savings, inB.invest, b.i, age0, end, stepM);
+  var alt = a ? series(inA.savings, inA.invest, a.i, age0, end, stepM) : null;
+  // the range between a cautious (5%) and an aggressive (9%) market, same monthly investing
+  var iLo = monthlyRate(realRate(0.05, S.asm.infl)), iHi = monthlyRate(realRate(0.09, S.asm.infl));
+  var bandLo = series(inB.savings, inB.invest, iLo, age0, end, stepM), bandHi = series(inB.savings, inB.invest, iHi, age0, end, stepM);
+  var needP = b.need > 0 && b.progress < 1 ? series(inB.savings, b.need, b.i, age0, S.goal, Math.max(1, Math.round((S.goal - age0) * 12 / 120))) : null;
+
+  function path(pts){
+    return pts.map(function(p, k){ return (k ? 'L' : 'M') + X(p.age).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join('');
+  }
+  var o = '';
+  o += '<defs><linearGradient id="paceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + C.accent + '" stop-opacity=".2"/><stop offset="1" stop-color="' + C.accent + '" stop-opacity="0"/></linearGradient>' +
+       '<clipPath id="plotClip"><rect x="' + L + '" y="' + (T - 2) + '" width="' + pw + '" height="' + (ph + 4) + '"/></clipPath></defs>';
+  // y grid + labels
+  for (var v = 0; v <= yTop + 1; v += step){
+    var y = Y(v);
+    o += '<line x1="' + L + '" x2="' + (W - Rr) + '" y1="' + y + '" y2="' + y + '" stroke="' + C.line + '" stroke-width="1"/>';
+    o += '<text x="' + (L - 10) + '" y="' + (y + 4) + '" text-anchor="end" fill="' + C.mid + '" font-size="12">' + moneyShort(v) + '</text>';
+  }
+  o += '<text x="' + (L - 10) + '" y="' + (T - 14) + '" text-anchor="end" fill="' + C.mid + '" font-size="12">Invested</text>';
+  // x axis: "Age 27" at the start, then round ages
+  var span = end - age0, xs = span <= 14 ? 2 : span <= 34 ? 5 : 10;
+  var startLbl = 'Age ' + age0, startW = startLbl.length * 7.2;
+  o += '<text x="' + X(age0) + '" y="' + (H - 10) + '" text-anchor="start" fill="' + C.mid + '" font-size="12">' + startLbl + '</text>';
+  for (var ag = Math.ceil((age0 + 0.01) / xs) * xs; ag <= end; ag += xs){
+    var tx = X(ag);
+    if (tx - 10 < X(age0) + startW + 6) continue;
+    if (tx > W - Rr - 6) continue;
+    o += '<line x1="' + tx + '" x2="' + tx + '" y1="' + (T + ph) + '" y2="' + (T + ph + 5) + '" stroke="' + C.tick + '"/>';
+    o += '<text x="' + tx + '" y="' + (H - 10) + '" text-anchor="middle" fill="' + C.mid + '" font-size="12">' + ag + '</text>';
+  }
+
+  // goal marker
+  var goalBox = null;
+  if (S.goal <= end){
+    var gx = X(S.goal), anchor = gx > W - 60 ? 'end' : (gx < L + 40 ? 'start' : 'middle');
+    o += '<line x1="' + gx + '" x2="' + gx + '" y1="' + T + '" y2="' + (T + ph) + '" stroke="' + C.tick + '" stroke-dasharray="3 4"/>';
+    o += '<text x="' + gx + '" y="' + (T - 12) + '" text-anchor="' + anchor + '" fill="' + C.mid + '" font-size="12">Goal ' + S.goal + '</text>';
+    var gw = ('Goal ' + S.goal).length * 7.2, gx0 = anchor === 'start' ? gx : (anchor === 'end' ? gx - gw : gx - gw / 2);
+    goalBox = { x0: gx0 - 3, x1: gx0 + gw + 3, y0: T - 26, y1: T - 8 };
+  }
+
+  o += '<g clip-path="url(#plotClip)">';
+  var bandPath = path(bandHi) + bandLo.slice().reverse().map(function(p){ return 'L' + X(p.age).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join('') + 'Z';
+  o += '<path d="' + bandPath + '" fill="' + C.accent + '" fill-opacity=".09"/>';
+  var pacePath = path(pace);
+  o += '<path d="' + pacePath + 'L' + X(end) + ' ' + Y(0) + 'L' + X(age0) + ' ' + Y(0) + 'Z" fill="url(#paceFill)"/>';
+  o += '<line x1="' + L + '" x2="' + (W - Rr) + '" y1="' + Y(b.fn) + '" y2="' + Y(b.fn) + '" stroke="' + C.ink + '" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="5 5"/>';
+  var altFnLine = a && Math.abs(a.fn - b.fn) > 1;
+  // the what-if number: ink and dotted, so it never reads like the dashed freedom number line
+  if (altFnLine) o += '<line x1="' + L + '" x2="' + (W - Rr) + '" y1="' + Y(a.fn) + '" y2="' + Y(a.fn) + '" stroke="' + C.ink + '" stroke-opacity=".85" stroke-width="2" stroke-linecap="round" stroke-dasharray="0.1 5"/>';
+  if (needP) o += '<path d="' + path(needP) + '" fill="none" stroke="' + C.mid + '" stroke-width="1.5" stroke-dasharray="4 5"/>';
+  o += '<path d="' + pacePath + '" fill="none" stroke="' + C.accent + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  if (alt) o += '<path d="' + path(alt) + '" fill="none" stroke="' + C.ink + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  o += '</g>';
+
+  // obstacles for label placement: every drawn curve point, the dashed lines, markers
+  var pts = [];
+  function addPts(arr){
+    if (!arr) return;
+    for (var k = 1; k < arr.length; k++){
+      var x0 = X(arr[k - 1].age), y0 = Y(arr[k - 1].v), x1 = X(arr[k].age), y1 = Y(arr[k].v);
+      var n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 3));
+      for (var j = 0; j <= n; j++){ var px = x0 + (x1 - x0) * j / n, py = y0 + (y1 - y0) * j / n; if (py >= T - 4) pts.push([px, py]); }
+    }
+  }
+  addPts(pace); addPts(alt); addPts(needP);
+  var boxes = goalBox ? [goalBox] : [];
+  var labels = [], markers = '';
+  function marker(r, color, textColor, dropAt){
+    if (r.progress >= 1 || r.freeAge == null || r.freeAge > end) return;
+    var cx = X(r.freeAge), cy = Y(r.fn);
+    markers += '<circle cx="' + cx + '" cy="' + cy + '" r="5.5" fill="' + color + '" stroke="' + C.bg + '" stroke-width="2.5"/>';
+    boxes.push({ x0: cx - 8, x1: cx + 8, y0: cy - 8, y1: cy + 8 });
+    labels.push({ text: 'Free at ' + ageText(r.freeAge), color: textColor, size: 13, dropAt: dropAt, cands: [
+      [cx - 10, cy - 11, 'end'], [cx + 10, cy - 11, 'start'], [cx, cy - 14, 'middle'],
+      [cx + 10, cy + 22, 'start'], [cx - 10, cy + 22, 'end'], [cx, cy + 26, 'middle'],
+      [cx - 12, cy - 30, 'end'], [cx + 12, cy + 40, 'start'], [cx - 12, cy + 40, 'end'], [cx - 30, cy - 14, 'end'],
+      [cx + 12, cy - 30, 'start'], [cx - 40, cy + 22, 'end'], [cx + 30, cy + 22, 'start']
+    ] });
+  }
+  marker(b, C.accent, C.accentInk);
+  if (a) marker(a, C.ink, C.ink, 100);
+  function lineLabel(text, yv, color, dropAt){
+    var yy = Y(yv), xr = W - Rr - 4, xl = L + 6;
+    labels.push({ text: text, color: color, size: 12, dropAt: dropAt, cands: [
+      [xr, yy - 8, 'end'], [xl, yy - 8, 'start'], [xr, yy + 17, 'end'], [xl, yy + 17, 'start'],
+      [(xl + xr) / 2, yy - 8, 'middle'], [(xl + xr) / 2, yy + 17, 'middle']
+    ] });
+  }
+  lineLabel('Freedom number ' + moneyShort(b.fn), b.fn, C.ink);
+  if (altFnLine) lineLabel('New number ' + moneyShort(a.fn), a.fn, C.ink, 25);
+  var hl = [Y(b.fn)]; if (altFnLine) hl.push(Y(a.fn));
+  o += markers;
+  o += placeLabels(labels, { points: pts, hlines: hl, boxes: boxes, halo: C.bg }, { x0: L, x1: W - Rr + 2, y0: T - 4, y1: T + ph });
+
+  // hover layer
+  o += '<line id="hov" x1="0" x2="0" y1="' + T + '" y2="' + (T + ph) + '" stroke="' + C.ink + '" stroke-opacity=".35" stroke-width="1" visibility="hidden"/>';
+  o += '<circle id="hov-p" r="4" fill="' + C.accent + '" visibility="hidden"/><circle id="hov-a" r="4" fill="' + C.ink + '" visibility="hidden"/>';
+  o += '<rect id="hit" x="' + L + '" y="' + T + '" width="' + pw + '" height="' + ph + '" fill="transparent"/>';
+
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  if (desk) svg.removeAttribute('height'); else svg.setAttribute('height', H);
+  svg.innerHTML = o;
+
+  var lg = '<span><i></i>Your pace</span><span><i class="band"></i>Your range if markets do 5 to 9%</span>';
+  if (a) lg += '<span><i class="alt"></i>With your what ifs</span>';
+  if (a && Math.abs(a.fn - b.fn) > 1) lg += '<span><i class="newfn"></i>New number</span>';
+  if (needP) lg += '<span><i class="need"></i>Needed to be free by ' + S.goal + '</span>';
+  lg += '<span><i class="fnl"></i>Freedom number</span>';
+  $('legend').innerHTML = lg;
+
+  CH = { yTop: yTop, X: X, Y: Y, L: L, pw: pw, age0: age0, end: end, inB: inB, inA: inA, b: b, a: a, W: W, H: H };
+  wireHover();
+}
+
+function wireHover(){
+  var hit = $('hit'), tip = $('tip');
+  function at(r, inp, ag){ return balanceAt(inp.savings, inp.invest, r.i, (ag - CH.age0) * 12); }
+  function move(e){
+    var rect = $('chart').getBoundingClientRect();
+    var px = (e.clientX - rect.left) * (CH.W / rect.width);
+    var ag = CH.age0 + clamp((px - CH.L) / CH.pw, 0, 1) * (CH.end - CH.age0);
+    ag = Math.round(ag);
+    var x = CH.X(ag), vb = at(CH.b, CH.inB, ag);
+    var hov = $('hov'); hov.setAttribute('x1', x); hov.setAttribute('x2', x); hov.setAttribute('visibility', 'visible');
+    var hp = $('hov-p'); hp.setAttribute('cx', x); hp.setAttribute('cy', CH.Y(vb)); hp.setAttribute('visibility', vb <= CH.yTop ? 'visible' : 'hidden');
+    var h = '<div class="ta">Age ' + ag + ' (' + (THIS_YEAR + ag - CH.age0) + ')</div><div class="tr"><span><i class="sw"></i>Your pace</span><b>' + money(vb) + '</b></div>';
+    var ha = $('hov-a');
+    if (CH.a){
+      var va = at(CH.a, CH.inA, ag);
+      ha.setAttribute('cx', x); ha.setAttribute('cy', CH.Y(va)); ha.setAttribute('visibility', va <= CH.yTop ? 'visible' : 'hidden');
+      h += '<div class="tr"><span><i class="sw alt"></i>With what ifs</span><b>' + money(va) + '</b></div>';
+    } else ha.setAttribute('visibility', 'hidden');
+    h += '<div class="tr"><span><i class="sw fnl"></i>Freedom number</span><b>' + money(CH.b.fn) + '</b></div>';
+    tip.innerHTML = h; tip.classList.add('on');
+    var sx = rect.width / CH.W, tx = x * sx + 14, tw = tip.offsetWidth;
+    if (tx + tw > rect.width) tx = x * sx - tw - 14;
+    tip.style.transform = 'translate(' + Math.max(0, tx) + 'px,' + 8 + 'px)';
+  }
+  function hide(){
+    tip.classList.remove('on');
+    ['hov', 'hov-p', 'hov-a'].forEach(function(id){ var el = $(id); if (el) el.setAttribute('visibility', 'hidden'); });
+  }
+  hit.addEventListener('pointermove', move);
+  hit.addEventListener('pointerdown', move);
+  hit.addEventListener('pointerleave', hide);
+}
+
+/* ---------- Top-level wiring ---------- */
+function toast(msg){
+  var t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast.t); toast.t = setTimeout(function(){ t.classList.remove('on'); }, 1800);
+}
+function copyText(txt){
+  if (navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(txt).then(function(){ return true; }, function(){ return fallback(); });
+  }
+  return Promise.resolve(fallback());
+  function fallback(){
+    try {
+      var ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    } catch (e) { return false; }
+  }
+}
+
+$('btn-start').addEventListener('click', function(){ show('v-wizard'); goStep(0, 1); });
+$('btn-resume').addEventListener('click', function(){ openResults(false); });
+$('btn-back').addEventListener('click', back);
+function edit(){ show('v-wizard'); goStep(0, 1); }
+$('btn-edit').addEventListener('click', edit);
+$('btn-edit-2').addEventListener('click', edit);
+$('btn-restart').addEventListener('click', function(){
+  S = freshState(); persist = true;
+  try { localStorage.removeItem('fn2'); } catch (e) {}
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  $('btn-resume').hidden = true;
+  show('v-landing');
+});
+$('btn-png').addEventListener('click', saveImage);
+$('as-go').addEventListener('click', function(){
+  $('asm').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+});
+$('btn-ics').addEventListener('click', saveReminder);
+$('email-form').addEventListener('submit', function(e){
+  e.preventDefault(); // preview only: nothing is sent or stored
+  $('email-msg').hidden = false;
+});
+document.querySelectorAll('#qcheck .qrow').forEach(function(row){
+  row.querySelectorAll('.chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      var k = row.dataset.q, v = c.dataset.a === '1';
+      S.qc[k] = S.qc[k] === v ? null : v;   // tap again to clear
+      renderMoves(); save(); syncHashIfShared();
+    });
+  });
+});
+$('btn-copy').addEventListener('click', function(){
+  var url = location.href.split('#')[0] + '#' + encodeShare();
+  try { history.replaceState(null, '', '#' + encodeShare()); } catch (e) {}
+  copyText(url).then(function(ok){ toast(ok ? 'Link copied' : 'Couldn\'t copy. The link is in your address bar now.'); });
+});
+
+/* ---------- Flash bang mode (light): the homepage's switch, copied from malikpeace.com/assets/site.js ---------- */
+(function(){
+  var root = document.documentElement, fbBtn = document.querySelector('[data-flashbang]');
+  var REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  function setTheme(t){
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem('mp-theme', t); } catch (e) {}
+    if (fbBtn) fbBtn.setAttribute('aria-pressed', String(t === 'light'));   // the label shown follows data-theme (CSS)
+    var meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = t === 'light' ? '#ffffff' : '#000000';
+    // the chart is drawn with the theme's colours
+    if (R && !$('v-results').hidden && !$('v-results').classList.contains('pre-reveal')) drawChart();
+  }
+  if (!fbBtn) return;
+  var mode = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark', swap = false, owed = false, noop = function(){};
+  setTheme(mode);
+  // the new mode grows out of the centre of the screen; colour fades stay off until the last circle lands
+  var go = function(){
+    mode = mode === 'light' ? 'dark' : 'light';
+    if (REDUCE || !document.startViewTransition){ setTheme(mode); return; }
+    root.classList.add('mp-swap'); swap = true;
+    var vt = document.startViewTransition(function(){ setTheme(mode); });
+    vt.ready.catch(noop); vt.updateCallbackDone.catch(noop);
+    vt.finished.catch(noop).then(function(){
+      swap = false;
+      if (owed){ owed = false; go(); } else root.classList.remove('mp-swap');
+    });
+  };
+  // taps that land mid-circle only flip what's owed, so a run of taps always ends on the mode its count says
+  var tap = function(){ if (swap) owed = !owed; else go(); };
+  document.addEventListener('click', function(e){
+    var hit = e.target.closest && e.target.closest('[data-flashbang]');
+    if (!hit && swap && e.clientX){ var b = fbBtn.getBoundingClientRect(); hit = e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom; }
+    if (hit) tap();
+  }, true);
+})();
+
+// landing email box: preview only, nothing is sent or stored
+$('land-email').addEventListener('submit', function(e){ e.preventDefault(); $('land-email-msg').hidden = false; });
+
+/* ---------- Landing example card: cycles through lifestyles ---------- */
+// Every lifestyle runs through the real engine with the default assumptions, so the
+// number and the monthly plan always agree with the math. The plan row starts from $0 at 25, free by 45.
+(function(){
+  var LIFE = [
+    ['Frugal', 2000], ['Van life', 2800], ['Comfortable', 5000], ['Family in the suburbs', 9000],
+    ['Big city', 14000], ['Luxury', 40000], ['Rich', 150000], ['Billionaire', 500000]
+  ];
+  var all = LIFE.map(function(l){ return compute({ age: 25, spend: l[1], savings: 0, invest: 0, goal: 45 }, DEFAULT_ASM); });
+  var lo = Math.log(all[0].fn), hi = Math.log(all[all.length - 1].fn);
+  var EX = LIFE.map(function(l, k){
+    var r = all[k];
+    return {
+      name: l[0], fn: money(r.fn), spend: money(l[1]) + ' a month', year: money(r.annual),
+      need: money(r.need) + '/mo',
+      // bar: the number on a log scale, frugal to billionaire
+      width: 6 + 94 * (Math.log(r.fn) - lo) / (hi - lo)
+    };
+  });
+  var card = document.querySelector('.land-ex .sum');
+  if (!card) return;
+  var els = { name: $('ex-name'), fn: $('ex-fn'), spend: $('ex-spend'), year: $('ex-year'), need: $('ex-need') };
+  function paint(e){
+    for (var k in els) els[k].textContent = e[k];
+    $('ex-fill').style.width = e.width + '%';
+  }
+  var idx = 0; paint(EX[0]);
+  // the headless screenshot tool fakes reduced motion for the result count-up; read the real setting here
+  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still) return;
+
+  // digits scramble, then settle left to right; $ and commas never move
+  function roll(el, to, delay, ms){
+    var t0 = null, from = el.textContent;
+    function frame(t){
+      if (t0 == null) t0 = t;
+      var e = t - t0 - delay;
+      if (e < 0){ requestAnimationFrame(frame); return; }
+      var p = Math.min(1, e / ms), out = '';
+      for (var k = 0; k < to.length; k++){
+        var c = to.charAt(k), settle = 0.35 + 0.65 * (k + 1) / to.length;
+        out += (/[0-9]/.test(c) && p < settle) ? String(Math.floor(Math.random() * (/[0-9]/.test(out.slice(-1)) ? 10 : 9)) + (/[0-9]/.test(out.slice(-1)) ? 0 : 1)) : c;
+      }
+      el.textContent = p < 1 ? out : to;
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    if (from === to) return;
+    requestAnimationFrame(frame);
+    setTimeout(function(){ el.textContent = to; }, delay + ms + 120); // settle even if frames are throttled
+  }
+  function next(){
+    idx = (idx + 1) % EX.length;
+    var e = EX[idx];
+    els.name.textContent = e.name;
+    roll(els.fn, e.fn, 0, 380);
+    $('ex-fill').style.width = e.width + '%';
+    ['spend', 'year', 'need'].forEach(function(k, j){ roll(els[k], e[k], 60 + j * 70, 260); });
+  }
+
+  // run only while the card is on screen, the landing is showing and the tab is visible
+  var onScreen = false, timer = null;
+  function live(){ return onScreen && !document.hidden && !$('v-landing').hidden; }
+  function sync(){
+    if (live() && !timer) timer = setInterval(function(){ if (live()) next(); }, 2200);
+    else if (!live() && timer){ clearInterval(timer); timer = null; }
+  }
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver(function(en){ onScreen = en[0].isIntersecting; sync(); }).observe(card);
+  } else { onScreen = true; }
+  document.addEventListener('visibilitychange', sync);
+})();
+
+/* ---------- Boot ---------- */
+var DEMO = { age: 27, guess: 1000000, spend: 4000, savings: 25000, invest: 800, takehome: 5200, goal: 45 };
+function boot(){
+  // a trailing green/refined style flag (#green, #demo-green, #step-3-green) is read in the head; drop it here
+  var h = (location.hash || '').replace(/(?:^#|[-&])(?:green|refined)$/, '');
+  var shared = decodeShare(h);
+  if (shared){ S = shared; persist = false; openResults(true); return; }
+  if (/^#demo/.test(h)){
+    persist = false;
+    for (var k in DEMO) S[k] = DEMO[k];
+    S.done = true;
+    if (h === '#demo-whatif'){ S.lev.less = 300; S.lev.more = 400; }
+    openResults(h === '#demo');
+    if (h === '#demo-whatif'){ recompute(); renderAll(false); }
+    return;
+  }
+  var m = /^#step-(\d)(b?)$/.exec(h);
+  if (m){
+    persist = false;
+    for (var k2 in DEMO) S[k2] = DEMO[k2];
+    show('v-wizard'); goStep(clamp(Number(m[1]) - 1, 0, STEPS.length - 1), 1);
+    if (m[2] && STEPS[S.step].kind === 'spend') openBreakdown(false);
+    return;
+  }
+  var saved = load();
+  if (saved){
+    var st = freshState();
+    Object.keys(st).forEach(function(k){ if (saved[k] !== undefined) st[k] = saved[k]; });
+    if (!st.asm || typeof st.asm.swr !== 'number') st.asm = freshState().asm;
+    if (!st.lev) st.lev = { less: 0, more: 0 };
+    if (!st.qc) st.qc = { debt: null, cash: null, match: null };
+    S = st;
+    if (S.done && S.age && S.spend && S.goal > S.age) $('btn-resume').hidden = false;
+  }
+  show('v-landing');
+}
+boot();
+})();
+</script>
+<style>
+.bh-plate { margin-top: 4px; max-width: 460px; }
+.bh { min-height: 56px; --bh-inset: 19px; width: calc(100% + var(--bh-inset) * 2) !important; max-width: none !important; margin-left: calc(-1 * var(--bh-inset)) !important; }
+.bh iframe { width: 100%; border: 0; background: transparent; color-scheme: normal; }
+html[data-theme="light"] .bh-plate, .bh-plate.always { background: #0b0b0c; border-radius: 16px; padding: 6px 4px 2px; }   /* .always: on a card that's white in dark mode */
+</style>
+<script>
+document.querySelectorAll('[data-bh]').forEach(function (b) {
+  var sc = document.createElement('script'); sc.async = true; sc.src = 'https://subscribe-forms.beehiiv.com/v3/loader.js';
+  sc.setAttribute('data-beehiiv-form', b.getAttribute('data-bh')); b.appendChild(sc);
+});
+</script>
+</body>
+</html>

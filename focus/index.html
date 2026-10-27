@@ -1,0 +1,1593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000" id="themeC">
+<script>try { if (localStorage.getItem('mp-theme') === 'light') { document.documentElement.classList.add('fb'); document.documentElement.setAttribute('data-theme', 'light'); document.getElementById('themeC').content = '#ffffff'; } } catch (e) {}</script>
+<title>Focus Room</title>
+<meta name="description" content="A free room for deep work. Say what you're working on, pick how long, and start. The room fills as the time passes.">
+<!-- it lives at malikpeace.com/focus (Malik, 2026-10-24); the share card and icons ship beside this page -->
+<link rel="canonical" href="https://malikpeace.com/focus">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Malik Peace">
+<meta property="og:title" content="Focus Room">
+<meta property="og:description" content="A free room for deep work. Pick how long and start. The room fills as the time passes.">
+<meta property="og:url" content="https://malikpeace.com/focus">
+<meta property="og:image" content="https://malikpeace.com/focus/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://malikpeace.com/focus/og.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Focus Room">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+/* THE FOCUS ROOM, round 3 (Malik, 2026-10-20: "make the focus room kick ass... more simple and minimal... look at the
+   deep work section inside Memento and use that as inspiration", and "a website people return to over time").
+   It is Memento's Deep work, on the web, nearly verbatim:
+   SETUP   what you're working on, the length (quick picks and the tick rail), up to five saved timers, the kind
+           (Timer, Pomodoro, Stopwatch, Alarm), Start by the thumb.
+   RUNNING the Fill: the black room fills from the bottom and the time rides the edge. Where the fill passes behind
+           the numbers they turn over exactly (two copies, one clipped). Tap the time for left vs so far, tap anywhere
+           else for Pause and End early.
+   TIME'S UP the room is full, a soft chime until you touch it, hold anywhere: the green circle, "Deep work completed".
+   The model is Memento's focus.ts: a session is timestamps, never a ticking counter, so a refresh or a closed tab
+   loses nothing. What brings people back: their hours, a streak, saved timers, a session that survives a reload.
+   Sound and zones live in one small sheet. Single theme on purpose: the room is black and the fill is white. */
+:root{
+  /* four channels carry every colour: ink (light text), on (dark text), w (light overlays), k (dark overlays).
+     Flash bang mode swaps them, so the room is white, the text black, and the Fill rises black */
+  --inkc:243,246,249; --onc:8,9,12; --wc:255,255,255; --kc:0,0,0; --hi:#fff;
+  --bg:rgb(var(--kc)); --ink:rgb(var(--inkc)); --mid:rgba(var(--inkc),.62); --lo:rgba(var(--inkc),.4);
+  --line:rgba(var(--wc),.12); --surf:rgba(var(--wc),.08); --surf2:rgba(var(--wc),.14);
+  --fill:rgb(var(--inkc)); --on:rgb(var(--onc)); --on-mid:rgba(var(--onc),.62); --on-surf:rgba(var(--onc),.07);
+  --green:#3fd94e;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",Arial,sans-serif;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px); --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
+  --out:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+/* FLASH BANG MODE (Malik, 2026-10-25): "the background is white with black text and elements... whenever the timer is going
+   up, instead it's like flipped... instead of it coming up as white, now it comes up as black". The same setting as the
+   homepage's Flash bang mode (localStorage mp-theme, data-theme="light"), so it carries across malikpeace.com. */
+html.fb{--inkc:8,9,12; --onc:243,246,249; --wc:0,0,0; --kc:255,255,255; --hi:#000; color-scheme:light}
+html.fb .bgc{filter:invert(1) hue-rotate(180deg)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+a{color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.tn{font-variant-numeric:tabular-nums}
+
+/* ---------- the bar ---------- */
+.bar{position:fixed;z-index:30;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:calc(var(--st) + 12px) calc(16px + var(--sr)) 0 calc(16px + var(--sl));pointer-events:none;color:var(--ink)}
+.bar>*{pointer-events:auto}
+.brand{display:flex;align-items:center;gap:8px;height:40px;font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.mk{width:13px;height:13px;flex:none;fill:currentColor}
+.brand .mk{opacity:.92}
+.crowd{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:14px;color:var(--mid);white-space:nowrap}
+.crowd i{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.crowd b{color:var(--ink);font-weight:600}
+.bar-r{display:flex;gap:8px}
+.crowd[hidden]+.bar-r{margin-left:auto}
+.ib{position:relative;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:transparent;box-shadow:inset 0 0 0 1px var(--line);transition:background-color .15s}
+.ib:hover{background:var(--surf)}
+.ib svg{width:19px;height:19px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ib .dot{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+/* outside setup the room can be black or white under the bar, so the bar turns over with it */
+body:not(.v-setup) .bar{mix-blend-mode:difference;color:#fff}
+body:not(.v-setup) .crowd i,body:not(.v-setup) .ib .dot{background:#fff}
+body.v-run .bar,body.v-end .bar{opacity:0;transition:opacity .3s}
+body.v-run:not(.peek) .bar>*,body.v-end .bar>*{pointer-events:none}
+body.v-run.peek .bar{opacity:1}
+
+.view{position:fixed;inset:0;z-index:1}
+.bgc{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;pointer-events:none}
+/* on a phone the setup controls sit low, right where the scenes live: a dark floor behind them keeps both readable */
+.bgscrim{position:fixed;left:0;right:0;bottom:0;height:46%;z-index:0;pointer-events:none;background:linear-gradient(to top,rgba(var(--kc),.94) 0,rgba(var(--kc),.82) 42%,rgba(var(--kc),0) 100%)}
+
+/* ---------- SETUP ---------- */
+#setup{display:flex;justify-content:center;align-items:center;overflow-y:auto}
+.col{width:100%;max-width:560px;height:100%;max-height:900px;min-height:600px;display:flex;flex-direction:column;padding:calc(var(--st) + 80px) calc(28px + var(--sr)) calc(var(--sb) + 14px) calc(28px + var(--sl))}
+.lbl input{width:100%;padding:0 0 8px;border:0;border-bottom:1px solid var(--line);background:none;font-size:21px;line-height:27px;font-weight:600;letter-spacing:-.015em;outline:none;border-radius:0}
+.lbl input::placeholder{color:rgba(var(--inkc),.42)}
+.lbl input:focus{border-bottom-color:rgba(var(--wc),.3)}
+.note{margin-top:8px;min-height:20px;font-size:14px;color:var(--mid)}
+.recent{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.recent button{height:30px;padding:0 12px;border-radius:15px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);font-size:13.5px;font-weight:600;color:var(--mid);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent button:hover{color:var(--ink)}
+.region{flex:1;min-height:200px;display:flex;align-items:center;gap:16px}
+.val{flex:1;min-width:0}
+.big{font-size:clamp(64px,8.4vw,96px);line-height:1.04;font-weight:600;letter-spacing:-.045em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bigw{position:relative;display:inline-flex;align-items:center;gap:8px;max-width:100%}
+.bigw .chev{display:none;flex:none;width:28px;height:28px;margin-top:6px;stroke:var(--mid);stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s}
+.bigw input{display:none}
+.bigw.pick .chev{display:block}
+.bigw.pick input{display:block;position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer;font-size:16px;color:transparent;background:none;-webkit-appearance:none;appearance:none}
+.bigw.pick:hover .chev{stroke:var(--ink)}
+/* tap a number to type it: the number steps aside and a field takes its exact place, with a thin line under what you type */
+.bigw.timer .big,.pz,.sub .plong button:not(.px){cursor:text}
+.editing{visibility:hidden}
+.numedit{position:fixed;z-index:90;display:flex;align-items:baseline;gap:.22em;transform:translateY(-50%);color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2;pointer-events:none}
+.numedit input{pointer-events:auto;font:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;border-radius:0;margin:0;padding:0;outline:none;caret-color:var(--ink);box-shadow:0 2px 0 var(--ink);text-align:left;-webkit-appearance:none;appearance:none}
+.numedit input::selection{background:rgba(var(--wc),.28)}
+.numedit span{color:var(--ink)}
+.numedit .mir{position:absolute;left:0;top:0;visibility:hidden;white-space:pre}
+.sub2{margin-top:2px;color:var(--mid);font-size:15px}
+/* Pomodoro: focus, break, rounds side by side. The picked one is bold and full, the rest step back; the rail moves it. */
+.pomo{--pzs:clamp(52px,7.4vw,88px);display:flex;align-items:flex-end;gap:calc(var(--pzs) * .42);max-width:100%}
+.pz{display:grid;gap:6px;padding:0;text-align:left;opacity:.32;transition:opacity .2s var(--out)}
+.pz:hover{opacity:.55}
+.pz.on,.pz.on:hover{opacity:1}
+.pv{display:flex;align-items:baseline;gap:5px;white-space:nowrap}
+.pv b{font-size:var(--pzs);line-height:1;font-weight:600;letter-spacing:-.045em}
+.pz:not(.on) .pv b{font-weight:500}
+.pv i{font-style:normal;font-size:max(14px,calc(var(--pzs) * .25));font-weight:600}
+.pl{font-size:15px;color:var(--mid)}
+.pz.on .pl{color:var(--ink)}
+.plong{font-size:15px;line-height:22px;color:var(--mid)}
+.plong .nw{white-space:nowrap}
+.sub .plong button{color:var(--mid);font-weight:600;padding:2px 0;white-space:nowrap;transition:color .15s}
+.sub .plong button:hover,.sub .plong button.on{color:var(--ink)}
+.sub .plong button.on{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:4px}
+.plong .px{margin-left:6px;width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;vertical-align:-5px;text-decoration:none}
+.plong .px svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round}
+.qin{align-self:center;padding:0 4px 0 12px;font-size:15px;color:var(--mid)}
+.sub{margin-top:8px;font-size:16px;line-height:22px;color:rgba(var(--inkc),.9)}
+.sub button{font-weight:600;color:var(--ink);padding:2px 0}
+.sub .sep{color:var(--mid)}
+.quick{display:flex;gap:4px;margin:14px 0 0 -12px}
+.quick button{height:34px;padding:0 12px;border-radius:17px;font-size:15px;font-weight:600;color:rgba(var(--inkc),.62);transition:background-color .15s,color .15s}
+.quick button[aria-pressed=true]{background:var(--ink);color:var(--on)}
+.quick button:hover{color:var(--ink)}
+/* the tick rail: drag it, scroll on it, or use the arrow keys */
+.rail{flex:none;width:48px;height:min(300px,40vh);display:flex;flex-direction:column;justify-content:center;align-items:flex-end;touch-action:none;cursor:ns-resize;outline-offset:6px;border-radius:14px}
+.rail i{display:block;flex:none;height:2px;width:8px;border-radius:1px;background:rgba(var(--inkc),.26);transition:width .15s var(--out),background-color .15s}
+.rail i.near{width:12px;background:rgba(var(--inkc),.5)}
+.rail i.on{width:22px;background:var(--ink)}
+.chipsrow{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.chips{flex:1;min-width:0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 0 -28px;padding:2px 0 2px 28px}
+/* save this timer: a small check, hollow until it's saved, filled once it is; tap again to unsave (Malik, 2026-10-25:
+   "make that smaller or just move it out the way... a very simple check mark") */
+.savek{flex:none;margin-left:auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--mid);box-shadow:inset 0 0 0 1px var(--line)}
+.savek svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.savek:hover{color:var(--ink)}
+.savek[aria-pressed=true]{background:var(--ink);color:var(--on);box-shadow:none}
+.savek:disabled{opacity:.35;cursor:default}
+.chips::-webkit-scrollbar{display:none}
+.chip{position:relative;flex:none;height:36px;padding:0 14px;border-radius:18px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;user-select:none;-webkit-user-select:none}
+.chip .x{display:none;margin:0 -6px 0 6px;width:20px;height:20px;border-radius:50%;place-items:center;color:var(--mid)}
+.chip .x svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round}
+@media (hover:hover){.chip:hover .x{display:grid}}
+.kinds{position:relative;display:grid;grid-template-columns:repeat(4,1fr);padding:4px;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.kinds .thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 4);border-radius:999px;background:var(--ink);box-shadow:none;transition:transform .25s var(--out)}
+.kinds button{position:relative;z-index:1;height:40px;font-size:14px;font-weight:600;color:var(--mid);transition:color .15s}
+.kinds button[aria-selected=true]{color:var(--on)}
+.start{margin-top:12px;height:56px;border-radius:999px;background:var(--ink);color:var(--on);font-size:17px;font-weight:600;letter-spacing:-.01em;transition:transform .15s var(--out),background-color .15s}
+.start:hover{background:var(--hi)}
+.start:active{transform:scale(.985)}
+.foot{margin-top:14px;text-align:center;font-size:13px;color:var(--lo)}
+.foot a,.foot button{color:var(--mid);text-decoration:underline;text-decoration-color:rgba(var(--wc),.25);text-underline-offset:3px}
+.foot .mockl{text-decoration-style:dashed}
+/* his name is never underlined (Malik, 2026-10-25); it just goes home */
+.foot a{text-decoration:none;color:var(--mid);transition:color .2s var(--out)}
+.foot a:hover{color:var(--ink)}
+.brand{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+/* phones that haven't added it yet: one quiet line, once they've finished a session */
+.a2hs{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:13.5px;color:var(--mid);text-align:center}
+.a2hs span{min-width:0}
+.a2hs b{font-weight:600;color:var(--ink)}
+.a2hs button{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(var(--wc),.3);text-underline-offset:3px}
+.a2hs .x{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;text-decoration:none;color:var(--lo)}
+.a2hs .x svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.steps{display:grid;gap:10px;margin:2px 0 0;padding:0;list-style:none;counter-reset:st}
+.steps li{display:flex;gap:12px;align-items:baseline;font-size:15.5px;line-height:1.4}
+.steps li::before{counter-increment:st;content:counter(st);flex:none;width:24px;height:24px;border-radius:50%;background:transparent;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;font-size:13px;font-weight:700;line-height:1;transform:translateY(-1px)}
+.steps svg{width:15px;height:15px;vertical-align:-2px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- RUNNING: the Fill ---------- */
+#run{cursor:pointer;user-select:none;-webkit-user-select:none}
+.layer{position:absolute;inset:0;overflow:hidden}
+.layer.base{background:transparent;color:var(--ink)}
+.layer.fill{background:var(--fill);color:var(--on);clip-path:inset(100% 0 0 0);pointer-events:none;transition:clip-path .4s linear}
+.shot .layer.fill{transition:none}
+.rw{position:absolute;inset:0;max-width:560px;margin:0 auto}
+.ride{position:absolute;left:calc(28px + var(--sl));right:calc(28px + var(--sr));bottom:0;transition:bottom .4s linear}
+.time{display:inline-flex;align-items:baseline;gap:10px;padding:0;color:inherit;text-align:left}
+.time .t{font-size:clamp(56px,9vw,120px);line-height:1;font-weight:600;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.time .w{font-size:17px;font-weight:600}
+.rsub{margin-top:8px;font-size:16px;line-height:22px;opacity:.92;max-width:36ch;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ctl{position:absolute;z-index:5;left:0;right:0;bottom:0;padding:0 20px calc(var(--sb) + 16px);display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;pointer-events:none;transition:opacity .2s ease-in}
+.ctl.on{opacity:1;pointer-events:auto;transition:opacity .24s var(--out)}
+.ctl>div{width:min(100%,504px);display:flex;flex-direction:column;align-items:center;gap:6px}
+.cta{width:100%;height:56px;border-radius:999px;background:var(--ink);color:var(--on);font-size:17px;font-weight:600;transition:background-color .2s,color .2s}
+.ghost{min-height:48px;padding:0 16px;font-size:16px;color:rgba(var(--inkc),.7);transition:color .2s}
+.ctl-row{display:flex;gap:8px;justify-content:center}
+.ask{font-size:15px;line-height:21px;text-align:center;margin-bottom:6px;color:rgba(var(--inkc),.92);transition:color .2s}
+/* each control takes the ink of what is behind it: the fill or the room */
+.onfill.cta{background:var(--on);color:var(--ink)}
+.onfill.ghost{color:rgba(var(--onc),.7)}
+.onfill.ask{color:rgba(var(--onc),.92)}
+
+/* ---------- TIME'S UP: hold anywhere ---------- */
+#end{background:var(--fill);color:var(--on);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+.endc{position:absolute;inset:0;max-width:560px;margin:0 auto;padding:0 calc(28px + var(--sr)) 60px calc(28px + var(--sl));display:flex;flex-direction:column;justify-content:center;pointer-events:none}
+.bigE{font-size:clamp(64px,9vw,120px);line-height:1.02;font-weight:600;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.lineE{margin-top:12px;font-size:20px;line-height:27px;font-weight:600}
+.orb{position:absolute;inset:0;background:var(--green);color:#08130a;clip-path:circle(0px at 50% 50%);pointer-events:none}
+.pill{position:absolute;left:50%;bottom:calc(var(--sb) + 52px);transform:translateX(-50%);height:40px;padding:0 18px;border-radius:20px;background:var(--on-surf);display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;white-space:nowrap;pointer-events:none;transition:opacity .2s}
+.pill i{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* ---------- DONE ---------- */
+#done{background:var(--fill);color:var(--on);overflow-y:auto}
+.flash{position:fixed;inset:0;z-index:2;background:var(--green);pointer-events:none;opacity:0}
+.flash.go{animation:flash .65s cubic-bezier(.25,.46,.45,.94) .38s both}
+@keyframes flash{from{opacity:1}to{opacity:0}}
+.donec{position:relative;min-height:100%;max-width:560px;margin:0 auto;padding:calc(var(--st) + 84px) calc(28px + var(--sr)) calc(var(--sb) + 20px) calc(28px + var(--sl));display:flex;flex-direction:column}
+.dmid{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:12px}
+.hang{margin-top:10px;font-size:14px;color:var(--on-mid)}
+.stats{margin-top:34px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stats div{display:grid;gap:2px}
+.stats b{font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stats span{font-size:13px;color:var(--on-mid)}
+.days{margin-top:18px;display:flex;gap:8px;align-items:flex-end}
+.days div{display:grid;justify-items:center;gap:6px;font-size:12px;color:var(--on-mid)}
+.days i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(var(--onc),.22)}
+.days i.on{background:var(--on);box-shadow:none}
+.days .today span{color:var(--on);font-weight:700}
+.ms{margin-top:16px;font-size:16px;font-weight:600}
+.pingl{margin-top:14px;font-size:14px;color:var(--on-mid)}
+.pingl button{color:var(--on);font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(var(--onc),.3)}
+.dacts{display:flex;flex-direction:column;align-items:center;gap:4px}
+.dacts .cta{background:var(--on);color:var(--ink);max-width:504px}
+.dacts .ghost{color:rgba(var(--onc),.7)}
+.dmail{margin-top:22px;width:100%;max-width:504px;align-self:center}
+.dmail label{display:block;font-size:13.5px;color:var(--on-mid);margin-bottom:6px}
+.dm-row{display:flex;align-items:center;border-bottom:1px solid rgba(var(--onc),.18);transition:border-color .15s}
+.dm-row:focus-within{border-bottom-color:rgba(var(--onc),.5)}
+.dm-row input{flex:1;min-width:0;height:44px;border:0;background:none;color:var(--on);font-size:16px;outline:none}
+.dm-row input::placeholder{color:rgba(var(--onc),.4)}
+.dm-row button{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:50%;color:var(--on)}
+.dm-row button:hover{background:var(--on-surf)}
+.dm-row svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.dm-ok{margin-top:22px;text-align:center;font-size:14px;color:var(--on-mid)}
+.dmem{margin-top:18px;text-align:center;font-size:13px;color:var(--on-mid)}
+.dmem .mk{width:10px;height:10px;margin-right:4px;vertical-align:-1px;opacity:.7}
+.dmem button{color:var(--on);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(var(--onc),.3)}
+
+/* ---------- sheets ---------- */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(var(--kc),.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sheet{position:fixed;z-index:61;left:0;right:0;bottom:0;max-height:calc(100% - var(--st) - 24px);overflow:auto;padding:22px calc(20px + var(--sr)) calc(var(--sb) + 22px) calc(20px + var(--sl));border-radius:22px 22px 0 0;background:rgba(var(--kc),.96);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:inset 0 0 0 1px rgba(var(--wc),.16),0 -20px 60px rgba(var(--kc),.6);color:var(--ink);animation:up .26s var(--out) both}
+@keyframes up{from{transform:translateY(36px);opacity:0}}
+@media (min-width:760px){.sheet{left:50%;right:auto;top:50%;bottom:auto;width:min(520px,calc(100vw - 48px));transform:translate(-50%,-50%);border-radius:22px;padding:26px;animation:pop .22s var(--out) both}@keyframes pop{from{transform:translate(-50%,calc(-50% + 12px)) scale(.98);opacity:0}}}
+.sh-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.sh-top h2{font-size:22px;line-height:1.15;letter-spacing:-.02em;font-weight:600}
+.sh-sec+.sh-sec{margin-top:22px}
+.sh-l{display:block;font-size:14px;font-weight:600;color:var(--mid);margin-bottom:8px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px;border-radius:14px;background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.seg button{min-height:44px;padding:4px 2px;border-radius:11px;font-size:14px;font-weight:600;color:var(--mid);display:grid;place-content:center;line-height:1.15;transition:background-color .15s,color .15s}
+.seg button small{display:block;font-size:11px;font-weight:600;opacity:.7}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--on)}
+.sh-note{margin-top:8px;font-size:13px;line-height:1.45;color:var(--mid)}
+.slr{display:grid;grid-template-columns:72px minmax(0,1fr) 64px;align-items:center;gap:10px}
+.slr+.slr{margin-top:2px}
+.slr span{font-size:14px;font-weight:600;color:var(--mid)}
+.slr output{text-align:right;white-space:nowrap;font-size:14px;font-weight:600;color:var(--mid);cursor:text}
+.slr output:hover{color:var(--ink)}
+.hz{margin-top:10px}
+.hz output{color:var(--ink)}
+.hz.off output{color:var(--lo)}
+.sh-lrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.sh-lrow .sh-l{margin:0}
+/* the preview: sound only when asked for, never just for opening the sheet (Malik, 2026-10-25) */
+.alist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.alist button{height:44px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px;font-size:14px;font-weight:600;color:var(--mid);transition:background-color .15s,color .15s}
+.alist button svg{width:13px;height:13px;fill:currentColor;opacity:.75;flex:none}
+.alist button[aria-pressed=true]{background:var(--ink);color:var(--on);box-shadow:none}
+.prev{margin-top:12px;width:100%;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600;box-shadow:inset 0 0 0 1px var(--line);transition:background-color .15s,color .15s}
+.prev svg{width:16px;height:16px;fill:currentColor}
+.prev .ps{display:none}
+.prev[aria-pressed=true]{background:var(--ink);color:var(--on);box-shadow:none}
+.prev[aria-pressed=true] .ps{display:block}.prev[aria-pressed=true] .pi{display:none}
+.prev:disabled{opacity:.35;cursor:default}
+.lnk{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;color:var(--mid);transition:background-color .15s,color .15s}
+.lnk[aria-pressed=true]{background:var(--ink);color:var(--on)}
+.lnk svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.vol{display:flex;align-items:center;gap:12px;margin-top:4px}
+.vol svg{width:18px;height:18px;flex:none;stroke:var(--mid);stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:36px;background:transparent;cursor:pointer;--p:60%}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--ink) 0,var(--ink) var(--p),rgba(var(--wc),.16) var(--p))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-9px;border-radius:50%;background:var(--hi);box-shadow:0 2px 8px rgba(var(--kc),.5)}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:rgba(var(--wc),.16)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--ink)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radius:50%;background:var(--hi)}
+.rstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rstats div{display:grid;gap:2px}
+.rstats b{font-size:24px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.rstats span{font-size:13px;color:var(--mid)}
+.streak{margin-top:14px;font-size:15px;font-weight:600}
+.grid{margin-top:16px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,14px);grid-auto-columns:14px;gap:4px}
+.grid i{border-radius:4px;background:rgba(var(--wc),.07)}
+.grid i.l1{background:rgba(var(--inkc),.28)}.grid i.l2{background:rgba(var(--inkc),.5)}.grid i.l3{background:rgba(var(--inkc),.75)}.grid i.l4{background:var(--ink)}
+.grid i.today{box-shadow:0 0 0 1.5px var(--green)}
+.gcap{margin-top:8px;font-size:12.5px;color:var(--lo)}
+.list{margin-top:6px;display:grid}
+.enjoy{margin-top:26px;padding-top:20px;box-shadow:inset 0 1px 0 var(--line)}
+.ej{font-size:15px;line-height:1.45;color:var(--mid)}
+.ml{display:inline-flex;align-items:center;gap:8px;margin-top:12px;height:40px;padding:0 16px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);font-size:15px;font-weight:600;color:var(--ink);text-decoration:none;transition:background-color .15s}
+.ml:hover{background:var(--surf)}
+.ml .mk{width:11px;height:11px;fill:currentColor}
+.ml .ar{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.enjoy .mail{margin-top:12px}
+.enjoy .mail input{height:40px}
+.enjoy .mail button{height:40px;padding:0 16px;background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+#recBody .sh-sec,#recBody+.sh-sec{margin-top:24px}
+.list div{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:11px 0;box-shadow:inset 0 -1px 0 var(--line)}
+.list div:last-child{box-shadow:none}
+.list b{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.list span{font-size:13px;color:var(--mid)}
+.list em{grid-row:1/span 2;grid-column:2;align-self:center;font-style:normal;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.empty{font-size:15px;color:var(--mid);line-height:1.5}
+.mail{display:flex;gap:8px;margin-top:8px}
+.mail input{flex:1;min-width:0;height:48px;padding:0 16px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);font-size:16px;outline:none}
+.mail input::placeholder{color:rgba(var(--inkc),.42)}
+.mail button{height:48px;padding:0 20px;border-radius:999px;background:var(--ink);color:var(--on);font-weight:600;font-size:15px}
+.fine{margin-top:8px;font-size:13px;line-height:1.45;color:var(--lo)}
+.about p{font-size:16px;line-height:1.55;color:rgba(var(--inkc),.86)}
+.about p+p{margin-top:12px}
+.about .cta{margin-top:20px}
+/* More free tools: the other tools on malikpeace.com, each a quiet box */
+.more{margin-top:26px;padding-top:20px;box-shadow:inset 0 1px 0 var(--line);display:grid;gap:8px}
+.more .sh-l{margin-bottom:2px}
+.mt{display:grid;gap:2px;padding:12px 16px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);text-decoration:none;color:var(--ink);transition:background-color .2s var(--out),transform .2s var(--out)}
+.mt:hover{background:var(--surf)}
+.mt:active{transform:scale(.98);transition-duration:.08s}
+.mt b{font-size:15px;font-weight:600}
+.mt span{font-size:13.5px;color:var(--mid)}
+.mockl-list{display:grid;gap:8px}
+.mockl-list button{height:46px;border-radius:12px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);font-weight:600;font-size:15px;text-align:left;padding:0 14px}
+.mockl-list button:hover{background:rgba(var(--wc),.12)}
+
+.toast{position:fixed;z-index:80;left:50%;bottom:calc(var(--sb) + 24px);transform:translate(-50%,10px);max-width:calc(100vw - 40px);padding:12px 18px;border-radius:999px;background:var(--bg);box-shadow:inset 0 0 0 1px rgba(var(--wc),.2);color:var(--ink);font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s var(--out),transform .2s var(--out)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+/* ---------- motion (Malik 2026-10-25: "swiping, tapping, change etc, has a nice responsive look and feel"). Every tap
+   answers: a quick press-in (80ms) and an ease-out return (200ms). Changes glide, nothing loops, Reduce Motion stills it all. */
+.ib,.savek,.quick button,.recent button,.chip,.kinds button,.start,.cta,.ghost,.seg button,.alist button,.prev,.lnk,.ml,.mail button,.mockl-list button,.dm-row button,.pz,.plong .px,.a2hs .x,.sh-top .ib{transition-property:transform,background-color,color,box-shadow,opacity;transition-duration:.2s;transition-timing-function:var(--out)}
+.ib:active,.savek:active:not(:disabled),.quick button:active,.recent button:active,.chip:active,.kinds button:active,.seg button:active,.alist button:active,.lnk:active,.ml:active,.mail button:active,.mockl-list button:active,.dm-row button:active,.plong .px:active,.a2hs .x:active{transform:scale(.94);transition-duration:.08s}
+.start:active,.cta:active,.prev:active:not(:disabled),.pz:active{transform:scale(.97);transition-duration:.08s}
+.ghost:active{opacity:.55;transition-duration:.08s}
+.time{transition:transform .2s var(--out)}
+.time:active{transform:scale(.98);transition-duration:.08s}
+.scrim{animation:fade .24s var(--out) both}
+@keyframes fade{from{opacity:0}}
+.numedit{animation:fade .14s var(--out)}
+/* phones: a grabber says the sheet can be pulled down to close */
+@media (max-width:759px){.sheet::before{content:"";position:absolute;top:8px;left:50%;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:rgba(var(--wc),.22)}}
+.rail.drag i{background:rgba(var(--inkc),.4)}
+.rail.drag i.near{background:rgba(var(--inkc),.7)}
+.rail.drag i.on{width:28px}
+input[type=range]::-webkit-slider-thumb{transition:transform .15s var(--out)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
+.ctl>div{transform:translateY(10px);transition:transform .2s ease-in}
+.ctl.on>div{transform:none;transition:transform .28s var(--out)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+@media (max-width:380px){.brand span{display:none}}
+@media (max-height:700px){.col{padding-top:calc(var(--st) + 68px)}.big{font-size:60px}}
+</style>
+</head>
+<body class="v-setup">
+<canvas class="bgc" id="bgc" aria-hidden="true" hidden></canvas>
+<div class="bgscrim" id="bgScrim" aria-hidden="true" hidden></div>
+
+<header class="bar" id="bar">
+  <button class="brand" type="button" id="bBrand" aria-label="Focus Room. What is this?"><svg class="mk" viewBox="0 0 512 512" aria-hidden="true"><path d="M62 55l194 194L450 55v402H62z"/></svg><span>Focus Room</span></button>
+  <span class="crowd" id="crowd" title="People in the room right now" hidden><i></i><b class="tn" id="crowdN">1,284</b> focusing</span>
+  <div class="bar-r">
+    <button class="ib" type="button" id="bSound" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><i class="dot" id="sndDot" hidden></i></button>
+    <button class="ib" type="button" id="bRec" aria-label="Your hours"><svg viewBox="0 0 24 24"><path d="M5 19v-7M10 19V6M15 19v-4M20 19V10"/></svg></button>
+  </div>
+</header>
+
+<!-- SETUP -->
+<main class="view" id="setup">
+  <div class="col">
+    <div class="lbl">
+      <input id="label" type="text" maxlength="120" placeholder="What are you working on?" autocomplete="off" aria-label="What are you working on?">
+      <p class="note" id="note"></p>
+      <div class="recent" id="recent" aria-label="Recent"></div>
+    </div>
+    <div class="region">
+      <div class="val">
+        <div class="bigw" id="bigWrap"><div class="big" id="big" aria-live="polite">1 hour</div><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><input type="time" id="atime" step="60" aria-label="Pick the alarm time"></div>
+        <div class="pomo" id="pomo" role="group" aria-label="Pomodoro" hidden>
+          <button type="button" class="pz" data-p="focus"><span class="pv"><b class="tn"></b><i>min</i></span><span class="pl">focus</span></button>
+          <button type="button" class="pz" data-p="brk"><span class="pv"><b class="tn"></b><i>min</i></span><span class="pl">break</span></button>
+          <button type="button" class="pz" data-p="rounds"><span class="pv"><b class="tn"></b></span><span class="pl">rounds</span></button>
+        </div>
+        <div class="sub" id="sub"></div>
+        <div class="quick" id="quick" role="group" aria-label="Quick lengths"></div>
+      </div>
+      <div class="rail" id="rail" role="slider" tabindex="0" aria-label="Length" aria-orientation="vertical"></div>
+    </div>
+    <div class="chipsrow"><div class="chips" id="chips"></div><button type="button" class="savek" id="savek" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4L18 8"/></svg></button></div>
+    <div class="kinds" id="kinds" role="tablist" aria-label="Kind of timer"><span class="thumb" id="thumb"></span></div>
+    <button class="start" type="button" id="start">Start</button>
+    <p class="a2hs" id="a2hs" hidden><span><b>Add it to your Home Screen</b> so it opens like an app.</span><button type="button" id="bA2hs">How</button><button type="button" class="x" id="xA2hs" aria-label="Not now"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></p>
+    <p class="foot">Free, by <a href="https://malikpeace.com/" target="_blank" rel="noopener">Malik Peace</a> · <button type="button" id="bAbout">What is this?</button><span id="mockWrap" hidden> · <button type="button" class="mockl" id="bMock">Preview states</button></span></p>
+  </div>
+</main>
+
+<!-- RUNNING -->
+<section class="view" id="run" hidden aria-label="Deep work running">
+  <div class="layer base"><div class="rw"><div class="ride" data-ride><button class="time" type="button" data-time aria-label="Switch between time left and time so far"><span class="t">0:00</span><span class="w">left</span></button><p class="rsub"></p></div></div></div>
+  <div class="layer fill" id="fillL" aria-hidden="true"><div class="rw"><div class="ride" data-ride><span class="time"><span class="t">0:00</span><span class="w">left</span></span><p class="rsub"></p></div></div></div>
+  <div class="ctl" id="ctl">
+    <div id="ctlMain"><button class="cta" type="button" id="bPause">Pause</button><div class="ctl-row"><button class="ghost" type="button" id="bEnd">End early</button><button class="ghost" type="button" id="bSnd2">Sound</button></div></div>
+    <div id="ctlAsk" hidden><p class="ask" id="askT"></p><button class="cta" type="button" id="bEndYes"></button><button class="ghost" type="button" id="bKeep">Keep going</button></div>
+  </div>
+</section>
+
+<!-- TIME'S UP -->
+<section class="view" id="end" hidden aria-label="Time's up">
+  <div class="endc"><div class="bigE" id="eBig">1 hour</div><div class="lineE" id="eLine">Time's up.</div></div>
+  <div class="orb" id="orb" aria-hidden="true"><div class="endc"><div class="bigE" id="oBig">1 hour</div><div class="lineE">Deep work completed</div></div></div>
+  <div class="pill" id="pill"><i></i><span id="pillT">Hold anywhere to complete</span></div>
+</section>
+
+<!-- DONE -->
+<section class="view" id="done" hidden aria-label="Done">
+  <div class="flash" id="flash"></div>
+  <div class="donec">
+    <div class="dmid">
+      <div class="bigE" id="dBig">1 hour</div>
+      <div class="lineE" id="dLine">Deep work completed</div>
+      <p class="hang" id="dHang"></p>
+      <div class="stats" id="dStats"></div>
+      <div class="days" id="dDays" aria-label="The last 7 days"></div>
+      <p class="ms" id="dMs" hidden></p>
+      <p class="pingl" id="dPing" hidden>Want a ping next time, even in another tab? <button type="button" id="bPing">Turn it on</button></p>
+    </div>
+    <div class="dacts">
+      <button class="cta" type="button" id="bBack">Back to the room</button>
+    </div>
+    <form class="dmail" id="dmail" novalidate>
+      <label for="dEmail">Enjoying this? Join my email list.</label>
+      <div class="bh-plate always"><div class="bh" data-bh="00d2e169-0ad8-422d-bf41-f7ccbf944ca5"></div></div>
+    </form>
+    <p class="dm-ok" id="dmOk" hidden></p>
+    <p class="dmem"><svg class="mk" viewBox="0 0 512 512" aria-hidden="true"><path d="M62 55l194 194L450 55v402H62z"/></svg> On your phone, Memento's Deep work also blocks the apps you pick. <button type="button" id="bMem">See how</button></p>
+  </div>
+</section>
+
+<!-- SHEETS -->
+<div class="scrim" id="scrim" hidden></div>
+<section class="sheet" id="shSound" role="dialog" aria-modal="true" aria-labelledby="hSound" hidden>
+  <div class="sh-top"><h2 id="hSound">Settings</h2><button class="ib" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="sh-sec"><span class="sh-l">Background</span>
+    <div class="seg" id="bgs"><button type="button" data-b="black">Black</button><button type="button" data-b="stars">Stars</button></div>
+  </div>
+  <div class="sh-sec"><span class="sh-l">Flash bang mode</span>
+    <div class="seg" id="fbSeg"><button type="button" data-f="0">Off</button><button type="button" data-f="1">On</button></div>
+  </div>
+  <div class="sh-sec"><span class="sh-l">Ambience</span>
+    <div class="seg" id="sounds"><button type="button" data-v="off">Off</button><button type="button" data-v="brown">Brown<small>noise</small></button><button type="button" data-v="pink">Pink<small>noise</small></button><button type="button" data-v="white">White<small>noise</small></button><button type="button" data-v="rain">Rain</button></div>
+  </div>
+  <div class="sh-sec"><span class="sh-l">Binaural zones</span>
+    <div class="seg" id="zones"><button type="button" data-z="0">Off</button><button type="button" data-z="6">Deep<small>6 Hz</small></button><button type="button" data-z="10">Calm<small>10 Hz</small></button><button type="button" data-z="16">Focus<small>16 Hz</small></button><button type="button" data-z="40">Flow<small>40 Hz</small></button></div>
+    <div class="slr hz" id="hzRow"><span>Custom</span><input type="range" id="hz" min="1" max="40" step="0.5" value="10" aria-label="Your own zone, in hertz"><output class="tn" id="hzOut">10 Hz</output></div>
+    <p class="sh-note">Each ear gets a slightly different frequency. Pick the one that helps you lock in. Headphones required for this.</p>
+  </div>
+  <div class="sh-sec"><div class="sh-lrow"><span class="sh-l">Volume</span><button type="button" class="lnk" id="volSync" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span id="volSyncT">Synced</span></button></div>
+    <div class="slr"><span>Ambience</span><input type="range" id="volA" min="0" max="100" value="60" aria-label="Ambience volume"><output class="tn" id="volAOut">60</output></div>
+    <div class="slr"><span>Binaural</span><input type="range" id="volZ" min="0" max="100" value="60" aria-label="Binaural volume"><output class="tn" id="volZOut">60</output></div>
+    <button type="button" class="prev" id="bPreview" aria-pressed="false"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><svg class="ps" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"/></svg><span id="bPreviewL">Preview</span></button>
+    <p class="sh-note" id="sndNote">It plays while your session runs.</p>
+  </div>
+  <div class="sh-sec" id="alarmSec"><span class="sh-l">Alarm</span>
+    <div class="alist" id="alarms"></div>
+    <p class="sh-note">Tap one to hear it. When time's up it rings and gets louder until you touch the screen, for up to 30 seconds.</p>
+  </div>
+  <div class="sh-sec" id="pingSec" hidden><span class="sh-l">When time's up</span>
+    <div class="seg" id="pings"><button type="button" data-g="0">Just the sound</button><button type="button" data-g="1">Sound and a ping</button></div>
+    <p class="sh-note">The ping shows even when this tab is behind other windows.</p>
+  </div>
+</section>
+
+<section class="sheet" id="shA2hs" role="dialog" aria-modal="true" aria-labelledby="hA2hs" hidden>
+  <div class="sh-top"><h2 id="hA2hs">Add it to your Home Screen</h2><button class="ib" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="sh-sec" id="a2Ios"><span class="sh-l">iPhone, in Safari</span>
+    <ol class="steps"><li><span>Tap the Share button <svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11v9h12v-9"/></svg> at the bottom.</span></li><li><span>Scroll down and tap Add to Home Screen.</span></li><li><span>Tap Add.</span></li></ol>
+  </div>
+  <div class="sh-sec" id="a2And"><span class="sh-l">Android, in Chrome</span>
+    <ol class="steps"><li><span>Tap the menu <svg viewBox="0 0 24 24"><path d="M12 5h.01M12 12h.01M12 19h.01" stroke-width="3"/></svg> at the top right.</span></li><li><span>Tap Add to Home screen, or Install app.</span></li></ol>
+  </div>
+  <p class="sh-note">It opens full screen, like an app. Keep it open while a session runs, because phones pause web pages you switch away from.</p>
+</section>
+
+<section class="sheet" id="shRec" role="dialog" aria-modal="true" aria-labelledby="hRec" hidden>
+  <div class="sh-top"><h2 id="hRec">Your hours</h2><button class="ib" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div id="recBody"></div>
+  <!-- fewer words, Memento as an accent, not a pitch (Malik, 2026-10-25); his line, verbatim -->
+  <div class="sh-sec enjoy">
+    <p class="ej">If you're enjoying this, then you're REALLY going to enjoy this.</p>
+    <a class="ml" href="https://mementoapp.co" target="_blank" rel="noopener"><svg class="mk" viewBox="0 0 512 512" aria-hidden="true"><path d="M62 55l194 194L450 55v402H62z"/></svg>Memento<svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <form class="mail" id="mail" novalidate><div class="bh-plate"><div class="bh" data-bh="00d2e169-0ad8-422d-bf41-f7ccbf944ca5"></div></div></form>
+    <p class="streak" id="mailOk" hidden></p>
+  </div>
+</section>
+
+<section class="sheet about" id="shAbout" role="dialog" aria-modal="true" aria-labelledby="hAbout" hidden>
+  <div class="sh-top"><h2 id="hAbout">What is this?</h2><button class="ib" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <!-- Malik's words, 2026-10-24 (spelling only); no Memento pitch here: "If someone just wants to know what this is, I don't want to always plug memento" -->
+  <p>This is a free area I made to help people focus.</p>
+  <p>Over time I've realized that focus is by FAR the most important thing when it comes to getting things done. And it helps me a lot to turn off everything, set a timer for 3-5 hours and just lose myself in whatever I'm doing. As I find myself accomplishing more in 1 focused hour than 10 distracted hours.</p>
+  <p>So I made this to help. I made it very very simple but I hope it's useful and the results you get from it are tangible and beneficial to your life.</p>
+  <div class="more">
+    <span class="sh-l">More free tools</span>
+    <a class="mt" data-tool="audit" href="/audit/"><b>The Life Audit</b><span>See where your time goes.</span></a>
+    <a class="mt" data-tool="freedom" href="/freedom/"><b>Your Freedom Number</b><span>How much you need to be free.</span></a>
+    <a class="mt" data-tool="25" href="/25/"><b>25+5 Lessons</b><span>What I learned by 25. $25.</span></a>
+  </div>
+</section>
+
+<section class="sheet" id="shMock" role="dialog" aria-modal="true" aria-labelledby="hMock" hidden>
+  <div class="sh-top"><h2 id="hMock">Preview states</h2><button class="ib" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <p class="sh-note" style="margin:-6px 0 14px">Mockup only. These jump to each state. Previews never touch your real hours, and the live count is a sample.</p>
+  <div class="mockl-list">
+    <button type="button" data-m="run">Running, a 1 hour timer</button>
+    <button type="button" data-m="brk">Pomodoro, on a break</button>
+    <button type="button" data-m="open">Stopwatch</button>
+    <button type="button" data-m="end">Time's up</button>
+    <button type="button" data-m="done">Done</button>
+    <button type="button" data-m="rec">Your hours, with a sample month</button>
+    <button type="button" data-m="back">A returning visitor</button>
+    <button type="button" data-m="a2hs">Phone, the Home Screen hint</button><button type="button" data-m="mail">Forget the saved email</button>
+  </div>
+  <span class="sh-l" style="margin-top:20px">Hear every sound</span>
+  <div class="mockl-list">
+    <button type="button" data-s="open">Start a session</button>
+    <button type="button" data-s="detent">Change a number (the tick)</button>
+    <button type="button" data-s="breakDown">A break starts</button>
+    <button type="button" data-s="breakUp">The next round starts</button>
+    <button type="button" data-s="kitchenTimer">Time's up (repeats until a touch)</button><button type="button" data-s="alarmClassic">Alarm: Classic</button><button type="button" data-s="alarmSoft">Alarm: Soft</button>
+    <button type="button" data-s="hold">Hold to complete, then done</button>
+    <button type="button" data-s="long">Done after a long session</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>window.FRBG = window.FRBG || {};</script>
+<script src="bg/stars.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  /* The live count shows only once the backend sends a real number (LIVE_URL); until then it stays hidden. Preview tools
+     (the sample count, Preview states, the Home Screen hint) come on with #preview in the address or a long press on the M. */
+  var LIVE_URL = null, preview = /preview/i.test(location.hash);
+  var K = { prefs: 'focusroom.prefs', saved: 'focusroom.saved', sessions: 'focusroom.sessions', active: 'focusroom.active' };
+  function load(k) { try { var s = localStorage.getItem(k); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function drop(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('show'); }, 2600); }
+
+  /* ================= the model, from Memento's focus.ts ================= */
+  var TIMER_STEPS = [5, 10, 15, 20, 25, 30, 45, 60, 75, 90, 120, 150, 180, 210, 240, 270, 300];
+  var QUICK = [15, 30, 60, 120, 180, 240], ALARM_QUICK = [30, 60, 120, 240, 480];
+  /* Pomodoro, flexible within limits (Malik, 2026-10-20): focus 5 min to 2 hours, breaks 1 to 30 min, 1 to 12 rounds,
+     and an optional long break every 2 to 8 rounds */
+  var POMO = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 75, 90, 120];
+  var BRK = [1, 30], ROUNDS = [1, 12], LONG = [0, 5, 10, 15, 20, 25, 30, 40, 45, 60], EVERY = [2, 8];
+  var OPEN_MAX = 600, SAVED_MAX = 5, HOLD = 3000, WAIT = 170, ALARM_GAP = 1700, ALARM_MAX = 30000, DAY = 86400000, MIN = 60000;
+  var KINDS = [['timer', 'Timer'], ['pomodoro', 'Pomodoro'], ['open', 'Stopwatch'], ['alarm', 'Alarm']];
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function mod(now) { var d = new Date(now); return d.getHours() * 60 + d.getMinutes(); }
+  function near(list, v) { return list.reduce(function (b, x) { return Math.abs(x - v) < Math.abs(b - v) ? x : b; }, list[0]); }
+  function nearIdx(list, v) { var k = 0; for (var i = 1; i < list.length; i++) if (Math.abs(list[i] - v) < Math.abs(list[k] - v)) k = i; return k; }
+  function elapsed(s, now) { var p = s.pausedAt != null ? Math.max(0, now - s.pausedAt) : 0; return Math.max(0, now - s.startedAt - s.pausedMs - p); }
+  /* the break after round r: the long one every few rounds, if they asked for one */
+  function isLong(s, r) { return !!(s.longMs && s.longEvery && r % s.longEvery === 0); }
+  function brkAfter(s, r) { return isLong(s, r) ? s.longMs : s.brkMs; }
+  function totalMs(s) { if (s.kind !== 'pomodoro') return s.focusMs; var t = s.rounds * s.focusMs; for (var r = 1; r < s.rounds; r++) t += brkAfter(s, r); return t; }
+  function phaseAt(s, now) {
+    var el = elapsed(s, now);
+    if (s.kind !== 'pomodoro') { var done = el >= s.focusMs; return { phase: done ? 'done' : 'focus', round: 1, inPhaseMs: Math.min(el, s.focusMs), phaseMs: s.focusMs, workedMs: Math.min(el, s.focusMs) }; }
+    var t = 0;
+    for (var r = 1; r <= s.rounds; r++) {
+      if (el < t + s.focusMs) return { phase: 'focus', round: r, inPhaseMs: el - t, phaseMs: s.focusMs, workedMs: (r - 1) * s.focusMs + (el - t) };
+      t += s.focusMs;
+      if (r === s.rounds) break;
+      var b = brkAfter(s, r);
+      if (el < t + b) return { phase: 'break', round: r, long: isLong(s, r), inPhaseMs: el - t, phaseMs: b, workedMs: r * s.focusMs };
+      t += b;
+    }
+    return { phase: 'done', round: s.rounds, inPhaseMs: s.focusMs, phaseMs: s.focusMs, workedMs: s.rounds * s.focusMs };
+  }
+  /* how full the room is: the focus stretch filling, a break draining, the Stopwatch filling once an hour */
+  function fillOf(s, now) {
+    var p = phaseAt(s, now);
+    if (p.phase === 'done') return 1;
+    if (s.kind === 'open') return (p.inPhaseMs % 3600000) / 3600000;
+    if (p.phase === 'break') return 1 - p.inPhaseMs / Math.max(1, p.phaseMs);
+    return p.inPhaseMs / Math.max(1, p.phaseMs);
+  }
+  function fmtClock(ms) { var s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60; return h ? h + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0') : m + ':' + String(x).padStart(2, '0'); }
+  function fmtLength(min) { var m = Math.max(0, Math.round(min)), h = Math.floor(m / 60), r = m % 60; if (!h) return r + ' min'; return h + ' ' + (h === 1 ? 'hour' : 'hours') + (r ? ' ' + r + ' min' : ''); }
+  function fmtShort(min) { var h = Math.floor(min / 60), r = min % 60; return h ? (r ? h + 'h ' + r + 'm' : h + ' ' + (h === 1 ? 'hour' : 'hours')) : r + ' min'; }
+  function fmtHM(min) { var m = Math.round(min), h = Math.floor(m / 60), r = m % 60; if (h >= 10) return Math.round(m / 60) + 'h'; return h ? (r ? h + 'h ' + r + 'm' : h + 'h') : r + 'm'; }
+  function clockOf(md) { var h = Math.floor(md / 60) % 24, m = md % 60; return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h >= 12 ? 'pm' : 'am'); }
+  function clockAt(ts) { var d = new Date(ts); return (d.getHours() % 12 || 12) + ':' + String(d.getMinutes()).padStart(2, '0') + (d.getHours() >= 12 ? 'pm' : 'am'); }
+  /* Alarm choices: every quarter hour from 15 minutes out, for the next 10 hours, never past midnight */
+  /* Alarm: any time in the next 24 hours, today or tomorrow. The rail moves in quarter hours, the picker to the minute. */
+  function alarmSlots(now) { var q = 15 * MIN, out = []; for (var t = Math.ceil((now + 15 * MIN) / q) * q; t <= now + DAY; t += q) out.push(t); return out; }
+  function nextAt(md, now) { var d = new Date(now); d.setHours(Math.floor(md / 60), md % 60, 0, 0); var t = d.getTime(); if (t < now + MIN) t += DAY; return t; }
+  function okUntil(t, now) { return typeof t === 'number' && t >= now + MIN && t <= now + DAY; }
+  function sameTimer(a, b) {
+    if (a.kind !== b.kind || a.label !== b.label) return false;
+    if (a.kind === 'timer') return a.minutes === b.minutes;
+    if (a.kind === 'pomodoro') return a.minutes === b.minutes && a.brk === b.brk && a.rounds === b.rounds && (a.longMin || 0) === (b.longMin || 0) && (!a.longMin || a.longEvery === b.longEvery);
+    if (a.kind === 'alarm') return a.untilMin === b.untilMin;
+    return true;
+  }
+  function cleanSaved(v) {
+    var out = [];
+    (Array.isArray(v) ? v : []).forEach(function (o) {
+      if (!o || typeof o !== 'object' || ['timer', 'pomodoro', 'open', 'alarm'].indexOf(o.kind) < 0 || out.length >= SAVED_MAX) return;
+      var t = { kind: o.kind, minutes: +o.minutes || 60, brk: clamp(+o.brk || 5, BRK[0], BRK[1]), rounds: clamp(+o.rounds || 4, ROUNDS[0], ROUNDS[1]), longMin: +o.longMin >= 1 && +o.longMin <= 60 ? Math.round(+o.longMin) : 0, longEvery: clamp(+o.longEvery || 4, EVERY[0], EVERY[1]), untilMin: +o.untilMin || 0, label: String(o.label || '').slice(0, 120) };
+      if (!out.some(function (x) { return sameTimer(x, t); })) out.push(t);
+    });
+    return out;
+  }
+  function readActive(o) {
+    if (!o || typeof o !== 'object' || ['timer', 'pomodoro', 'open', 'alarm'].indexOf(o.kind) < 0 || typeof o.startedAt !== 'number' || typeof o.focusMs !== 'number') return null;
+    return { kind: o.kind, label: String(o.label || ''), startedAt: o.startedAt, focusMs: o.focusMs, brkMs: +o.brkMs || 0, longMs: +o.longMs || 0, longEvery: +o.longEvery || 0, rounds: Math.max(1, +o.rounds || 1), pausedAt: typeof o.pausedAt === 'number' ? o.pausedAt : null, pausedMs: +o.pausedMs || 0, rung: !!o.rung, mock: !!o.mock };
+  }
+  function dayKey(ts) { var d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+  /* ================= what this browser remembers ================= */
+  var prefs = load(K.prefs) || {};
+  var kind = ['timer', 'pomodoro', 'open', 'alarm'].indexOf(prefs.kind) >= 0 ? prefs.kind : 'timer';
+  /* typed values can land between the rail's steps (tap a number to type it, Malik 2026-10-25), so any whole value in range holds */
+  var minutes = +prefs.minutes >= 1 && +prefs.minutes <= 600 ? Math.round(+prefs.minutes) : 60;
+  var pomo = +prefs.pomo >= 1 && +prefs.pomo <= 180 ? Math.round(+prefs.pomo) : 25;
+  var brk = clamp(Math.round(+prefs.brk) || 5, BRK[0], BRK[1]), rounds = clamp(Math.round(+prefs.rounds) || 4, ROUNDS[0], ROUNDS[1]);
+  var longBrk = +prefs.longBrk >= 1 && +prefs.longBrk <= 60 ? Math.round(+prefs.longBrk) : 0, longEvery = clamp(Math.round(+prefs.longEvery) || 4, EVERY[0], EVERY[1]);
+  var pomoSel = 'focus';   /* which Pomodoro part the rail moves: focus, brk, rounds, long or every */
+  var until = typeof prefs.untilMin === 'number' ? nextAt(prefs.untilMin, Date.now()) : null;   /* a clock time, as a timestamp */
+  var saved = cleanSaved(load(K.saved));
+  var sessions = Array.isArray(load(K.sessions)) ? load(K.sessions).filter(function (r) { return r && typeof r.at === 'number' && r.minutes > 0; }) : [];
+  var S = readActive(load(K.active));
+  var sample = null;   /* the preview's sample month, never saved */
+  function savePrefs() { prefs.kind = kind; prefs.minutes = minutes; prefs.pomo = pomo; prefs.brk = brk; prefs.rounds = rounds; prefs.longBrk = longBrk; prefs.longEvery = longEvery; if (until) prefs.untilMin = mod(until); save(K.prefs, prefs); }
+  function recs() { return sample || sessions; }
+  function byDay(list) { var m = {}; list.forEach(function (r) { var k = r.iso || dayKey(r.at); m[k] = (m[k] || 0) + r.minutes; }); return m; }
+  function streakOf(list) { var d = byDay(list), k = 0, day = new Date(); if (!d[dayKey(day)]) day.setDate(day.getDate() - 1); while (d[dayKey(day)]) { k++; day.setDate(day.getDate() - 1); } return k; }
+  function lastDays(list, n) { var d = byDay(list), t = 0, day = new Date(); for (var i = 0; i < n; i++) { t += d[dayKey(day)] || 0; day.setDate(day.getDate() - 1); } return t; }
+  function total(list) { return list.reduce(function (a, r) { return a + r.minutes; }, 0); }
+
+  /* the other tools: real paths on malikpeace.com, their preview pages anywhere else */
+  if (!/(^|\.)malikpeace\.com$/.test(location.hostname)) {
+    var TOOL = { audit: 'UkGU5Nz97VMmvfB6Xo1eGb', freedom: '4UaJZ8jCyXkzyDijseL9Wx', '25': 'UZsMJUYnqtwsjdVKqHyQNr' };
+    [].forEach.call(document.querySelectorAll('[data-tool]'), function (a) { a.href = 'https://claude.ai/artifact/' + TOOL[a.dataset.tool]; a.target = '_blank'; a.rel = 'noopener'; });
+  }
+
+  /* ================= motion helpers ================= */
+  /* glide something in (a fresh screen, a switched kind, a new saved timer), or nudge a number the way it moved */
+  function enter(el, from) { if (RM || !el || !el.animate) return; el.animate([from || { opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2,.7,.2,1)' }); }
+  function bump(el, dir) { if (RM || !el || !el.animate) return; el.animate([{ opacity: .5, transform: 'translateY(' + (dir * .07) + 'em)' }, { opacity: 1, transform: 'none' }], { duration: 200, easing: 'cubic-bezier(.2,.7,.2,1)' }); }
+  /* iOS only shows :active presses once the page listens for touches */
+  document.addEventListener('touchstart', function () {}, { passive: true });
+
+  /* ================= views ================= */
+  var view = 'setup';
+  function show(v) {
+    view = v; ['setup', 'run', 'end', 'done'].forEach(function (k) { $(k).hidden = k !== v; }); if (v !== 'run') bgFloor = 1;
+    document.body.className = 'v-' + v;
+    if (v === 'setup') document.title = 'Focus Room';
+    if (typeof syncSound === 'function') syncSound();
+    if (typeof loopBg === 'function' && bgc) loopBg();
+    if (v === 'setup') enter(document.querySelector('#setup .col'), { opacity: 0, transform: 'translateY(12px)' });
+    else if (v === 'run') enter($('run'), { opacity: 0 });
+  }
+
+  /* ================= SETUP ================= */
+  function range(a, b) { var o = []; for (var x = a; x <= b; x++) o.push(x); return o; }
+  var BRK_STEPS = range(BRK[0], BRK[1]), ROUND_STEPS = range(ROUNDS[0], ROUNDS[1]), LONG_STEPS = LONG.slice(1), EVERY_STEPS = range(EVERY[0], EVERY[1]);
+  function pomoSteps() { return pomoSel === 'brk' ? BRK_STEPS : pomoSel === 'rounds' ? ROUND_STEPS : pomoSel === 'long' ? LONG_STEPS : pomoSel === 'every' ? EVERY_STEPS : POMO; }
+  function pomoVal() { return pomoSel === 'brk' ? brk : pomoSel === 'rounds' ? rounds : pomoSel === 'long' ? longBrk : pomoSel === 'every' ? longEvery : pomo; }
+  function steps() { return kind === 'timer' ? TIMER_STEPS : kind === 'pomodoro' ? pomoSteps() : kind === 'alarm' ? alarmSlots(Date.now()) : null; }
+  function value() { return kind === 'timer' ? minutes : kind === 'pomodoro' ? pomoVal() : until; }
+  function setValue(v, quiet) {
+    var was = value(); if (v === was) return;
+    if (kind === 'timer') minutes = v;
+    else if (kind === 'pomodoro') { if (pomoSel === 'brk') brk = v; else if (pomoSel === 'rounds') rounds = v; else if (pomoSel === 'long') longBrk = v; else if (pomoSel === 'every') longEvery = v; else pomo = v; }
+    else if (kind === 'alarm') until = v;
+    savePrefs(); renderSetup(); if (!quiet) detent();
+    bump(kind === 'pomodoro' ? document.querySelector('.pz.on b') : $('big'), v > was ? 1 : -1);
+  }
+  function bigText() { return kind === 'timer' ? fmtShort(minutes) : kind === 'pomodoro' ? (pomoSel === 'rounds' ? rounds + ' rounds' : pomoSel === 'every' ? 'every ' + longEvery + ' rounds' : pomoVal() + ' min') : kind === 'alarm' ? clockOf(mod(until)) : '0:00'; }
+  function pomoShape() { return { kind: 'pomodoro', focusMs: pomo * MIN, brkMs: brk * MIN, longMs: longBrk * MIN, longEvery: longBrk ? longEvery : 0, rounds: rounds }; }
+  function renderSetup() {
+    var now = Date.now();
+    if (kind === 'alarm' && !okUntil(until, now)) { var sl = alarmSlots(now); until = sl[Math.min(sl.length - 1, 8)]; }
+    $('big').textContent = bigText();
+    $('bigWrap').classList.toggle('pick', kind === 'alarm'); $('bigWrap').classList.toggle('timer', kind === 'timer'); $('bigWrap').hidden = kind === 'pomodoro'; $('pomo').hidden = kind !== 'pomodoro';
+    if (kind === 'pomodoro') { renderPomoRow(); fitPomo(); }
+    if (kind === 'alarm') { var ad = new Date(until); $('atime').value = String(ad.getHours()).padStart(2, '0') + ':' + String(ad.getMinutes()).padStart(2, '0'); }
+    renderSub(now); renderQuick(now); renderRail(); renderKinds(); renderChips(); renderNote(); renderA2hs();
+  }
+  function renderSub(now) {
+    var sub = $('sub'); sub.innerHTML = '';
+    if (kind === 'pomodoro') {
+      /* a quiet line for the long break: "+ Long break" when it's off; its length and how often when it's on */
+      var line = document.createElement('div'); line.className = 'plong';
+      if (!longBrk) {
+        var add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Long break';
+        add.addEventListener('click', function () { longBrk = 15; pomoSel = 'long'; savePrefs(); renderSetup(); detent(); });
+        line.appendChild(add);
+      } else {
+        /* two halves that wrap as a pair, so a long value never strands the x on its own line */
+        var h1 = document.createElement('span'), h2 = document.createElement('span'); h1.className = h2.className = 'nw';
+        h1.appendChild(document.createTextNode('Long break '));
+        var lb = document.createElement('button'); lb.type = 'button'; lb.textContent = longBrk + ' min'; lb.className = pomoSel === 'long' ? 'on' : ''; lb.dataset.p = 'long'; lb.setAttribute('aria-label', 'Long break length, ' + longBrk + ' minutes');
+        lb.addEventListener('click', function () { pickPomo('long'); typePomo('long', lb); });
+        h1.appendChild(lb); h1.appendChild(document.createTextNode(',')); line.appendChild(h1); line.appendChild(document.createTextNode(' '));
+        h2.appendChild(document.createTextNode('every '));
+        var ev = document.createElement('button'); ev.type = 'button'; ev.textContent = longEvery + ' rounds'; ev.className = pomoSel === 'every' ? 'on' : ''; ev.dataset.p = 'every'; ev.setAttribute('aria-label', 'Long break after every ' + longEvery + ' rounds');
+        ev.addEventListener('click', function () { pickPomo('every'); typePomo('every', ev); });
+        h2.appendChild(ev); line.appendChild(h2);
+        var x = document.createElement('button'); x.type = 'button'; x.className = 'px'; x.setAttribute('aria-label', 'No long break'); x.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+        x.addEventListener('click', function () { longBrk = 0; if (pomoSel === 'long' || pomoSel === 'every') pomoSel = 'focus'; savePrefs(); renderSetup(); detent(); });
+        h2.appendChild(x);
+      }
+      sub.appendChild(line);
+      var all = document.createElement('div'); all.className = 'sub2'; var tm = totalMs(pomoShape()) / MIN;
+      all.textContent = fmtLength(tm) + ' in all. Ends at ' + clockOf(mod(now + tm * MIN)) + '.' + (longBrk && rounds <= longEvery ? ' Add rounds to reach a long break.' : '');
+      sub.appendChild(all);
+    } else if (kind === 'alarm') {
+      var mins = Math.max(1, Math.round((until - now) / MIN)), tomorrow = new Date(until).getDate() !== new Date(now).getDate();
+      sub.textContent = (tomorrow ? 'Tomorrow, in ' : 'Today, in ') + fmtShort(mins) + '. A chime plays when it\'s time.';
+    } else sub.textContent = kind === 'timer' ? 'Ends at ' + clockOf(mod(now) + minutes) : 'Counts up until you stop. Stops by itself at 10 hours.';
+  }
+  /* tap a number to type it: an exact value in place, Enter or tapping away keeps it, Esc puts it back (Malik, 2026-10-25:
+     "anytime somebody taps on the actual number, make sure that they can really fine tune adjust it") */
+  var edit = null;
+  function editNumber(el, o) {
+    if (edit) edit.done(true);
+    var nf = getComputedStyle(o.font || el), box = document.createElement('div'), inp = document.createElement('input'), dec = o.step && o.step % 1;
+    box.className = 'numedit';
+    /* iOS zooms into any field under 16px, so a small number is set at 16px and scaled back down to its own size */
+    var fs = parseFloat(nf.fontSize), k = Math.min(1, fs / 16);
+    box.style.fontSize = Math.max(16, fs) + 'px'; box.style.fontWeight = nf.fontWeight; box.style.letterSpacing = nf.letterSpacing; box.style.fontVariantNumeric = nf.fontVariantNumeric;
+    /* the same line height as the number, so centring the field on it puts the typed digits on the number's own baseline */
+    if (nf.lineHeight !== 'normal') box.style.lineHeight = parseFloat(nf.lineHeight) / k + 'px';
+    box.style.transform = 'translateY(-50%) scale(' + k + ')'; box.style.transformOrigin = (o.align === 'right' ? 'right' : o.align === 'center' ? 'center' : 'left') + ' center';
+    inp.type = 'text'; inp.inputMode = dec ? 'decimal' : 'numeric'; inp.enterKeyHint = 'done'; inp.autocomplete = 'off'; inp.spellcheck = false;
+    inp.value = String(o.value); inp.setAttribute('aria-label', o.label);
+    var mir = document.createElement('span'); mir.className = 'mir'; box.appendChild(mir);
+    function fit() { mir.textContent = inp.value || '0'; inp.style.width = Math.ceil(mir.getBoundingClientRect().width + 2) + 'px'; }
+    inp.addEventListener('input', function () { inp.value = inp.value.replace(dec ? /[^\d.,]/g : /\D/g, '').slice(0, 4); if (o.show) o.show(inp.value || '0'); fit(); place(); });
+    box.appendChild(inp);
+    if (o.unit) {
+      var u = document.createElement('span'); u.textContent = o.unit;
+      if (o.unitFont) { var uf = getComputedStyle(o.unitFont); u.style.fontSize = uf.fontSize; u.style.fontWeight = uf.fontWeight; u.style.letterSpacing = uf.letterSpacing; }
+      box.appendChild(u);
+    }
+    box.style.gap = o.gap || '.22em';
+    /* o.show writes what's being typed into the hidden number, so the line around it makes room as it grows */
+    /* sits exactly where the number was, lined up the same way (left, centre or right), and follows it if the sheet scrolls */
+    function place() {
+      var r = (o.at || el).getBoundingClientRect(), w = box.offsetWidth;
+      box.style.top = (r.top + r.height / 2) + 'px';
+      box.style.left = (o.align === 'right' ? r.right - w : o.align === 'center' ? r.left + (r.width - w) / 2 : r.left) + 'px';
+    }
+    document.body.appendChild(box); el.classList.add('editing'); fit(); place();
+    addEventListener('scroll', place, true); addEventListener('resize', place);
+    var closed = false;
+    function done(keep) {
+      if (closed) return; closed = true; edit = null; el.classList.remove('editing'); box.remove();
+      removeEventListener('scroll', place, true); removeEventListener('resize', place);
+      var v = parseFloat(inp.value.replace(',', '.')), st = o.step || 1;
+      if (isFinite(v)) v = clamp(Math.round(v / st) * st, o.min, o.max);
+      if (keep && isFinite(v) && (v !== o.value || o.always)) o.apply(v);
+      afterTap(o.render);
+    }
+    /* Enter keeps it, Esc puts it back; neither reaches the page (Esc would close the sheet, Enter would start things) */
+    inp.addEventListener('keydown', function (e) { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); done(true); } else if (e.key === 'Escape') { e.preventDefault(); done(false); } });
+    inp.addEventListener('blur', function () { done(true); });
+    edit = { done: done, inp: inp };
+    inp.focus(); inp.select();
+  }
+  /* a tap somewhere else keeps the typed value at once, but the redraw waits for that tap's click: redrawing first would
+     rebuild the button under the finger (quick picks, saved timers, the long-break line) and swallow the tap */
+  var ptrDown = false, pend = null;
+  function afterTap(f) { if (ptrDown) pend = f; else f(); }
+  function flush() { ptrDown = false; var f = pend; pend = null; if (f && !edit) f(); }
+  addEventListener('pointerdown', function (e) { ptrDown = true; if (edit && e.target !== edit.inp) edit.done(true); }, true);
+  addEventListener('click', flush);
+  ['pointerup', 'pointercancel'].forEach(function (t) { addEventListener(t, function () { setTimeout(function () { if (pend) flush(); else ptrDown = false; }, 400); }, true); });
+  $('bigWrap').addEventListener('click', function () { if (kind === 'timer') editNumber($('big'), { value: minutes, min: 1, max: 600, unit: 'min', label: 'Minutes', show: function (t) { $('big').textContent = t + ' min'; }, apply: function (v) { minutes = v; savePrefs(); detent(); }, render: renderSetup }); });
+
+  /* the three sections: tap one, and the rail moves it */
+  function pickPomo(k) { if (pomoSel === k) return; pomoSel = k; renderSetup(); detent(); }
+  [].forEach.call(document.querySelectorAll('.pz'), function (b) { b.addEventListener('click', function () { pickPomo(b.dataset.p); typePomo(b.dataset.p, b.querySelector('.pv')); }); });
+  var POMO_TYPE = { focus: [1, 180, 'min', 'Focus minutes'], brk: [BRK[0], BRK[1], 'min', 'Break minutes'], rounds: [ROUNDS[0], ROUNDS[1], '', 'Rounds'], long: [5, 60, 'min', 'Long break minutes'], every: [EVERY[0], EVERY[1], 'rounds', 'Long break after how many rounds'] };
+  function typePomo(k, el) {
+    if (!el.isConnected) el = document.querySelector('.plong [data-p="' + k + '"]'); if (!el) return;
+    var r = POMO_TYPE[k], cur = k === 'brk' ? brk : k === 'rounds' ? rounds : k === 'long' ? longBrk : k === 'every' ? longEvery : pomo;
+    var pv = el.classList.contains('pv');
+    editNumber(el, { value: cur, min: r[0], max: r[1], unit: r[2], label: r[3], font: pv ? el.querySelector('b') : el, at: pv ? el.querySelector('b') : null, unitFont: pv ? el.querySelector('i') : null, gap: pv ? '5px' : '', show: function (t) { if (pv) el.querySelector('b').textContent = t; else el.textContent = t + (r[2] ? ' ' + r[2] : ''); }, apply: function (v) {
+      if (k === 'brk') brk = v; else if (k === 'rounds') rounds = v; else if (k === 'long') longBrk = v; else if (k === 'every') longEvery = v; else pomo = v;
+      savePrefs(); detent(); }, render: renderSetup });
+  }
+  function renderPomoRow() {
+    [].forEach.call(document.querySelectorAll('.pz'), function (b) {
+      var k = b.dataset.p, v = k === 'brk' ? brk : k === 'rounds' ? rounds : pomo;
+      b.querySelector('b').textContent = String(v); b.classList.toggle('on', pomoSel === k);
+      if (k === 'rounds') b.querySelector('.pl').textContent = rounds === 1 ? 'round' : 'rounds';
+      b.setAttribute('aria-pressed', String(pomoSel === k));
+      b.setAttribute('aria-label', (k === 'focus' ? 'Focus, ' + pomo + ' minutes' : k === 'brk' ? 'Break, ' + brk + ' minutes' : rounds + ' rounds') + '. Tap to type it, or use the rail.');
+    });
+  }
+  /* "120 min, 30 min, 12 rounds" still fits: start at the normal size and step down until the row fits its column */
+  function fitPomo() {
+    var row = $('pomo'); if (row.hidden) return;
+    var avail = row.parentNode.clientWidth, size = Math.max(52, Math.min(88, innerWidth * 0.074));
+    row.style.setProperty('--pzs', size + 'px');
+    for (var k = 0; k < 40 && row.scrollWidth > avail && size > 30; k++) { size -= 2; row.style.setProperty('--pzs', size + 'px'); }
+  }
+  /* quick picks: lengths for the Timer, "in 30m, 1h..." for the Alarm */
+  function renderQuick(now) {
+    var q = $('quick'), list = kind === 'timer' ? QUICK : kind === 'alarm' ? ALARM_QUICK : null;
+    q.hidden = !list; if (!list) return;
+    if (q.dataset.k !== kind) {
+      q.dataset.k = kind; q.innerHTML = '';
+      if (kind === 'alarm') { var lab = document.createElement('span'); lab.className = 'qin'; lab.textContent = 'In'; q.appendChild(lab); }
+      list.forEach(function (m) {
+        var b = document.createElement('button'); b.type = 'button'; b.dataset.m = m;
+        b.textContent = m < 60 ? m + 'm' : (m / 60) + 'h';
+        b.setAttribute('aria-label', (kind === 'alarm' ? 'In ' : '') + fmtLength(m));
+        b.addEventListener('click', function () { if (kind === 'alarm') { var f = 5 * MIN; setValue(Math.ceil((Date.now() + m * MIN) / f) * f); } else setValue(m); });
+        q.appendChild(b);
+      });
+    }
+    [].forEach.call(q.querySelectorAll('button'), function (b) { var m = +b.dataset.m; b.setAttribute('aria-pressed', String(kind === 'alarm' ? Math.abs(until - (now + m * MIN)) < 5 * MIN : m === minutes)); });
+  }
+  /* the rail: biggest at the top, so dragging up makes it longer (or later). Long lists show a window that slides. */
+  var WIN = 31;
+  function renderRail() {
+    var st = steps(), r = $('rail'); r.hidden = !st; if (!st) return;
+    var n = st.length, idx = nearIdx(st, value()), shown = Math.min(n, WIN), lo = clamp(idx - (WIN >> 1), 0, n - shown);
+    if (r.childElementCount !== shown) { r.innerHTML = ''; for (var i = 0; i < shown; i++) r.appendChild(document.createElement('i')); }
+    var gap = Math.max(3, Math.min(12, ((r.clientHeight || 260) - shown * 2) / Math.max(1, shown - 1)));
+    [].forEach.call(r.children, function (t, k) { var d = Math.abs((lo + shown - 1 - k) - idx); t.className = d === 0 ? 'on' : d === 1 ? 'near' : ''; t.style.marginTop = k ? gap + 'px' : '0'; });
+    r.dataset.gap = gap + 2;
+    r.setAttribute('aria-valuemin', '0'); r.setAttribute('aria-valuemax', String(n - 1)); r.setAttribute('aria-valuenow', String(idx)); r.setAttribute('aria-valuetext', bigText());
+  }
+  /* tap the alarm's time for the phone's own picker, any minute in the next 24 hours */
+  $('atime').addEventListener('click', function () { try { if (this.showPicker) this.showPicker(); } catch (e) {} });
+  $('atime').addEventListener('change', function () { var v = this.value; if (!/^\d{2}:\d{2}$/.test(v)) return; setValue(nextAt(+v.slice(0, 2) * 60 + +v.slice(3, 5), Date.now())); });
+  (function rail() {
+    var r = $('rail'), drag = null, wheelAt = 0;
+    function step(by) { var st = steps(); if (!st) return; var i = clamp(nearIdx(st, value()) + by, 0, st.length - 1); setValue(st[i]); }
+    r.addEventListener('pointerdown', function (e) { var st = steps(); if (!st) return; drag = { y: e.clientY, i: nearIdx(st, value()) }; r.classList.add('drag'); try { r.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+    r.addEventListener('pointermove', function (e) { if (!drag) return; var st = steps(), g = +r.dataset.gap || 14, i = clamp(drag.i + Math.round((drag.y - e.clientY) / g), 0, st.length - 1); setValue(st[i]); });
+    function end() { drag = null; r.classList.remove('drag'); }
+    r.addEventListener('pointerup', end); r.addEventListener('pointercancel', end);
+    r.addEventListener('wheel', function (e) { e.preventDefault(); var t = Date.now(); if (t - wheelAt < 70) return; wheelAt = t; step(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+    r.addEventListener('keydown', function (e) { if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { step(1); e.preventDefault(); } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { step(-1); e.preventDefault(); } });
+  })();
+  /* the kind picker, a glass track with a thumb that slides */
+  KINDS.forEach(function (k, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.k = k[0]; b.textContent = k[1];
+    b.addEventListener('click', function () { if (kind !== k[0]) { kind = k[0]; savePrefs(); renderSetup(); detent(); enter(document.querySelector('.val')); } });
+    b.addEventListener('keydown', function (e) { var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return; var j = (i + d + KINDS.length) % KINDS.length; kind = KINDS[j][0]; savePrefs(); renderSetup(); $('kinds').querySelectorAll('button')[j].focus(); e.preventDefault(); });
+    $('kinds').appendChild(b);
+  });
+  function renderKinds() {
+    var i = KINDS.findIndex(function (k) { return k[0] === kind; });
+    $('thumb').style.transform = 'translateX(' + (i * 100) + '%)';
+    [].forEach.call($('kinds').querySelectorAll('button'), function (b) { var on = b.dataset.k === kind; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+  }
+  /* saved timers: up to five, tap to load, press and hold (or the x) to remove */
+  function current() { return { kind: kind, minutes: kind === 'pomodoro' ? pomo : minutes, brk: brk, rounds: rounds, longMin: longBrk, longEvery: longEvery, untilMin: until ? mod(until) : 0, label: $('label').value.trim() }; }
+  function chipText(x) {
+    var v = x.kind === 'timer' ? fmtShort(x.minutes) : x.kind === 'pomodoro' ? x.minutes + '/' + x.brk + ' ×' + x.rounds + (x.longMin && x.rounds > x.longEvery ? ' (' + x.longMin + ')' : '') : x.kind === 'alarm' ? 'Until ' + clockOf(x.untilMin) : 'Stopwatch';
+    var l = x.label.length > 14 ? x.label.slice(0, 13) + '…' : x.label;
+    return l ? v + ' · ' + l : v;
+  }
+  function renderChips() {
+    var box = $('chips'); box.innerHTML = '';
+    saved.forEach(function (x, k) {
+      var c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.textContent = chipText(x); c.setAttribute('aria-label', chipText(x) + '. Press and hold to remove.');
+      var xb = document.createElement('span'); xb.className = 'x'; xb.setAttribute('role', 'button'); xb.setAttribute('aria-label', 'Remove'); xb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>'; c.appendChild(xb);
+      var lp = 0, removed = false;
+      c.addEventListener('pointerdown', function () { removed = false; lp = setTimeout(function () { removed = true; remove(k); }, 550); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { c.addEventListener(ev, function () { clearTimeout(lp); }); });
+      c.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+      c.addEventListener('click', function (e) { if (removed) return; if (e.target.closest('.x')) { remove(k); return; } loadTimer(x); });
+      box.appendChild(c);
+    });
+    var k = savedIdx(), sk = $('savek'), full = k < 0 && saved.length >= SAVED_MAX;
+    box.hidden = !saved.length; sk.setAttribute('aria-pressed', String(k >= 0)); sk.disabled = full;
+    sk.title = k >= 0 ? 'Saved. Tap to remove it.' : full ? '5 of 5 saved' : 'Save this timer'; sk.setAttribute('aria-label', sk.title);
+  }
+  function remove(k) { saved.splice(k, 1); save(K.saved, saved); renderChips(); toast('Removed.'); }
+  function savedIdx() { var cur = current(); for (var i = 0; i < saved.length; i++) if (sameTimer(saved[i], cur)) return i; return -1; }
+  $('savek').addEventListener('click', function () {
+    var k = savedIdx(); if (k >= 0) { remove(k); detent(); return; }
+    if (saved.length >= SAVED_MAX) return;
+    saved.push(current()); save(K.saved, saved); renderChips(); detent();
+    var cs = $('chips').querySelectorAll('.chip'); enter(cs[cs.length - 1], { opacity: 0, transform: 'scale(.88)' }); enter(this, { opacity: 1, transform: 'scale(.8)' });
+  });
+  function loadTimer(x) {
+    kind = x.kind;
+    if (x.kind === 'pomodoro') { pomo = clamp(Math.round(x.minutes), 1, 180); brk = x.brk; rounds = x.rounds; longBrk = x.longMin || 0; longEvery = x.longEvery || 4; }
+    else if (x.kind === 'timer') minutes = clamp(Math.round(x.minutes), 1, 600);
+    else if (x.kind === 'alarm') until = nextAt(x.untilMin, Date.now());
+    $('label').value = x.label; savePrefs(); renderSetup(); detent();
+  }
+  /* the line under the label: who's back, and what they were working on */
+  function renderNote() {
+    var list = recs(), today = byDay(list)[dayKey(Date.now())] || 0, st = streakOf(list);
+    /* the first visit gets the line; every visit after just says "Lock in." (Malik, 2026-10-25) */
+    $('note').textContent = !list.length ? 'Focus, and get it done.' : 'Lock in.';
+    var box = $('recent'); box.innerHTML = ''; var seen = {}, typed = $('label').value.trim();
+    list.slice().sort(function (a, b) { return b.at - a.at; }).forEach(function (r) {
+      var l = (r.label || '').trim(); if (!l || seen[l] || l === typed || box.childElementCount >= 3) return; seen[l] = 1;
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = l; b.addEventListener('click', function () { $('label').value = l; renderNote(); renderChips(); });
+      box.appendChild(b);
+    });
+  }
+  $('label').addEventListener('input', function () { renderNote(); renderChips(); });
+  $('label').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); this.blur(); } });
+
+  /* ================= START ================= */
+  $('start').addEventListener('click', function () {
+    var now = Date.now(), label = $('label').value.trim().slice(0, 120);
+    if (kind === 'alarm' && !okUntil(until, now)) { renderSetup(); toast('That time has passed. Pick a new one.'); return; }
+    var focusMs = kind === 'timer' ? minutes * MIN : kind === 'pomodoro' ? pomo * MIN : kind === 'open' ? OPEN_MAX * MIN : until - now;
+    S = { kind: kind, label: label, startedAt: now, focusMs: focusMs, brkMs: kind === 'pomodoro' ? brk * MIN : 0, longMs: kind === 'pomodoro' && longBrk ? longBrk * MIN : 0, longEvery: kind === 'pomodoro' && longBrk ? longEvery : 0,
+      rounds: kind === 'pomodoro' ? rounds : 1, pausedAt: null, pausedMs: 0, rung: false, mock: false };
+    save(K.active, S); prefs.label = label; savePrefs();
+    audioOn(); cue('start'); begin();
+  });
+  function begin() { flip = false; lastPh = null; ctlOn = false; confirmOn = false; show('run'); renderCtl(); wake(true); paint(); armEnd(); }
+
+  /* ================= RUNNING: the Fill ================= */
+  var rides = [].map.call(document.querySelectorAll('[data-ride]'), function (el) { return { el: el, t: el.querySelector('.t'), w: el.querySelector('.w'), s: el.querySelector('.rsub') }; });
+  var flip = false, lastPh = null, lift = 0, ctlOn = false, confirmOn = false, ctlT = 0, peekT = 0;
+  function paint() {
+    if (!S || view !== 'run') return;
+    var now = Date.now(), ph = phaseAt(S, now);
+    if (ph.phase === 'done') { toEnd(false); return; }
+    var H = innerHeight, f = fillOf(S, now), fh = Math.round(f * H), paused = S.pausedAt != null;
+    $('fillL').style.clipPath = 'inset(' + (H - fh) + 'px 0 0 0)'; bgFloor = clamp((H - fh) / H, 0, 1);
+    var soFar = S.kind === 'open' ? !flip : flip;
+    var shown = soFar ? fmtClock(S.kind === 'pomodoro' ? ph.inPhaseMs : ph.workedMs) : fmtClock(ph.phaseMs - ph.inPhaseMs);
+    var sub = paused ? 'Paused' : S.kind === 'pomodoro' ? (ph.phase === 'break' ? (ph.long ? 'Long break' : 'Break') + ' · round ' + ph.round + ' of ' + S.rounds : (S.label ? S.label + ' · ' : '') + 'round ' + ph.round + ' of ' + S.rounds) : (S.label || (S.kind === 'open' ? 'Stopwatch' : 'Deep work'));
+    var bottom = Math.min(H * 0.7, Math.max(fh + 18, lift));
+    rides.forEach(function (r) { r.t.textContent = shown; r.w.textContent = soFar ? 'so far' : 'left'; r.s.textContent = sub; r.el.style.bottom = bottom + 'px'; });
+    document.title = (paused ? 'Paused, ' : ph.phase === 'break' ? 'Break, ' : '') + shown + (soFar ? ' so far' : ' left') + ' · Focus Room';
+    if (lastPh && S.kind === 'pomodoro' && (lastPh.phase !== ph.phase || lastPh.round !== ph.round)) cue(ph.phase === 'break' ? 'down' : 'up');
+    if (lastPh && S.kind === 'open' && Math.floor(ph.workedMs / 3600000) > Math.floor(lastPh.worked / 3600000)) cue('start');
+    lastPh = { phase: ph.phase, round: ph.round, worked: ph.workedMs };
+    inkCtl(H - fh);
+  }
+  /* each control takes the ink of what is behind it */
+  function inkCtl(edge) {
+    [].forEach.call($('ctl').querySelectorAll('.cta,.ghost,.ask'), function (el) { if (el.offsetParent === null) return; var r = el.getBoundingClientRect(); el.classList.toggle('onfill', r.top + r.height / 2 > edge); });
+  }
+  function renderCtl() {
+    var on = !!S && (ctlOn || confirmOn || S.pausedAt != null);
+    $('ctl').classList.toggle('on', on); $('ctlMain').hidden = confirmOn; $('ctlAsk').hidden = !confirmOn;
+    if (S) {
+      $('bPause').textContent = S.pausedAt != null ? 'Resume' : 'Pause';
+      $('bEnd').textContent = S.kind === 'open' ? 'Stop and finish' : 'End early';
+      if (confirmOn) { var w = fmtLength(phaseAt(S, Date.now()).workedMs / 60000); $('askT').textContent = 'End now? ' + w + ' counts.'; $('bEndYes').textContent = 'End and log ' + w; }
+    }
+    lift = on ? $('ctl').getBoundingClientRect().height + 18 : 0;
+    document.body.classList.toggle('peek', on);
+    paint();
+  }
+  function poke() { ctlOn = !ctlOn; clearTimeout(ctlT); if (ctlOn) ctlT = setTimeout(function () { ctlOn = false; renderCtl(); }, 3000); renderCtl(); }
+  $('run').addEventListener('click', function (e) {
+    if (e.target.closest('.ctl')) return;
+    if (e.target.closest('[data-time]')) { flip = !flip; paint(); [].forEach.call(document.querySelectorAll('#run .time .w'), function (w) { enter(w, { opacity: 0, transform: 'translateY(4px)' }); }); return; }
+    poke();
+  });
+  /* on a computer, moving the mouse shows the bar for a moment */
+  $('run').addEventListener('pointermove', function (e) { if (e.pointerType !== 'mouse') return; document.body.classList.add('peek'); clearTimeout(peekT); peekT = setTimeout(function () { if (!$('ctl').classList.contains('on')) document.body.classList.remove('peek'); }, 1800); });
+  function pause() { if (!S) return; var now = Date.now(); if (S.pausedAt != null) { S.pausedMs += now - S.pausedAt; S.pausedAt = null; wake(true); audioOn(); } else { S.pausedAt = now; wake(false); } save(K.active, S); ctlOn = false; renderCtl(); syncSound(); armEnd(); }
+  $('bPause').addEventListener('click', pause);
+  $('bSnd2').addEventListener('click', function () { clearTimeout(ctlT); openSheet('shSound'); });
+  $('bEnd').addEventListener('click', function () {
+    if (!S) return;
+    if (S.kind !== 'open') { confirmOn = true; clearTimeout(ctlT); renderCtl(); return; }
+    /* the Stopwatch's Stop and finish: straight to hold to complete. Under a minute there is nothing to log, so it just ends */
+    var now = Date.now(), w = phaseAt(S, now).workedMs;
+    if (w < 60000) { endSession(); toast('Under a minute, so nothing was logged.'); return; }
+    if (S.pausedAt != null) { S.pausedMs += now - S.pausedAt; S.pausedAt = null; }
+    S.focusMs = elapsed(S, now); S.rung = true; save(K.active, S); toEnd(true);
+  });
+  $('bEndYes').addEventListener('click', function () {
+    if (!S) return;
+    var now = Date.now(), m = Math.round(phaseAt(S, now).workedMs / 60000), mock = S.mock, label = S.label, k = S.kind;
+    endSession();
+    if (m >= 1) { if (!mock) logSession(m, label, k, false, now); else mockLog(m, label, k, false, now); doneView(m, true, now); } else toast('Under a minute, so nothing was logged.');
+  });
+  $('bKeep').addEventListener('click', function () { confirmOn = false; ctlOn = false; renderCtl(); });
+  function endSession() { clearTimeout(endT); S = null; drop(K.active); confirmOn = false; ctlOn = false; wake(false); silence(); $('ctl').classList.remove('on'); show('setup'); renderSetup(); }
+
+  /* ================= TIME'S UP: hold anywhere ================= */
+  var endMin = 1, ringing = false, ringT = 0;
+  function toEnd(quiet) {
+    var now = Date.now(), ph = phaseAt(S, now);
+    endMin = Math.max(1, Math.round(ph.workedMs / 60000));
+    $('eBig').textContent = $('oBig').textContent = fmtShort(endMin);
+    $('eLine').textContent = S.kind === 'open' && ph.workedMs >= OPEN_MAX * 60000 ? 'Stopped at the 10 hour limit.' : 'Time\'s up.';
+    $('ctl').classList.remove('on'); confirmOn = false; ctlOn = false;
+    show('end'); document.title = 'Time\'s up · Focus Room'; wake(false); clearTimeout(endT);
+    hold.f = 0; paintOrb();
+    if (!quiet && !S.rung) { S.rung = true; save(K.active, S); ring(); pingNow(); }
+  }
+  /* the chime repeats until a touch, 30 seconds at most */
+  /* the alarm, picked in Settings (Malik, 2026-10-25: "a real, proper alarm that somebody can pick from"). Of the eleven
+     made, he kept two: Classic and Soft.
+     Each is one ring from sounds/; when time's up it repeats, starting at 45% and rising to full over ten seconds, until a
+     touch, 30 seconds at most */
+  var ALARMS = [['classic', 'Classic', 'alarmClassic', 1.25], ['soft', 'Soft', 'alarmSoft', 1.45]];
+  function alarmOf(k) { for (var i = 0; i < ALARMS.length; i++) if (ALARMS[i][0] === k) return ALARMS[i]; return ALARMS[0]; }
+  var alarmPick = alarmOf(prefs.alarm)[0], previewSrc = null;
+  function sfxSrc(n, gain) { if (!audioOn() || !SFX[n]) return null; var src = AC.createBufferSource(), g = AC.createGain(); src.buffer = SFX[n]; g.gain.value = gain; src.connect(g); g.connect(AC.destination); src.start(0); return src; }
+  function whenSfx(n, cb, tries) { if (SFX[n]) { cb(); return; } if ((tries || 0) > 50) return; setTimeout(function () { whenSfx(n, cb, (tries || 0) + 1); }, 100); }
+  function ring() { if (!AC) return; ringing = true; var a = alarmOf(alarmPick), t0 = Date.now(); (function beat() { if (!ringing || Date.now() - t0 > ALARM_MAX) { ringing = false; return; } if (!sfxSrc(a[2], 0.45 + 0.55 * Math.min(1, (Date.now() - t0) / 10000))) cue('end'); ringT = setTimeout(beat, a[3] * 1000); })(); }
+  function silence() { ringing = false; clearTimeout(ringT); }
+  var hold = { on: false, f: 0, x: 0, y: 0, iv: 0, wait: 0, drain: 0 };
+  function radius(f) {
+    var W = innerWidth, H = innerHeight, x = hold.x, y = hold.y, far = Math.max(Math.hypot(x, y), Math.hypot(W - x, y), Math.hypot(x, H - y), Math.hypot(W - x, H - y));
+    return f <= 0 ? 0 : 3 * Math.pow((far + 30) / 3, Math.pow(f, 1.2));
+  }
+  function paintOrb() {
+    $('orb').style.clipPath = RM ? 'circle(0px at 50% 50%)' : 'circle(' + radius(hold.f).toFixed(1) + 'px at ' + hold.x + 'px ' + hold.y + 'px)';
+    $('pill').style.opacity = RM || !(hold.on || hold.f > 0) ? 1 : 0;
+    $('pillT').textContent = RM && hold.on ? 'Keep holding' : 'Hold anywhere to complete';
+  }
+  function holdDown(x, y, now) {
+    silence(); if (hold.on || view !== 'end') return;
+    clearInterval(hold.drain); hold.x = x; hold.y = y; clearTimeout(hold.wait);
+    if (now) startHold(); else hold.wait = setTimeout(startHold, WAIT);
+  }
+  function startHold() {
+    hold.on = true; audioOn(); var t0 = Date.now() - hold.f * HOLD, lastTick = 0;
+    hold.iv = setInterval(function () {
+      var f = Math.min(1, (Date.now() - t0) / HOLD); hold.f = f; paintOrb();
+      var rate = 3 + 19 * f * f; if (Date.now() - lastTick > 1000 / rate) { lastTick = Date.now(); ratchet(f); }
+      if (f >= 1) { clearInterval(hold.iv); hold.on = false; complete(); }
+    }, 16);
+  }
+  function holdUp() {
+    clearTimeout(hold.wait); if (!hold.on) return;
+    clearInterval(hold.iv); hold.on = false; var f0 = hold.f, t0 = Date.now();
+    hold.drain = setInterval(function () { var t = Math.min(1, (Date.now() - t0) / 320), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; hold.f = f0 * (1 - e); paintOrb(); if (t >= 1) { hold.f = 0; paintOrb(); clearInterval(hold.drain); } }, 16);
+  }
+  $('end').addEventListener('pointerdown', function (e) { if (e.target.closest('.bar')) return; holdDown(e.clientX, e.clientY); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { $('end').addEventListener(ev, holdUp); });
+  function complete() {
+    var now = Date.now(), m = endMin, mock = S && S.mock;
+    silence(); cue('done'); if (m >= 105) playSfx('doneDrop', 0.9, AC ? AC.currentTime + 0.05 : 0);
+    if (S && !mock) logSession(m, S.label, S.kind, true, now); else if (S) mockLog(m, S.label, S.kind, true, now);
+    S = null; drop(K.active); hold.f = 0;
+    doneView(m, false, now);
+  }
+  /* previews add to the sample month, never to real hours */
+  function mockLog(m, label, k, full, at) { if (!sample) sample = sampleMonth(); sample.push({ at: at, iso: dayKey(at), minutes: m, label: label || '', kind: k, full: full }); }
+  function logSession(m, label, k, full, at) {
+    sessions.push({ at: at, iso: dayKey(at), minutes: m, label: label || '', kind: k, full: full });
+    if (sessions.length > 4000) sessions = sessions.slice(-4000);
+    save(K.sessions, sessions);
+  }
+
+  /* ================= DONE ================= */
+  var MILES = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
+  function doneView(m, partial, at) {
+    show('done'); document.title = (partial ? 'Logged' : 'Done') + ' · Focus Room';
+    $('dBig').textContent = fmtShort(Math.max(1, m));
+    $('dLine').textContent = partial ? 'of deep work, logged.' : 'Deep work completed';
+    $('dHang').textContent = (partial ? 'Ended at ' : 'Done at ') + clockAt(at);
+    var list = recs(), d = byDay(list), st = streakOf(list);
+    $('dStats').innerHTML = '';
+    [[fmtHM(d[dayKey(at)] || 0), 'today'], [fmtHM(lastDays(list, 7)), 'last 7 days'], [String(st), st === 1 ? 'day in a row' : 'days in a row']].forEach(function (x) { var el = document.createElement('div'); var b = document.createElement('b'); b.textContent = x[0]; var s = document.createElement('span'); s.textContent = x[1]; el.appendChild(b); el.appendChild(s); $('dStats').appendChild(el); });
+    var days = $('dDays'); days.innerHTML = ''; var day = new Date(at); day.setDate(day.getDate() - 6);
+    for (var i = 0; i < 7; i++) { var c = document.createElement('div'); if (i === 6) c.className = 'today'; var dot = document.createElement('i'); if (d[dayKey(day)]) dot.className = 'on'; var s2 = document.createElement('span'); s2.textContent = 'SMTWTFS'[day.getDay()]; c.appendChild(dot); c.appendChild(s2); days.appendChild(c); day.setDate(day.getDate() + 1); }
+    var after = total(list) / 60, before = (total(list) - m) / 60, hit = MILES.filter(function (x) { return before < x && after >= x; }).pop();
+    $('dMs').hidden = !hit; if (hit) $('dMs').textContent = hit === 1 ? 'Your first hour in the room.' : 'That\'s ' + hit + ' hours in the room.';
+    var offer = !partial && (preview ? !prefs.ping : canPing && !prefs.ping && !prefs.pingAsked && Notification.permission === 'default');
+    $('dPing').hidden = !offer; if (offer && !preview) { prefs.pingAsked = true; savePrefs(); }
+    var fl = $('flash'); fl.classList.remove('go'); if (!partial && !RM) { void fl.offsetWidth; fl.classList.add('go'); }
+  }
+  $('bBack').addEventListener('click', function () { show('setup'); renderSetup(); });
+  /* the email: once it's in, every box that asks for it says thanks instead (the real build adds it to the list) */
+  var MAIL = 'focusroom.mail';
+  function mailed() { var v = load(MAIL); return typeof v === 'string' ? v : ''; }
+  function okEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+  function setMail(v) { save(MAIL, v); mailUI(); toast('You\'re on the list. Thank you!'); }
+  function mailUI() {
+    var m = mailed();
+    $('dmail').hidden = !!m; $('dmOk').hidden = !m; if (m) $('dmOk').textContent = 'You\'re on the list. Thank you!';
+    $('mail').hidden = !!m; $('mailOk').hidden = !m; if (m) $('mailOk').textContent = 'You\'re on the list. Thank you!';
+  }
+  $('dmail').addEventListener('submit', function (e) { e.preventDefault(); var v = $('dEmail').value.trim(); if (!okEmail(v)) { toast('That email doesn\'t look right.'); return; } setMail(v); });
+  $('bMem').addEventListener('click', function () { openSheet('shAbout'); });
+
+  /* ================= sheets ================= */
+  var openId = null, lastFocus = null;
+  function openSheet(id) {
+    if (openId) closeSheet(true);
+    if (id === 'shRec') renderRec();
+    [$('scrim'), $(id)].forEach(function (el) { if (el.getAnimations) el.getAnimations().forEach(function (a) { if (!a.animationName) a.cancel(); }); el.style.pointerEvents = ''; el.style.translate = ''; el.style.opacity = ''; });
+    lastFocus = document.activeElement; openId = id; $('scrim').hidden = false; $(id).hidden = false; $(id).scrollTop = 0; if (id === 'shSound') syncSound();
+    var c = $(id).querySelector('[data-close]'); if (c) c.focus();
+  }
+  function closeSheet(quick, dragY) {
+    if (!openId) return; var was = openId, sh = $(was), sc = $('scrim'); openId = null;
+    if (quick || RM || !sh.animate) { sh.hidden = true; sc.hidden = true; sh.style.translate = ''; sc.style.opacity = ''; }
+    else {
+      var desk = innerWidth >= 760, a = desk
+        ? sh.animate([{ opacity: 1 }, { opacity: 0, transform: 'translate(-50%,calc(-50% + 10px)) scale(.98)' }], { duration: 160, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' })
+        : dragY ? sh.animate([{ translate: '0 ' + dragY + 'px' }, { translate: '0 100%' }], { duration: 200, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' })
+        : sh.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(40px)' }], { duration: 170, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+      var b = sc.animate([{ opacity: sc.style.opacity || 1 }, { opacity: 0 }], { duration: 200, easing: 'ease-in', fill: 'forwards' });
+      sh.style.pointerEvents = sc.style.pointerEvents = 'none';
+      a.onfinish = function () {
+        if (openId !== was) { sh.hidden = true; a.cancel(); sh.style.translate = ''; sh.style.pointerEvents = ''; }
+        if (!openId) { sc.hidden = true; b.cancel(); sc.style.opacity = ''; sc.style.pointerEvents = ''; }
+      };
+    }
+    if (was === 'shSound') { previewOn = false; if (typeof stopPreview === 'function') stopPreview(); syncSound(); }
+    if (!quick && lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) {}
+  }
+  $('scrim').addEventListener('click', function () { closeSheet(); });
+  /* on a phone, pull a sheet down from its top to close it: it follows the finger, and goes if pulled far or flicked */
+  [].forEach.call(document.querySelectorAll('.sheet'), function (sh) {
+    var y0 = 0, x0 = 0, dy = 0, t0 = 0, on = false, live = false;
+    sh.addEventListener('touchstart', function (e) {
+      on = innerWidth < 760 && sh.scrollTop <= 0 && e.touches.length === 1 && !e.target.closest('input,textarea,.alist,.chips');
+      live = false; dy = 0; y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; t0 = performance.now();
+    }, { passive: true });
+    sh.addEventListener('touchmove', function (e) {
+      if (!on) return; var d = e.touches[0].clientY - y0, dx = e.touches[0].clientX - x0;
+      if (!live) { if (d > 8 && d > Math.abs(dx) * 1.2) live = true; else if (d < -4 || Math.abs(dx) > 10) { on = false; return; } else return; }
+      e.preventDefault(); dy = Math.max(0, d - 8); sh.style.translate = '0 ' + dy + 'px'; $('scrim').style.opacity = String(Math.max(0, 1 - dy / 420));
+    }, { passive: false });
+    sh.addEventListener('touchend', function () {
+      if (!live) { on = false; return; } on = live = false;
+      var v = dy / Math.max(1, performance.now() - t0);
+      if (dy > 110 || (dy > 30 && v > .5)) closeSheet(false, dy);
+      else { var from = dy; sh.style.translate = ''; $('scrim').style.opacity = ''; if (sh.animate && !RM) sh.animate([{ translate: '0 ' + from + 'px' }, { translate: '0 0' }], { duration: 240, easing: 'cubic-bezier(.2,.7,.2,1)' }); }
+    });
+  });
+  [].forEach.call(document.querySelectorAll('[data-close]'), function (b) { b.addEventListener('click', function () { closeSheet(); }); });
+  $('bSound').addEventListener('click', function (e) { e.stopPropagation(); openSheet('shSound'); });
+  $('bRec').addEventListener('click', function (e) { e.stopPropagation(); openSheet('shRec'); });
+  $('bAbout').addEventListener('click', function () { openSheet('shAbout'); });
+  var lpT = 0, lpFired = false;
+  $('bBrand').addEventListener('pointerdown', function () { lpFired = false; clearTimeout(lpT); lpT = setTimeout(function () { lpFired = true; setPreview(!preview); toast(preview ? 'Preview tools on.' : 'Preview tools off.'); }, 700); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { $('bBrand').addEventListener(ev, function () { clearTimeout(lpT); }); });
+  $('bBrand').addEventListener('click', function (e) { if (lpFired) { lpFired = false; e.preventDefault(); return; } openSheet('shAbout'); });
+  function setPreview(on) { preview = on; $('mockWrap').hidden = !on; $('crowd').hidden = !(LIVE_URL || on); renderA2hs(); }
+  $('bMock').addEventListener('click', function () { openSheet('shMock'); });
+  ['pointerdown', 'click'].forEach(function (ev) { $('bar').addEventListener(ev, function (e) { if (e.target.closest('button')) e.stopPropagation(); }); });
+
+  /* your hours: today, the last 7 days, all time, the streak, 12 weeks of days, the last few sessions */
+  function renderRec() {
+    var list = recs(), d = byDay(list), st = streakOf(list), body = $('recBody'); body.innerHTML = '';
+    if (!list.length) { var p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No hours yet.'; body.appendChild(p); return; }
+    var s = document.createElement('div'); s.className = 'rstats';
+    [[fmtHM(d[dayKey(Date.now())] || 0), 'today'], [fmtHM(lastDays(list, 7)), 'last 7 days'], [fmtHM(total(list)), 'all time']].forEach(function (x) { var el = document.createElement('div'); var b = document.createElement('b'); b.textContent = x[0]; var sp = document.createElement('span'); sp.textContent = x[1]; el.appendChild(b); el.appendChild(sp); s.appendChild(el); });
+    body.appendChild(s);
+    var sl = document.createElement('p'); sl.className = 'streak'; sl.textContent = st ? st + (st === 1 ? ' day' : ' days') + ' in a row.' : 'Your streak starts with your next session.'; body.appendChild(sl);
+    var g = document.createElement('div'); g.className = 'grid'; g.setAttribute('aria-label', 'The last 12 weeks');
+    var day = new Date(); day.setDate(day.getDate() - 83);
+    for (var i = 0; i < 84; i++) { var c = document.createElement('i'), m = d[dayKey(day)] || 0; c.className = (m >= 120 ? 'l4' : m >= 60 ? 'l3' : m >= 30 ? 'l2' : m > 0 ? 'l1' : '') + (i === 83 ? ' today' : ''); c.title = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + (m ? ', ' + fmtHM(m) : ''); g.appendChild(c); day.setDate(day.getDate() + 1); }
+    body.appendChild(g);
+    var gc = document.createElement('p'); gc.className = 'gcap'; gc.textContent = 'The last 12 weeks. Brighter days had more deep work.'; body.appendChild(gc);
+    var sec = document.createElement('div'); sec.className = 'sh-sec'; var h = document.createElement('span'); h.className = 'sh-l'; h.textContent = 'Lately'; sec.appendChild(h);
+    var lst = document.createElement('div'); lst.className = 'list';
+    list.slice().sort(function (a, b) { return b.at - a.at; }).slice(0, 5).forEach(function (r) {
+      var row = document.createElement('div'), b = document.createElement('b'), sp = document.createElement('span'), em = document.createElement('em');
+      b.textContent = r.label || (r.kind === 'pomodoro' ? 'Pomodoro' : r.kind === 'open' ? 'Stopwatch' : 'Deep work');
+      var dd = dayKey(r.at) === dayKey(Date.now()) ? 'Today' : new Date(r.at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      sp.textContent = dd + ', ' + clockAt(r.at) + (r.full ? '' : ', ended early'); em.textContent = fmtHM(r.minutes);
+      row.appendChild(b); row.appendChild(em); row.appendChild(sp); lst.appendChild(row);
+    });
+    sec.appendChild(lst); body.appendChild(sec);
+  }
+  $('mail').addEventListener('submit', function (e) { e.preventDefault(); var v = $('email').value.trim(); if (!okEmail(v)) { toast('That email doesn\'t look right.'); return; } setMail(v); });
+
+  /* ================= the room's live count (a sample number in this mockup) ================= */
+  var crowd = 1284;
+  setInterval(function () { var s = Math.round(Math.random() * 6 - 2.6); if (crowd < 1230) s = Math.abs(s); if (crowd > 1350) s = -Math.abs(s); if (s) { crowd += s; $('crowdN').textContent = crowd.toLocaleString('en-US'); } }, 4200);
+
+  /* ================= sound, made live, only after a tap ================= */
+  var AC = null, ambBus = null, zoneBus = null, chain = null, BUF = {}, zone = null, CARRIER = 200, ZONE_LEVEL = 0.12, CLICK = null;
+  var choiceSnd = ['off', 'brown', 'pink', 'white', 'rain'].indexOf(prefs.snd) >= 0 ? prefs.snd : 'off';
+  var choiceZone = +prefs.zone >= 1 && +prefs.zone <= 40 ? +prefs.zone : 0, zoneLast = +prefs.zoneLast >= 1 && +prefs.zoneLast <= 40 ? +prefs.zoneLast : (choiceZone || 10);
+  function volOf(id) { return +$(id).value / 100; }
+  function gainOf(v) { return v * v * 0.9; }
+  function audioOn() {
+    if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+      try { AC = new C(); } catch (e) { AC = null; return null; }
+      loadSfx();
+      ambBus = AC.createGain(); ambBus.gain.value = gainOf(volOf('volA')); ambBus.connect(AC.destination);
+      zoneBus = AC.createGain(); zoneBus.gain.value = gainOf(volOf('volZ')) / 0.9; zoneBus.connect(AC.destination); }
+    if (AC.state === 'suspended' && AC.resume) { try { var p = AC.resume(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+    return AC;
+  }
+  /* a seamless loop (the tail crossfades into the head), levelled so every sound sits at the same loudness */
+  function loopBuf(sec, gen, rms) {
+    var sr = AC.sampleRate, L = Math.floor(sec * sr), X = Math.floor(0.6 * sr), b = AC.createBuffer(2, L, sr), ch, i, pk = 0, sq = 0;
+    for (ch = 0; ch < 2; ch++) { var raw = gen(L + X, sr, ch), out = b.getChannelData(ch);
+      for (i = 0; i < L; i++) out[i] = raw[i];
+      for (i = 0; i < X; i++) { var a = i / X; out[i] = raw[i] * Math.sqrt(a) + raw[L + i] * Math.sqrt(1 - a); }
+      for (i = 0; i < L; i++) { var v = out[i]; sq += v * v; if (v > pk) pk = v; else if (-v > pk) pk = -v; } }
+    var k = rms / Math.sqrt(sq / (2 * L)); if (pk * k > 0.95) k = 0.95 / pk;
+    for (ch = 0; ch < 2; ch++) { var o = b.getChannelData(ch); for (i = 0; i < L; i++) o[i] *= k; }
+    return b;
+  }
+  function genBrown(n) { var o = new Float32Array(n), last = 0; for (var i = 0; i < n; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; o[i] = last * 3.2; } return o; }
+  function genRain(n, sr) {
+    var o = new Float32Array(n), b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, hp = 0, prev = 0, brown = 0, i, a = 1 / (1 + 2 * Math.PI * 450 / sr);
+    for (i = 0; i < n; i++) { var w = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852; b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+      var pink = (b0 + b1 + b2 + b3 + b4 + b5 + w * 0.5362) * 0.11; hp = a * (hp + pink - prev); prev = pink;
+      brown = (brown + 0.02 * (Math.random() * 2 - 1)) / 1.02; o[i] = hp * 0.55 + brown * 0.9; }
+    var ev = Math.floor(n / sr * 110);
+    for (var e = 0; e < ev; e++) { var at = Math.floor(Math.random() * n), amp = Math.pow(Math.random(), 2.4) * 0.32, len = 30 + Math.floor(Math.random() * 260), pw = 0;
+      for (var k = 0; k < len && at + k < n; k++) { var wv = Math.random() * 2 - 1; o[at + k] += (wv - pw) * amp * Math.exp(-k / (len * 0.22)); pw = wv * 0.6; } }
+    return o;
+  }
+  function genWhite(n) { var o = new Float32Array(n); for (var i = 0; i < n; i++) o[i] = Math.random() * 2 - 1; return o; }
+  function genPink(n) {
+    var o = new Float32Array(n), b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (var i = 0; i < n; i++) { var w = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852; b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+      o[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926; }
+    return o;
+  }
+  function buf(k) { if (!BUF[k]) BUF[k] = k === 'brown' ? loopBuf(10, genBrown, 0.16) : k === 'pink' ? loopBuf(10, genPink, 0.1) : k === 'white' ? loopBuf(8, genWhite, 0.06) : loopBuf(12, genRain, 0.09); return BUF[k]; }
+  function stopChain(fade) {
+    if (!chain || !AC) { chain = null; return; }
+    var c = chain; chain = null;
+    try { c.g.gain.cancelScheduledValues(AC.currentTime); c.g.gain.setTargetAtTime(0, AC.currentTime, fade / 4); } catch (e) {}
+    setTimeout(function () { c.srcs.forEach(function (s) { try { s.stop(); } catch (e) {} }); try { c.g.disconnect(); } catch (e) {} }, fade * 1000 + 200);
+  }
+  function play(k) {
+    if (!audioOn()) { toast('Sound isn\'t supported in this browser.'); return false; }
+    stopChain(0.6);
+    var g = AC.createGain(); g.gain.value = 0; g.connect(ambBus);
+    var s = AC.createBufferSource(); s.buffer = buf(k); s.loop = true;
+    if (k === 'brown') { var f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1100; s.connect(f); f.connect(g); } else s.connect(g);
+    s.start(); g.gain.setTargetAtTime(0.9, AC.currentTime, 0.45);
+    chain = { g: g, srcs: [s], kind: k };
+    return true;
+  }
+  /* Memento's own Deep work sounds (memento-native/assets/sounds), loaded once the first tap wakes the audio.
+     Until a file is in, the drawn fallback below plays instead. */
+  var SFX = {}, SFX_NAMES = ['open', 'detent', 'breakDown', 'breakUp', 'kitchenTimer', 'ratchetLight', 'ratchetLock', 'done', 'doneDrop', 'alarmClassic', 'alarmSoft'], sfxAsked = false;
+  function loadSfx() {
+    if (sfxAsked || !AC || !window.fetch) return; sfxAsked = true;
+    SFX_NAMES.forEach(function (n) {
+      fetch('sounds/' + n + '.wav').then(function (r) { if (!r.ok) throw new Error(n); return r.arrayBuffer(); })
+        .then(function (b) { return new Promise(function (ok, no) { var pr = AC.decodeAudioData(b, ok, no); if (pr && pr.then) pr.then(ok, no); }); })
+        .then(function (buf) { SFX[n] = buf; }).catch(function () {});
+    });
+  }
+  function playSfx(n, gain, at) {
+    if (!audioOn() || !SFX[n]) return false;
+    var src = AC.createBufferSource(), g = AC.createGain(); src.buffer = SFX[n]; g.gain.value = gain == null ? 1 : gain;
+    src.connect(g); g.connect(AC.destination); src.start(at || 0); return true;
+  }
+  var CUE_FILE = { start: 'open', down: 'breakDown', up: 'breakUp', end: 'kitchenTimer' };
+  /* soft cues, like Memento's: one note to start, down into a break and up out of it, two to finish. Never without a tap first. */
+  function cue(k) {
+    if (!AC) return; audioOn();
+    if (k === 'done' ? playSfx('ratchetLock') && playSfx('done', 1, AC.currentTime + 0.05) : CUE_FILE[k] && playSfx(CUE_FILE[k])) return;
+    var t = AC.currentTime + 0.03, lv = 0.065;
+    var notes = k === 'start' ? [[523.25, 0]] : k === 'down' ? [[659.25, 0], [523.25, 0.26]] : k === 'up' ? [[523.25, 0], [659.25, 0.2], [783.99, 0.4]] : k === 'done' ? [[523.25, 0], [659.25, 0.12], [783.99, 0.24], [1046.5, 0.38]] : [[659.25, 0], [987.77, 0.24]];
+    notes.forEach(function (n) {
+      var o = AC.createOscillator(), o2 = AC.createOscillator(), e = AC.createGain(), e2 = AC.createGain(), s = t + n[1];
+      o.frequency.value = n[0]; o2.frequency.value = n[0] * 2; e2.gain.value = 0.22;
+      o.connect(e); o2.connect(e2); e2.connect(e); e.connect(AC.destination);
+      e.gain.setValueAtTime(0, s); e.gain.linearRampToValueAtTime(lv, s + 0.015); e.gain.exponentialRampToValueAtTime(0.0001, s + 1.7);
+      o.start(s); o2.start(s); o.stop(s + 1.8); o2.stop(s + 1.8);
+    });
+  }
+  /* a soft detent when a value changes, and the hold's ratchet: a tooth that gets quicker and heavier as it fills */
+  function click(level, freq) {
+    if (!audioOn()) return;
+    if (!CLICK) { var n = Math.floor(AC.sampleRate * 0.012); CLICK = AC.createBuffer(1, n, AC.sampleRate); var d = CLICK.getChannelData(0); for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (n * 0.18)); }
+    var s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); s.buffer = CLICK; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 3; g.gain.value = level * 0.8;
+    s.connect(f); f.connect(g); g.connect(AC.destination); s.start();
+  }
+  function detent() { if (!playSfx('detent', 1.4)) click(0.25, 3200); }
+  /* the hold's ratchet: on a phone it's felt, here it's heard, so it's quiet and gets heavier as it fills */
+  function ratchet(f) { if (!playSfx('ratchetLight', 0.18 + 0.5 * f)) click(0.35 + 0.65 * f, 3600 - 1600 * f); }
+  /* Sound plays only while a session is running, or while someone presses Preview in Settings. Opening the sheet
+     stays quiet (Malik, 2026-10-25: "very annoying that it's playing every single time u open the settings").
+     Picking is a choice that sticks; it starts with the next session and stops when the session pauses or ends. */
+  var previewOn = false;
+  function soundLive() { return (view === 'run' && !!S && S.pausedAt == null) || (openId === 'shSound' && previewOn); }
+  function syncSound() {
+    var live = soundLive(), want = live ? choiceSnd : 'off', wz = live ? choiceZone : 0;
+    if (want === 'off') { if (chain) stopChain(0.6); } else if (!chain || chain.kind !== want) play(want);
+    zoneTo(wz); dotUI(); noteUI();
+  }
+  function setSound(k) {
+    choiceSnd = k; prefs.snd = k; savePrefs();
+    [].forEach.call($('sounds').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === k)); });
+    syncSound();
+  }
+  function setZone(hz) {
+    choiceZone = hz; if (hz) zoneLast = hz; prefs.zone = hz; prefs.zoneLast = zoneLast; savePrefs();
+    zoneUI(); syncSound();
+  }
+  function fmtHz(v) { return (v % 1 ? v.toFixed(1) : String(v)) + ' Hz'; }
+  function zoneUI() {
+    /* each preset owns a range, so sliding keeps the one you're inside lit: Deep 1-8, Calm 8-13, Focus 13-30, Flow 30-40 Hz */
+    var band = !choiceZone ? 0 : choiceZone < 8 ? 6 : choiceZone < 13 ? 10 : choiceZone < 30 ? 16 : 40;
+    [].forEach.call($('zones').children, function (b) { b.setAttribute('aria-pressed', String(+b.dataset.z === band)); });
+    var h = $('hz'); h.value = choiceZone || zoneLast; fillRange(h);
+    $('hzOut').textContent = choiceZone ? fmtHz(choiceZone) : 'Off'; $('hzRow').classList.toggle('off', !choiceZone);
+  }
+  function fillRange(el) { el.style.setProperty('--p', ((el.value - el.min) / (el.max - el.min) * 100) + '%'); }
+  /* a binaural tone: two sines, one per ear, a few Hz apart. Fades in and out, glides between zones */
+  function zoneTo(hz) {
+    if (!hz) {
+      if (zone && AC) { var z = zone; zone = null; var t0 = AC.currentTime; try { z.g.gain.cancelScheduledValues(t0); z.g.gain.setTargetAtTime(0, t0, 0.25); } catch (e) {}
+        setTimeout(function () { try { z.l.stop(); z.r.stop(); z.g.disconnect(); } catch (e) {} }, 1500); }
+      return;
+    }
+    if (!audioOn()) return;
+    var t = AC.currentTime;
+    if (zone) { zone.r.frequency.cancelScheduledValues(t); zone.r.frequency.setTargetAtTime(CARRIER + hz, t, 0.3); return; }
+    var g = AC.createGain(), m = AC.createChannelMerger(2), l = AC.createOscillator(), r = AC.createOscillator();
+    g.gain.value = 0; l.frequency.value = CARRIER; r.frequency.value = CARRIER + hz;
+    l.connect(m, 0, 0); r.connect(m, 0, 1); m.connect(g); g.connect(zoneBus);
+    l.start(); r.start(); g.gain.setTargetAtTime(ZONE_LEVEL, t, 0.3);
+    zone = { g: g, l: l, r: r };
+  }
+  function dotUI() { $('sndDot').hidden = choiceSnd === 'off' && !choiceZone; }
+  /* for checking the mockup: what is actually playing right now */
+  window.__focusRoomSound = function () { return { playing: chain ? chain.kind : 'off', zone: !!zone, chosen: choiceSnd, chosenZone: choiceZone }; };
+  function noteUI() {
+    var running = view === 'run' && S && S.pausedAt == null, none = choiceSnd === 'off' && !choiceZone;
+    $('sndNote').textContent = view === 'run' && S ? (S.pausedAt != null ? 'Paused, so it\'s quiet. It comes back when you resume.' : 'Playing while your session runs.') : 'It plays while your session runs.';
+    $('bPreview').hidden = !!running; $('bPreview').disabled = none && !previewOn;
+    $('bPreview').setAttribute('aria-pressed', String(previewOn)); $('bPreviewL').textContent = previewOn ? 'Stop' : 'Preview';
+  }
+  $('bPreview').addEventListener('click', function () { previewOn = !previewOn; if (previewOn) audioOn(); syncSound(); });
+  /* the alarm list: tapping one picks it and plays one ring of it */
+  function alarmUI() { [].forEach.call($('alarms').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.a === alarmPick)); }); }
+  function stopPreview() { if (previewSrc) { try { previewSrc.stop(); } catch (e) {} previewSrc = null; } }
+  ALARMS.forEach(function (a) {
+    var b = document.createElement('button'); b.type = 'button'; b.dataset.a = a[0];
+    b.innerHTML = '<span>' + a[1] + '</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
+    b.setAttribute('aria-label', a[1] + ', play');
+    b.addEventListener('click', function () { alarmPick = a[0]; prefs.alarm = a[0]; savePrefs(); alarmUI(); stopPreview(); audioOn(); whenSfx(a[2], function () { stopPreview(); previewSrc = sfxSrc(a[2], 0.9); }); });
+    $('alarms').appendChild(b);
+  });
+  alarmUI();
+  [].forEach.call($('sounds').children, function (b) { b.addEventListener('click', function () { setSound(b.dataset.v); }); });
+  [].forEach.call($('zones').children, function (b) { b.addEventListener('click', function () { setZone(+b.dataset.z); }); });
+  $('hz').addEventListener('input', function () { setZone(+this.value); });
+  var synced = prefs.volSync !== false;
+  if (typeof prefs.volA === 'number') $('volA').value = prefs.volA;
+  if (typeof prefs.volZ === 'number') $('volZ').value = prefs.volZ;
+  function volUI() {
+    ['volA', 'volZ'].forEach(function (id) { fillRange($(id)); $(id + 'Out').textContent = $(id).value; });
+    $('volSync').setAttribute('aria-pressed', String(synced)); $('volSyncT').textContent = synced ? 'Synced' : 'Separate';
+    if (AC && ambBus) { ambBus.gain.setTargetAtTime(gainOf(volOf('volA')), AC.currentTime, 0.05); zoneBus.gain.setTargetAtTime(gainOf(volOf('volZ')) / 0.9, AC.currentTime, 0.05); }
+  }
+  ['volA', 'volZ'].forEach(function (id) {
+    $(id).addEventListener('input', function () { if (synced) $(id === 'volA' ? 'volZ' : 'volA').value = this.value; prefs.volA = +$('volA').value; prefs.volZ = +$('volZ').value; savePrefs(); volUI(); });
+  });
+  ['volA', 'volZ'].forEach(function (id) {
+    $(id + 'Out').addEventListener('click', function () { var r = $(id); var out = this; editNumber(out, { value: +r.value, min: 0, max: 100, align: 'right', show: function (t) { out.textContent = t; }, label: r.getAttribute('aria-label'), apply: function (v) { r.value = v; r.dispatchEvent(new Event('input')); }, render: volUI }); });
+  });
+  $('hzOut').addEventListener('click', function () { var out = this; editNumber(out, { show: function (t) { out.textContent = t + ' Hz'; }, value: choiceZone || zoneLast, always: !choiceZone, min: 1, max: 40, step: 0.5, unit: 'Hz', align: 'right', label: 'Your own zone, in hertz', apply: function (v) { setZone(v); }, render: zoneUI }); });
+  $('volSync').addEventListener('click', function () {
+    synced = !synced; prefs.volSync = synced;
+    if (synced) { $('volZ').value = $('volA').value; prefs.volZ = +$('volA').value; }
+    savePrefs(); volUI(); detent();
+  });
+  volUI(); zoneUI();
+  [].forEach.call($('sounds').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === choiceSnd)); });
+  /* a session picked up after a reload has no tap yet, so its sound waits for the first one */
+  document.addEventListener('pointerdown', function () { if (view === 'run' && S) { audioOn(); syncSound(); } }, { once: true, capture: true });
+
+  /* ================= the room's background ================= */
+  /* Black, or Stars: a faint field drifting, slow and dim so it never pulls the eye. Aurora, Mist and Dusk went 2026-10-24
+     (cheap); Rain and Sisyphus went 2026-10-25 (Malik: "Animation is bad"), and Window the same day ("i don't like it"). Each moving room is a module in bg/ that draws its own full-resolution canvas. They only move on the setup and running screens, about 30 frames a second, and hold
+     still with Reduce Motion or a hidden tab. bgFloor is the top of the Fill, 1 = the bottom of the screen. */
+  var BGS = ['black', 'stars'], bgKind = BGS.indexOf(prefs.bg) >= 0 ? prefs.bg : 'black';
+  var bgFloor = 1, bgT0 = performance.now(), bgLast = 0, bgRaf = 0, bgInst = {}, bgCanvas = {}, bgc = $('bgc');
+  function bgOn() { return bgKind !== 'black' && (view === 'setup' || view === 'run'); }
+  function bgMod(k) {
+    if (!window.FRBG || !FRBG[k]) return null;
+    if (!bgInst[k]) { var c = document.createElement('canvas'); c.className = 'bgc'; c.setAttribute('aria-hidden', 'true'); bgc.parentNode.insertBefore(c, bgc); bgCanvas[k] = c; bgInst[k] = FRBG[k](c); bgInst[k].resize(); }
+    return bgInst[k];
+  }
+  function bgShow() { Object.keys(bgCanvas).forEach(function (k) { bgCanvas[k].hidden = !(bgOn() && k === bgKind); }); $('bgScrim').hidden = !(bgOn() && view === 'setup' && innerWidth < 760); }
+  function bgSize() { Object.keys(bgInst).forEach(function (k) { bgInst[k].resize(); }); }
+  function setBg(k) {
+    bgKind = k; prefs.bg = k; savePrefs();
+    [].forEach.call($('bgs').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.b === k)); });
+    if (k !== 'black') bgMod(k); bgShow(); drawBg(); loopBg();
+  }
+  function loopBg() {
+    cancelAnimationFrame(bgRaf); if (bgOn()) bgMod(bgKind); bgShow(); if (!bgOn()) return;
+    drawBg(); if (RM) return;
+    bgRaf = requestAnimationFrame(function step(ts) { if (!bgOn() || document.hidden) return; if (ts - bgLast > 32) { bgLast = ts; drawBg(); } bgRaf = requestAnimationFrame(step); });
+  }
+  function drawBg() { var m = bgOn() && bgMod(bgKind); if (m) m.draw(RM ? 40 : (performance.now() - bgT0) / 1000, bgFloor); }
+  [].forEach.call($('bgs').children, function (b) { b.addEventListener('click', function () { setBg(b.dataset.b); detent(); }); });
+  [].forEach.call($('bgs').children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.b === bgKind)); });
+  /* Flash bang mode: the room turns over (see html.fb in the styles); in it the plain room is white, so its button says so.
+     Stored as the homepage stores it (mp-theme), so turning it on anywhere on malikpeace.com turns it on here too */
+  var flashOn = false;
+  try { flashOn = localStorage.getItem('mp-theme') === 'light'; } catch (e) {}
+  function setFlash(on) {
+    flashOn = on; try { localStorage.setItem('mp-theme', on ? 'light' : 'dark'); } catch (e) {}
+    document.documentElement.classList.toggle('fb', on);
+    if (on) document.documentElement.setAttribute('data-theme', 'light'); else document.documentElement.removeAttribute('data-theme');
+    $('themeC').content = on ? '#ffffff' : '#000000'; $('bgs').querySelector('[data-b=black]').textContent = on ? 'White' : 'Black';
+    [].forEach.call($('fbSeg').children, function (b) { b.setAttribute('aria-pressed', String((b.dataset.f === '1') === on)); });
+  }
+  [].forEach.call($('fbSeg').children, function (b) { b.addEventListener('click', function () { var on = b.dataset.f === '1'; if (on !== flashOn) { setFlash(on); detent(); } }); });
+  setFlash(flashOn);
+  addEventListener('resize', function () { bgSize(); bgShow(); if (bgOn()) drawBg(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) loopBg(); });
+
+  /* the preview sheet's sound list: each of the room's sounds on its own */
+  [].forEach.call(document.querySelectorAll('[data-s]'), function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.s; audioOn();
+      function go() {
+        if (k === 'hold') { var t0 = AC.currentTime + 0.05, at = 0; while (at < 3) { var f = at / 3; playSfx('ratchetLight', 0.18 + 0.5 * f, t0 + at) || click(0.35 + 0.65 * f, 3600 - 1600 * f); at += 1 / (3 + 19 * f * f); } setTimeout(function () { cue('done'); }, 3050); return; }
+        if (k === 'long') { cue('done'); playSfx('doneDrop', 0.9, AC.currentTime + 0.05); return; }
+        if (!playSfx(k, k === 'detent' ? 1.4 : 1)) toast('Still loading that sound. Try again in a second.');
+      }
+      if (SFX.open) go(); else setTimeout(go, 600);
+    });
+  });
+
+  /* ================= keep the screen on while it runs ================= */
+  var lock = null;
+  function wake(on) {
+    if (on) {
+      if (lock || !navigator.wakeLock || !navigator.wakeLock.request) return;
+      try { navigator.wakeLock.request('screen').then(function (l) { lock = l; l.addEventListener('release', function () { if (lock === l) lock = null; }); if (!S || S.pausedAt != null) wake(false); }).catch(function () {}); } catch (e) {}
+    } else if (lock) { var l = lock; lock = null; try { var p = l.release(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { if (S && view === 'run') { if (S.pausedAt == null) wake(true); paint(); } } });
+
+  /* ================= keys ================= */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { if (openId) { closeSheet(); return; } if (view === 'run' && (ctlOn || confirmOn)) { ctlOn = false; confirmOn = false; renderCtl(); } return; }
+    if (openId || /INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) return;
+    if ((e.key === ' ' || e.key === 'Enter') && view === 'end') { if (!e.repeat) holdDown(innerWidth / 2, innerHeight * 0.6, true); e.preventDefault(); return; }
+    if (e.key === ' ' && view === 'run') { pause(); e.preventDefault(); }
+  });
+  document.addEventListener('keyup', function (e) { if ((e.key === ' ' || e.key === 'Enter') && view === 'end') holdUp(); });
+
+  /* ================= the clock ================= */
+  var lastSub = 0;
+  setInterval(function () {
+    if (view === 'run') paint();
+    else if (view === 'setup' && Date.now() - lastSub > 15000 && !openId && !edit) { lastSub = Date.now(); renderSub(Date.now()); if (kind === 'alarm') renderSetup(); }
+  }, 250);
+  addEventListener('resize', function () { if (view === 'setup') { renderRail(); fitPomo(); } if (view === 'run') { renderCtl(); } });
+
+  /* ================= preview states (mockup only) ================= */
+  var LABELS = ['Script for Sunday\'s video', 'Edit the vlog', 'Chapter 3 of the book', 'Study for the exam', 'Ship the landing page', 'Practice guitar'];
+  function sampleMonth() {
+    var out = [], day = new Date(); day.setHours(9, 0, 0, 0); day.setDate(day.getDate() - 60);
+    for (var i = 0; i < 61; i++) {
+      var r = Math.sin(i * 12.9898) * 43758.5453; r = r - Math.floor(r);
+      if (i > 50 || r > 0.32) { var n = 1 + Math.floor(r * 3); for (var k = 0; k < n; k++) { var m = [25, 45, 60, 90, 120][Math.floor((r * 7 + k * 0.37) * 5) % 5], at = day.getTime() + (k * 3 + 1) * 3600000; if (i === 60 && at > Date.now()) at = Date.now() - (k + 1) * 3600000; out.push({ at: at, iso: dayKey(at), minutes: m, label: LABELS[(i + k) % LABELS.length], kind: k === 1 ? 'pomodoro' : 'timer', full: true }); } }
+      day.setDate(day.getDate() + 1);
+    }
+    return out;
+  }
+  [].forEach.call(document.querySelectorAll('[data-m]'), function (b) {
+    b.addEventListener('click', function () {
+      var m = b.dataset.m, now = Date.now(); closeSheet(true); silence();
+      if (m === 'mail') { drop('focusroom.mail'); mailUI(); toast('The email boxes are back.'); return; }
+      if (m === 'rec') { sample = sampleMonth(); renderSetup(); openSheet('shRec'); return; }
+      if (m === 'back') { sample = sampleMonth(); show('setup'); renderSetup(); toast('This is what someone who keeps coming back sees.'); return; }
+      if (m === 'a2hs') { a2Force = true; show('setup'); renderSetup(); return; }
+      var L = $('label').value.trim() || LABELS[0];
+      if (m === 'run') S = { kind: 'timer', label: L, startedAt: now - 23 * 60000, focusMs: 3600000, brkMs: 0, rounds: 1, pausedAt: null, pausedMs: 0, rung: false, mock: true };
+      if (m === 'brk') S = { kind: 'pomodoro', label: L, startedAt: now - (25 + 5 + 25 + 2) * 60000, focusMs: 25 * 60000, brkMs: 5 * 60000, longMs: 0, longEvery: 0, rounds: 4, pausedAt: null, pausedMs: 0, rung: false, mock: true };
+      if (m === 'open') S = { kind: 'open', label: L, startedAt: now - 37 * 60000 - 12000, focusMs: OPEN_MAX * 60000, brkMs: 0, rounds: 1, pausedAt: null, pausedMs: 0, rung: false, mock: true };
+      if (m === 'end') S = { kind: 'timer', label: L, startedAt: now - 61 * 60000, focusMs: 3600000, brkMs: 0, rounds: 1, pausedAt: null, pausedMs: 0, rung: true, mock: true };
+      if (m === 'done') { S = null; mockLog(60, L, 'timer', true, now); doneView(60, false, now); return; }
+      if (m === 'end') { show('run'); toEnd(true); return; }
+      begin();
+    });
+  });
+
+  /* ================= the ping, the exact end, the Home Screen ================= */
+  /* a background tab checks the clock rarely; one timer set for the exact end wakes it on time */
+  var endT = 0;
+  function armEnd() { clearTimeout(endT); if (!S || S.mock || S.pausedAt != null) return; var left = S.startedAt + S.pausedMs + totalMs(S) - Date.now(); if (left > 0) endT = setTimeout(function () { if (view === 'run') paint(); }, left + 40); }
+  /* laptops: a system ping when time's up while the tab is behind other windows (asked once, kept in prefs) */
+  var canPing = 'Notification' in window && matchMedia('(hover: hover) and (pointer: fine)').matches;
+  function renderPing() { $('pingSec').hidden = !canPing; [].forEach.call($('pings').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String((b.dataset.g === '1') === !!prefs.ping)); }); }
+  function askPing(then) {
+    var done = function (ok) { prefs.ping = ok; savePrefs(); renderPing(); if (!ok) toast('Your browser blocked the ping. You can allow notifications for this site in its settings.'); if (then) then(ok); };
+    if (!('Notification' in window)) { done(false); return; }
+    if (Notification.permission === 'granted') { done(true); return; }
+    var settled = false, fin = function (x) { if (settled) return; settled = true; done(x === 'granted'); };
+    try { var r = Notification.requestPermission(fin); if (r && r.then) r.then(fin, function () { fin('denied'); }); } catch (e) { fin('denied'); }
+  }
+  function pingNow() {
+    if (!canPing || !prefs.ping || !S || S.mock || !document.hidden) return;
+    try { if (Notification.permission !== 'granted') return; var n = new Notification('Time\'s up', { body: (S.label ? S.label + ' · ' : '') + fmtShort(endMin) + ' of deep work', tag: 'focusroom-end', icon: 'icon-192.png' }); n.onclick = function () { try { window.focus(); } catch (e) {} n.close(); }; } catch (e) {}
+  }
+  [].forEach.call($('pings').querySelectorAll('button'), function (b) { b.addEventListener('click', function () { if (b.dataset.g === '1') askPing(); else { prefs.ping = false; savePrefs(); renderPing(); } }); });
+  $('bPing').addEventListener('click', function () { askPing(function (ok) { $('dPing').hidden = true; if (ok) toast('Done. You\'ll get a ping when time\'s up.'); }); });
+  /* phones: once they've finished a session, one quiet line about the Home Screen (never once it's there or dismissed) */
+  var isPhone = matchMedia('(pointer: coarse)').matches, standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true, installEv = null, a2Force = false;
+  addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEv = e; });
+  function renderA2hs() { var gone = false; try { gone = !!localStorage.getItem('focusroom.a2hs'); } catch (e) {} $('a2hs').hidden = !(a2Force || (isPhone && !standalone && !gone && sessions.length > 0)); }
+  $('xA2hs').addEventListener('click', function () { try { localStorage.setItem('focusroom.a2hs', '1'); } catch (e) {} a2Force = false; renderA2hs(); });
+  $('bA2hs').addEventListener('click', function () {
+    if (installEv) { var ev = installEv; installEv = null; ev.prompt(); return; }
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), droid = /Android/.test(navigator.userAgent);
+    $('a2Ios').hidden = droid && !ios; $('a2And').hidden = ios && !droid; openSheet('shA2hs');
+  });
+
+  /* ================= start up: pick up a session that was running ================= */
+  renderSetup(); dotUI(); mailUI(); bgSize(); loopBg(); setPreview(preview); renderPing();
+  /* still pictures of any moment, for review pages: #shot-<background>-<percent | setup | end | hold | done>[-old][-ping]
+     (-old = the floor glows stay at the bottom, as before; -ping = the Done page's laptop line) */
+  var shot = /^#shot-(black|stars)-(\d+|setup|end|hold|done)(-ping)?$/.exec(location.hash);
+  if (shot) {
+    document.documentElement.classList.add('shot'); S = null; drop(K.active); setBg(shot[1]); setPreview(false);
+    var sn = Date.now(), pct = /^\d+$/.test(shot[2]) ? +shot[2] / 100 : 1.02;
+    if (shot[2] === 'setup') { show('setup'); renderSetup(); }
+    else if (shot[2] === 'done') { mockLog(60, '', 'timer', true, sn); doneView(60, false, sn); $('dPing').hidden = !shot[3]; }
+    else {
+      S = { kind: 'timer', label: '', startedAt: sn - pct * 3600000, focusMs: 3600000, brkMs: 0, rounds: 1, pausedAt: null, pausedMs: 0, rung: true, mock: true };
+      if (pct < 1) begin(); else { show('run'); toEnd(true); if (shot[2] === 'hold') { hold.x = innerWidth / 2; hold.y = innerHeight * 0.62; hold.f = 0.55; paintOrb(); } }
+    }
+  } else if (S) { if (phaseAt(S, Date.now()).phase === 'done') { show('run'); toEnd(true); } else begin(); }
+})();
+</script>
+<style>
+.bh-plate { margin-top: 4px; max-width: 460px; }
+.bh { min-height: 56px; --bh-inset: 19px; width: calc(100% + var(--bh-inset) * 2) !important; max-width: none !important; margin-left: calc(-1 * var(--bh-inset)) !important; }
+.bh iframe { width: 100%; border: 0; background: transparent; color-scheme: normal; }
+html[data-theme="light"] .bh-plate, .bh-plate.always { background: #0b0b0c; border-radius: 16px; padding: 6px 4px 2px; }   /* .always: on a card that's white in dark mode */
+</style>
+<script>
+document.querySelectorAll('[data-bh]').forEach(function (b) {
+  var sc = document.createElement('script'); sc.async = true; sc.src = 'https://subscribe-forms.beehiiv.com/v3/loader.js';
+  sc.setAttribute('data-beehiiv-form', b.getAttribute('data-bh')); b.appendChild(sc);
+});
+</script>
+</body>
+</html>
