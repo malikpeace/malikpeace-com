@@ -164,6 +164,15 @@
   });
 
   /* ---------------- email forms: Beehiiv (the same list as mementoapp.co) ---------------- */
+  // Once someone joins, Beehiiv's loader hides every form of the list on this site for a year (its bhv_<list>_subscribed
+  // cookie), which would leave empty plates. The site keeps its own note instead (mp-joined: the 25+5 opens from it) and
+  // clears that cookie before the forms load, so the forms always draw.
+  (function () {
+    var C = 'bhv_9b9b5ca7-27ea-4bd8-a188-9cc96efe0001_subscribed';
+    function note() { try { localStorage.setItem('mp-joined', '1'); } catch (e) {} }
+    if (document.cookie.indexOf(C + '=') > -1) { note(); document.cookie = C + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'; }
+    window.addEventListener('message', function (e) { if (e.origin === 'https://subscribe-forms.beehiiv.com' && e.data && e.data.type === 'beehiiv:submitted') note(); });
+  })();
   $$('[data-bh]').forEach(function (b) {
     var sc = document.createElement('script'); sc.async = true; sc.src = 'https://subscribe-forms.beehiiv.com/v3/loader.js';
     sc.setAttribute('data-beehiiv-form', b.getAttribute('data-bh') || '00d2e169-0ad8-422d-bf41-f7ccbf944ca5'); b.appendChild(sc);   // a box can name its own form

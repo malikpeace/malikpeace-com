@@ -861,6 +861,7 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
       <a class="btn primary" id="startBtn" href="#intro"><span id="startLabel">Start reading</span><svg class="i"><use href="#i-right"/></svg></a>
       <a class="btn" href="#contents">Contents</a>
     </div>
+    <p class="cover-free rise unpaid-only" style="--d:300ms">Free when you join my email list.</p>
     <div class="cover-progress rise" id="coverProgress" style="--d:320ms" hidden>
       <div class="track"><i id="coverBar"></i></div>
       <span><b id="coverCount">0</b> of 30 read</span>
@@ -1982,6 +1983,8 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
   var FORCE_OPEN = false;   // the word check flips this on a temporary copy, so it can read every lesson
   var lic = null;
   try { lic = JSON.parse(localStorage.getItem(LIC) || 'null'); if (!lic || !lic.key) lic = null; } catch (e) {}
+  if (!lic) { var joined = false; try { joined = localStorage.getItem('mp-joined') === '1'; } catch (e) {}
+    if (joined || document.cookie.indexOf('bhv_9b9b5ca7-27ea-4bd8-a188-9cc96efe0001_subscribed=') > -1) { lic = { key: 'free', activation: 'email' }; try { localStorage.setItem(LIC, JSON.stringify(lic)); } catch (e) {} } }
   function isPaid() { return FORCE_OPEN || !!lic; }
   function gated(r) { return !isPaid() && ((r.v === 'lesson' && r.n > FREE) || r.v === 'end'); }
   function setPaidUI() { doc.classList.toggle('paid', isPaid()); }
@@ -2641,11 +2644,19 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
       '<p class="buy-price"><b>Free</b></p>' +
       '<p class="buy-what">All 30 lessons and the PDF. Just join my email list.</p>' +
       '<div class="bh-plate always"><div class="bh" data-bh="4f75a75a-a70f-4a90-b335-c326024413f8"></div></div>' +
-      '<button class="buy-go" type="button">Keep reading<svg class="i" aria-hidden="true"><use href="#i-right"/></svg></button>' +
-      '<p class="buy-help">I never spam, don’t worry lol</p>';
-    $('.buy-go', box).addEventListener('click', function () { unlock({ key: 'free', activation: 'email' }); });
+      '<p class="buy-help">I never spam, don’t worry lol</p>' +
+      '<button class="buy-stuck" type="button" hidden>Form not showing? Keep reading</button>';
+    var stuck = $('.buy-stuck', box);
+    stuck.addEventListener('click', function () { unlock({ key: 'free', activation: 'blocked' }); });
+    setTimeout(function () { if (!box.querySelector('iframe[data-bhv-sized]')) stuck.hidden = false; }, 9000);
     return box;
   }
+  // the real unlock: the moment Beehiiv's form says someone joined, every lesson opens
+  window.addEventListener('message', function (e) {
+    if (e.origin !== 'https://subscribe-forms.beehiiv.com' || !e.data || e.data.type !== 'beehiiv:submitted') return;
+    try { localStorage.setItem('mp-joined', '1'); } catch (x) {}
+    if (!isPaid()) unlock({ key: 'free', activation: 'email' });
+  });
   function unlock(v) {
     lic = v;
     try { localStorage.setItem(LIC, JSON.stringify(v)); } catch (e) {}
@@ -2791,7 +2802,7 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
   render(first, { initial: true });
 })();
 </script>
-<style>.buy button.buy-go { border: 0; font: inherit; font-weight: 700; cursor: pointer; margin-top: 14px; } .buy .bh-plate { margin-inline: 0; } html[data-theme="light"] .buy .bh-plate { background: none; padding: 0; } .buy button.buy-go { max-width: 420px; } html[data-theme="light"] .buy button.buy-go { max-width: 400px; }</style>
+<style>.buy .bh-plate { margin-inline: 0; } html[data-theme="light"] .buy .bh-plate { background: none; padding: 0; } .buy-stuck { display: block; margin-top: 12px; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: inherit; opacity: .7; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; } .buy-stuck[hidden] { display: none; } html.paid .unpaid-only { display: none !important; } .cover-free { margin: 18px 0 0; font-size: clamp(15px, 1.2vw, 17px); color: var(--mid); } @media (min-width: 900px) { .cover-in { width: max-content; max-width: 100%; } }</style>
 <style>
 /* Beehiiv's form sits in its own 76px frame with 16px of padding, at most 432px wide: the box pulls the padding back out
    and is never wider than the form, so the plate hugs the field and Join button with the same 10px on every side */
@@ -2801,6 +2812,15 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
 html[data-theme="light"] .bh-plate, .bh-plate.always { background: #0b0b0c; border-radius: 17px; padding: 10px; }   /* .always: on a card that's white in dark mode */
 </style>
 <script>
+/* Once someone joins, Beehiiv's loader hides every form of the list on this site for a year (its bhv_<list>_subscribed
+   cookie), which would leave empty plates. The site keeps its own note instead (mp-joined: the 25+5 opens from it) and
+   clears that cookie before the forms load, so the forms always draw. */
+(function () {
+  var C = 'bhv_9b9b5ca7-27ea-4bd8-a188-9cc96efe0001_subscribed';
+  function note() { try { localStorage.setItem('mp-joined', '1'); } catch (e) {} }
+  if (document.cookie.indexOf(C + '=') > -1) { note(); document.cookie = C + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'; }
+  addEventListener('message', function (e) { if (e.origin === 'https://subscribe-forms.beehiiv.com' && e.data && e.data.type === 'beehiiv:submitted') note(); });
+})();
 document.querySelectorAll('[data-bh]').forEach(function (b) {
   var sc = document.createElement('script'); sc.async = true; sc.src = 'https://subscribe-forms.beehiiv.com/v3/loader.js';
   sc.setAttribute('data-beehiiv-form', b.getAttribute('data-bh')); b.appendChild(sc);
