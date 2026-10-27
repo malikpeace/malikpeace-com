@@ -1222,12 +1222,10 @@ html[data-theme="light"] .s7 .ytbtn.pri:not(#ytallbtn):hover { background: #2626
 .k7la__row { top: 48px !important; width: 204px; height: 12px; background-image: radial-gradient(circle at 6px 6px, #0b0b0c 0 2.1px, transparent 2.6px); }
 .k7la__now { left: 204px !important; top: 48px !important; width: 12px; height: 12px; background: radial-gradient(circle at 6px 6px, #1fb83a 0 3px, transparent 3.5px); }
 
-/* 25+5: the book's cover as the tile */
-.k7bk { display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 0 26px 24px; color: #f2f2f3;
-  background: radial-gradient(90% 75% at 18% 12%, rgba(111, 207, 214, .2), rgba(111, 207, 214, 0) 70%), #000; }
-.k7bk__n { font-size: clamp(52px, 5vw, 72px); font-weight: 700; letter-spacing: -0.05em; line-height: .9; font-variant-numeric: tabular-nums; }
-.k7bk__n i { font-style: normal; color: #6fcfd6; }
-.k7bk__s { font-size: 15px; font-weight: 700; line-height: 1.3; }
+/* 25+5: flat black, just the title mark, big, with the +5 as an exponent (Malik 2026-10-27: cleaner, flatter) */
+.k7bk { display: flex; align-items: flex-end; padding: 0 26px 22px; color: #f2f2f3; background: #000; }
+.k7bk__n { font-size: clamp(88px, 8.4vw, 124px); font-weight: 700; letter-spacing: -0.055em; line-height: .78; }
+.k7bk__n i { font-style: normal; font-size: .4em; letter-spacing: -0.03em; line-height: 1; vertical-align: top; margin-left: .06em; color: #6fcfd6; }
 
 /* the Freedom Number: the example result as the tile, its bar the one bit of green */
 .k7fn { width: auto; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 0 26px 24px;
