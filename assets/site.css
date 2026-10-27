@@ -1225,7 +1225,7 @@ html[data-theme="light"] .s7 .ytbtn.pri:not(#ytallbtn):hover { background: #2626
 /* 25+5: flat black, just the title mark, big, with the +5 as an exponent (Malik 2026-10-27: cleaner, flatter) */
 .k7bk { display: flex; align-items: flex-end; padding: 0 26px 22px; color: #f2f2f3; background: #000; }
 .k7bk__n { font-size: clamp(88px, 8.4vw, 124px); font-weight: 700; letter-spacing: -0.055em; line-height: .78; }
-.k7bk__n i { font-style: normal; font-size: .4em; letter-spacing: -0.03em; line-height: 1; vertical-align: top; margin-left: .06em; color: #6fcfd6; }
+.k7bk__n i { font-style: normal; font-size: .4em; letter-spacing: -0.03em; line-height: 1; vertical-align: top; margin-left: .06em; }   /* black and white, no accent (Malik 2026-10-27) */
 
 /* the Freedom Number: the example result as the tile, its bar the one bit of green */
 .k7fn { width: auto; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 0 26px 24px;

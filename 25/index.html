@@ -2546,14 +2546,14 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
     x.font = '700 48px ' + F; x.fillStyle = '#fff';
     x.fillText('25', pad, pad + 46);
     var w25 = x.measureText('25').width;
-    x.font = '700 26px ' + F; x.fillStyle = '#6fcfd6';
+    x.font = '700 26px ' + F; x.fillStyle = '#fff';
     x.fillText('+5', pad + w25 + 3, pad + 24);
     var wp = x.measureText('+5').width;
     x.font = '700 48px ' + F; x.fillStyle = '#fff';
     x.fillText('Lessons', pad + w25 + wp + 16, pad + 46);
     // lesson number
     track(-14);
-    x.font = '700 250px ' + F; x.fillStyle = '#6fcfd6';
+    x.font = '700 250px ' + F; x.fillStyle = '#a7a7ad';
     x.fillText(String(n), pad - 12, 520);
     // title, sized to fit
     var title = titles[n], size = 96, lines, lh;
@@ -2802,6 +2802,7 @@ html[data-theme="light"] .buy-err { color: #ff6b62; }
   render(first, { initial: true });
 })();
 </script>
+<style>html[data-theme] { --accent: var(--ink); --accent-text: var(--ink); --accent-display: var(--ink); --accent-on-box: var(--on-box); --num-bonus: var(--num); } html[data-theme="dark"] { --bonus-tint: rgba(255, 255, 255, .04); --bonus-tint-2: rgba(255, 255, 255, .08); --bonus-line: rgba(255, 255, 255, .12); } html[data-theme="light"] { --bonus-tint: rgba(0, 0, 0, .035); --bonus-tint-2: rgba(0, 0, 0, .07); --bonus-line: rgba(0, 0, 0, .12); }</style>
 <style>.buy .bh-plate { margin-inline: 0; } html[data-theme="light"] .buy .bh-plate { background: none; padding: 0; } .buy-stuck { display: block; margin-top: 12px; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: inherit; opacity: .7; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; } .buy-stuck[hidden] { display: none; } html.paid .unpaid-only { display: none !important; } .cover-free { margin: 18px 0 0; font-size: clamp(15px, 1.2vw, 17px); color: var(--mid); } @media (min-width: 900px) { .cover-in { width: max-content; max-width: 100%; } }</style>
 <style>
 /* Beehiiv's form sits in its own 76px frame with 16px of padding, at most 432px wide: the box pulls the padding back out
