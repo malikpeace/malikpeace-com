@@ -166,7 +166,7 @@
   /* ---------------- email forms: Beehiiv (the same list as mementoapp.co) ---------------- */
   $$('[data-bh]').forEach(function (b) {
     var sc = document.createElement('script'); sc.async = true; sc.src = 'https://subscribe-forms.beehiiv.com/v3/loader.js';
-    sc.setAttribute('data-beehiiv-form', '00d2e169-0ad8-422d-bf41-f7ccbf944ca5'); b.appendChild(sc);
+    sc.setAttribute('data-beehiiv-form', b.getAttribute('data-bh') || '00d2e169-0ad8-422d-bf41-f7ccbf944ca5'); b.appendChild(sc);   // a box can name its own form
   });
 
   /* ---------------- the real Memento card (Frost Aurora), mementoapp.co's own engine ---------------- */
