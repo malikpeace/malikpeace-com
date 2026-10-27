@@ -1123,12 +1123,10 @@ html[data-theme="light"] .steps7 {
   --bg: #ffffff; --ink: #0b0b0c; --mid: #5c5c66; --line: #e3e3e8; --soft: #f3f3f5; --field: #f4f4f6; --link: #0a8189; --text: #2b2b31;
   --fill: rgba(0, 0, 0, .035); --fill2: rgba(0, 0, 0, .06); --hi: inset 0 1px 0 rgba(255, 255, 255, .7); --u: rgba(0, 0, 0, .35); color: var(--ink);
 }
-html:not([data-theme="light"]) .s7-tools {
-  --bg: #ffffff; --ink: #0b0b0c; --mid: #5c5c66; --line: #e3e3e8; --soft: #f3f3f5; --field: #f4f4f6; --link: #0a8189; --text: #2b2b31;
-  --fill: rgba(0, 0, 0, .035); --fill2: rgba(0, 0, 0, .06); --hi: inset 0 1px 0 rgba(255, 255, 255, .7); --u: rgba(0, 0, 0, .35); color: var(--ink);
-  background: var(--bg); box-shadow: 0 0 0 100vmax var(--bg); clip-path: inset(0 -100vmax); padding-bottom: clamp(64px, 9vw, 120px);
-}
-html[data-theme="light"] .s7-tools { border-top: 1px solid var(--line); }
+/* the tools sit on the page's own colour in both modes (Malik 2026-10-27: dark with white text in dark mode, white in
+   Flash bang), with a hairline above them like the other same-colour neighbours */
+html:not([data-theme="light"]) .s7-tools { padding-bottom: clamp(64px, 9vw, 120px); }
+.s7-tools { border-top: 1px solid var(--line); }
 /* the three tool cards stay dark objects on any band (their visuals and small print are drawn for dark) */
 .s7-tools .k7 {
   --bg: #000000; --ink: #f2f2f3; --mid: #a7a7ad; --line: #1d1d21; --soft: rgba(255, 255, 255, .05); --field: #0a0a0b; --link: #6fcfd6; --text: #dcdce1;
@@ -1249,3 +1247,8 @@ html[data-theme="light"] .s7 .ytbtn.pri:not(#ytallbtn):hover { background: #2626
 .bh { width: calc(100% + 32px) !important; max-width: 432px !important; margin: -16px !important; min-height: 76px; }
 .bh iframe { display: block; }
 html[data-theme="light"] .bhwrap, html:not([data-theme="light"]) .s1-foot .bhwrap { padding: 10px; border-radius: 17px; }
+/* the story section ends where its steps band ends (.s1 .sec's 44px of bottom padding left a strip of the story's own
+   colour between the steps and the tools: white in dark mode, black in Flash bang) */
+.s1 .s7-val { padding-bottom: 0; }
+/* the same room under the tool cards in both modes (.s1 .sec's 44px won in Flash bang) */
+.s1 .s7-tools { padding-bottom: clamp(64px, 9vw, 120px); }
