@@ -180,7 +180,7 @@
       '<span class="rp">Reply</span></div></div></div>';
   }
   var box = $('#ymarq7');
-  var SP = [7, 8.5, 6.5, 7.8, 7.4], BASE = Math.min(500, C.length), PER = 100, added = 0;
+  var SP = [7, 8.5, 6.5, 7.8, 7.4], BASE = Math.min(500, C.length), PER = 100, mode = 'base';
   function rowHtml(cards, i, more) { return '<div class="row' + (i % 2 ? ' rev' : '') + (more ? ' more' : '') + '" style="--dur:' + Math.round(cards.length * SP[i % 5]) + 's">' + cards.join('') + cards.join('') + '</div>'; }
   // the first five rows hold the first 500 comments, dealt across them
   function buildMarquee() {
@@ -195,6 +195,7 @@
   var CV = !!box && 'contentVisibility' in box.style, cvW = 0;
   function lighten() {
     if (!CV) return;
+    if (mode === 'all') { box.style.contentVisibility = box.style.containIntrinsicHeight = ''; cvW = innerWidth; return; }
     var rows = $$('.row', box), hs;
     box.style.contentVisibility = ''; rows.forEach(function (r) { r.style.height = ''; r.classList.remove('cv'); });
     hs = rows.map(function (r) { return r.offsetHeight; });
@@ -204,42 +205,51 @@
   }
   buildMarquee();
   if (CV) { var cvT = 0; addEventListener('resize', function () { clearTimeout(cvT); cvT = setTimeout(function () { if (innerWidth !== cvW) lighten(); }, 200); }); }
-  // "Add more" adds two more rows of comments not yet shown; once everyone is in, it becomes "Show less"
-  var addBtn = $('#ytallbtn'), wallBtn = $('#ywallbtn'), wall = $('#ywall'), btns = addBtn && addBtn.parentNode;
-  function addLabel() {
-    var left = BASE + added * PER < C.length;
-    $('.lbl', addBtn).textContent = left ? 'Add more' : 'Show less'; addBtn.setAttribute('aria-expanded', String(!left));
+  // Three ways to see the comments: 5 rows, 10 rows ("Add more"), or every comment ("Show all", asked first), still
+  // drifting sideways, about a dozen to a row, all the way down the page
+  var addBtn = $('#ytallbtn'), wallBtn = $('#ywallbtn'), btns = addBtn && addBtn.parentNode, allTop = null;
+  function setMode(m) {
+    mode = m;
+    $('.lbl', addBtn).textContent = m === 'base' ? 'Add more' : 'Show less'; addBtn.setAttribute('aria-expanded', String(m !== 'base'));
+    wallBtn.hidden = m === 'all'; box.classList.toggle('is-all', m === 'all'); if (allTop) allTop.hidden = m !== 'all';
   }
-  if (addBtn) addBtn.addEventListener('click', function () {
-    var start = BASE + added * PER;
-    if (start >= C.length) { $$('.row.more', box).forEach(function (r) { r.remove(); }); added = 0; lighten(); addLabel(); box.scrollIntoView({ block: 'center' }); return; }
-    var html = '', i = $$('.row', box).length;
-    for (var r = 0; r < 2 && start < C.length; r++, i++, start += PER, added++) {
+  function more() {   // rows 6 to 10: the next 500 comments, a hundred to a row
+    var html = '';
+    for (var i = 5, start = BASE; i < 10 && start < C.length; i++, start += PER) {
       var cards = []; for (var k = start; k < Math.min(C.length, start + PER); k++) cards.push(card(C[k], k));
       html += rowHtml(cards, i, true);
     }
-    box.insertAdjacentHTML('beforeend', html); lighten(); addLabel();
-  });
-  // "Show all" asks first, then puts every comment on one page
+    box.insertAdjacentHTML('beforeend', html); setMode('more'); lighten();
+  }
+  function all() {    // every comment, dealt across ~95 rows of about 12
+    var R = Math.ceil(C.length / 12), rows = [];
+    for (var i = 0; i < R; i++) rows.push([]);
+    for (var k = 0; k < C.length; k++) rows[k % R].push(card(C[k], k));
+    setMode('all');
+    box.innerHTML = rows.map(function (r, i) { return rowHtml(r, i); }).join(''); lighten();
+    allTop.scrollIntoView({ block: 'start' });
+  }
+  function less() {
+    var was = mode;
+    if (was === 'all') { setMode('base'); buildMarquee(); } else { $$('.row.more', box).forEach(function (r) { r.remove(); }); setMode('base'); lighten(); }
+    if (was === 'all' || box.getBoundingClientRect().top < 0) box.scrollIntoView({ block: 'center' });
+  }
+  if (addBtn) {
+    allTop = document.createElement('p'); allTop.className = 'ywall-top yall-top'; allTop.hidden = true; allTop.textContent = 'Here’s all 1,000+ 🫡';
+    box.parentNode.insertBefore(allTop, box);
+    addBtn.addEventListener('click', function () { if (mode === 'base') more(); else less(); });
+  }
+  // "Show all" asks first
   var N = C.length.toLocaleString('en-US'), ask = document.createElement('div');
   ask.className = 'yask'; ask.hidden = true;
   ask.innerHTML = '<p class="ynote">Show all ' + N + ' comments on one page?</p><div class="ybtns"><button type="button" class="ytbtn pri" data-yes>Show all</button><button type="button" class="ytbtn" data-no>Cancel</button></div>';
   if (btns) btns.parentNode.insertBefore(ask, btns.nextSibling);
-  function asking(on) { ask.hidden = !on; btns.hidden = on; (on ? $('[data-yes]', ask) : wallBtn).focus({ preventScroll: true }); }
-  function closeWall() { wall.hidden = true; wall.innerHTML = ''; wallBtn.textContent = 'Show all'; }
-  function openWall() {
-    wall.innerHTML = '<p class="ywall-top">Here’s all 1,000+ 🫡</p><div class="ywall-cols">' + C.map(card).join('') + '</div><button type="button" class="ytbtn" data-hidewall>Hide the full list</button>';
-    wall.hidden = false; wallBtn.textContent = 'Hide the full list'; wall.scrollIntoView({ block: 'start' });
-  }
-  if (wallBtn) wallBtn.addEventListener('click', function () {
-    if (!wall.hidden) { closeWall(); wallBtn.scrollIntoView({ block: 'center' }); return; }
-    asking(true);
-  });
+  function asking(on) { ask.hidden = !on; btns.hidden = on; (on ? $('[data-yes]', ask) : addBtn).focus({ preventScroll: true }); }
+  if (wallBtn) wallBtn.addEventListener('click', function () { asking(true); });
   ask.addEventListener('click', function (e) {
-    if (e.target.closest('[data-yes]')) { asking(false); openWall(); }
-    else if (e.target.closest('[data-no]')) asking(false);
+    if (e.target.closest('[data-yes]')) { asking(false); all(); }
+    else if (e.target.closest('[data-no]')) { asking(false); wallBtn.focus({ preventScroll: true }); }
   });
-  if (wall) wall.addEventListener('click', function (e) { if (e.target.closest('[data-hidewall]')) { closeWall(); wallBtn.scrollIntoView({ block: 'center' }); } });
 
   // grab a row and fling it sideways; it glides, then carries on moving on its own. Tap a comment to pin it.
   function pin(i) {

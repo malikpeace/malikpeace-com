@@ -1212,3 +1212,10 @@ html[data-theme="light"] .p7s.open .p7s__n { color: #1c9e31; }   /* the bright g
 .s7 .ytbtn.pri:hover { background: #fff; }
 html[data-theme="light"] .s7 .ytbtn.pri:not(#ytallbtn) { background: #0b0b0c; color: #fff; box-shadow: none; }
 html[data-theme="light"] .s7 .ytbtn.pri:not(#ytallbtn):hover { background: #26262a; }
+
+/* "Show all": every comment drifting sideways in rows all the way down the page; rows off screen skip themselves
+   entirely, so a hundred moving rows cost about what ten do */
+.ymarq.is-all .row { content-visibility: auto; contain-intrinsic-size: auto 176px; }
+@media (max-width: 620px) { .ymarq.is-all .row { contain-intrinsic-size: auto 166px; } }
+.yall-top { text-align: center; margin: 0 0 6px; scroll-margin-top: 96px; }
+.yall-top[hidden] { display: none; }
