@@ -124,7 +124,7 @@
         if (w1 > max) { next.style.fontSize = ((v.s || 1) * max / w1).toFixed(3) + 'em'; w1 = next.getBoundingClientRect().width; }
         hi.removeChild(next); next.style.position = next.style.visibility = '';
         at = n;
-        var done = function () { hi.style.width = ''; hi.classList.remove('swap'); busy = false; if (again) { again = false; go(); } };
+        var done = function () { hi.style.width = ''; hi.classList.remove('swap'); busy = false; if (again) { again = false; go(); } else later(); };
         if (REDUCE) { hi.replaceChild(next, cur); write(next); done(); return; }
         // the old word fades up and out, the space eases to the new word's width, then the new word settles in
         hi.style.width = w0 + 'px'; void hi.offsetWidth; hi.classList.add('swap'); hi.style.width = w1 + 'px';
@@ -137,6 +137,15 @@
         }, 150);
       });
     }
+    // it also changes on its own every few seconds, for a bit of personality (the handwritten one stays longer so it can
+    // finish writing), only while the heading is on screen, the tab is open and nobody is editing; a tap restarts the clock
+    var auto = 0, seen = true;
+    function later() {
+      clearTimeout(auto); if (REDUCE) return;
+      auto = setTimeout(function () { if (document.hidden || !seen || root.classList.contains('mp-editing')) later(); else go(); }, V[at].svg ? 4600 : 2800);
+    }
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }).observe(hi.closest('h1'));
+    later();
     hi.addEventListener('click', function (e) { if (root.classList.contains('mp-editing')) return; e.preventDefault(); go(); });
     // the preview's text editor puts the plain word back before anything is edited
     document.addEventListener('mp:edit', function () { clearTimeout(timer); hi.innerHTML = DEF; hi.style.width = ''; hi.classList.remove('swap'); at = V.length - 1; busy = again = false; });
