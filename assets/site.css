@@ -1250,3 +1250,20 @@ html[data-theme="light"] .bhwrap, html:not([data-theme="light"]) .s1-foot .bhwra
 .s1 .s7-val { padding-bottom: 0; }
 /* the same room under the tool cards in both modes (.s1 .sec's 44px won in Flash bang) */
 .s1 .s7-tools { padding-bottom: clamp(64px, 9vw, 120px); }
+
+/* the surprise at the very bottom (Malik 2026-10-28): the tagline is a button; tap it and a finger rises, zooms in and points at you */
+.egg { display: block; appearance: none; background: none; border: 0; padding: 0; font: inherit; font-size: 15px; color: var(--mid); cursor: pointer; text-decoration: underline; text-decoration-color: var(--u, currentColor); text-underline-offset: 3px; text-align: left; transition: color .15s ease-out; }
+.egg:hover, .egg:focus-visible { color: var(--ink); }
+html.egg-on { overflow: hidden; }
+.egg-ov { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(14px, 3vh, 28px);
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px)); text-align: center; cursor: pointer; outline: 0;
+  background: #000; color: #f2f2f3; animation: eggFade .25s ease-out both; }
+html[data-theme="light"] .egg-ov { background: #fff; color: #0b0b0c; }
+.egg-ov.out { opacity: 0; transition: opacity .2s ease-in; }
+.egg-pt { display: block; font-size: clamp(150px, 46vmin, 320px); line-height: 1; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; animation: eggIn 1.1s cubic-bezier(.2, .8, .2, 1) both; }
+.egg-msg { margin: 0; max-width: 16ch; font-weight: 700; font-size: clamp(28px, 6.6vw, 46px); line-height: 1.12; letter-spacing: -.01em; animation: eggUp .5s .8s ease-out both; }
+.egg-x { margin: 0; font-size: 14px; opacity: .5; animation: eggUp .4s 1.7s ease-out both; }
+@keyframes eggFade { from { opacity: 0; } }
+@keyframes eggIn { 0% { transform: translateY(50vh) scale(.2); opacity: 0; } 35% { opacity: 1; } 72% { transform: translateY(0) scale(1.14); } 100% { transform: translateY(0) scale(1); } }
+@keyframes eggUp { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .egg-pt, .egg-msg, .egg-x { animation: eggFade .2s ease-out both; } }

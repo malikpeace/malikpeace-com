@@ -341,4 +341,23 @@
     box.addEventListener('click', function (e) { var ci = e.target.closest('.yc'); if (ci) pin(+ci.getAttribute('data-ci')); });
   }
 
+  // the surprise at the very bottom (Malik 2026-10-28): a finger rises, zooms in and points at you. Tap anywhere to close.
+  $$('[data-egg]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (document.querySelector('.egg-ov')) return;
+      var t0 = performance.now(), ov = document.createElement('div');
+      ov.className = 'egg-ov'; ov.tabIndex = -1;
+      ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'A surprise');
+      ov.innerHTML = '<span class="egg-pt" aria-hidden="true">🫵</span><p class="egg-msg">Get the most out of your existence.</p><p class="egg-x">Tap anywhere to close</p>';
+      document.body.appendChild(ov); document.documentElement.classList.add('egg-on'); ov.focus();
+      function close() {
+        document.removeEventListener('keydown', key); ov.classList.add('out');
+        setTimeout(function () { ov.remove(); document.documentElement.classList.remove('egg-on'); b.focus(); }, 200);
+      }
+      function key(e) { if (e.key === 'Escape') close(); }
+      ov.addEventListener('click', function () { if (performance.now() - t0 > 600) close(); });   // a quick double tap doesn't skip it
+      document.addEventListener('keydown', key);
+    });
+  });
+
 })();
