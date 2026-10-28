@@ -8,12 +8,12 @@
 <title>Focus Room</title>
 <meta name="description" content="A free room for deep work. Say what you're working on, pick how long, and start. The room fills as the time passes.">
 <!-- it lives at malikpeace.com/focus (Malik, 2026-10-24); the share card and icons ship beside this page -->
-<link rel="canonical" href="https://malikpeace.com/focus">
+<link rel="canonical" href="https://malikpeace.com/focus/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Malik Peace">
 <meta property="og:title" content="Focus Room">
 <meta property="og:description" content="A free room for deep work. Pick how long and start. The room fills as the time passes.">
-<meta property="og:url" content="https://malikpeace.com/focus">
+<meta property="og:url" content="https://malikpeace.com/focus/">
 <meta property="og:image" content="https://malikpeace.com/focus/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -535,7 +535,7 @@ input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
     <span class="sh-l">More free tools</span>
     <a class="mt" data-tool="audit" href="/audit/"><b>The Life Audit</b><span>See where your time goes.</span></a>
     <a class="mt" data-tool="freedom" href="/freedom/"><b>Your Freedom Number</b><span>How much you need to be free.</span></a>
-    <a class="mt" data-tool="25" href="/25/"><b>25+5 Lessons</b><span>What I learned by 25. $25.</span></a>
+    <a class="mt" data-tool="25" href="/25/"><b>25+5 Lessons</b><span>What I learned by 25. Free.</span></a>
   </div>
 </section>
 
@@ -1183,7 +1183,7 @@ input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
   $('bRec').addEventListener('click', function (e) { e.stopPropagation(); openSheet('shRec'); });
   $('bAbout').addEventListener('click', function () { openSheet('shAbout'); });
   var lpT = 0, lpFired = false;
-  $('bBrand').addEventListener('pointerdown', function () { lpFired = false; clearTimeout(lpT); lpT = setTimeout(function () { lpFired = true; setPreview(!preview); toast(preview ? 'Preview tools on.' : 'Preview tools off.'); }, 700); });
+  $('bBrand').addEventListener('pointerdown', function () { lpFired = false; clearTimeout(lpT); if (/(^|\.)malikpeace\.com$/i.test(location.hostname)) return; lpT = setTimeout(function () { lpFired = true; setPreview(!preview); toast(preview ? 'Preview tools on.' : 'Preview tools off.'); }, 700); });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { $('bBrand').addEventListener(ev, function () { clearTimeout(lpT); }); });
   $('bBrand').addEventListener('click', function (e) { if (lpFired) { lpFired = false; e.preventDefault(); return; } openSheet('shAbout'); });
   function setPreview(on) { preview = on; $('mockWrap').hidden = !on; $('crowd').hidden = !(LIVE_URL || on); renderA2hs(); }
