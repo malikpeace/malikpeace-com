@@ -1254,3 +1254,6 @@ html[data-theme="light"] .bhwrap, html:not([data-theme="light"]) .s1-foot .bhwra
 /* the very bottom (Malik 2026-10-28): "The end", the links, the hashtag; on About its sign-up sits above, stacked */
 .s1-foot .wide { flex-direction: column; }
 @media (max-width: 480px) { .s1-foot .end7 nav { gap: 8px 14px; font-size: 15px; } }
+/* Malik's line after the people (2026-10-29): closes the rows, then leads straight into the lock-in heading */
+.steps7 .great-end { margin-top: clamp(48px, 6vw, 88px); }
+.steps7 .great-end + .lockin { margin-top: clamp(18px, 2.4vw, 30px); }
